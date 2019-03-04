@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum CollisionTypes {Node, Wall}
+public enum CollisionTypes {Swimmer, Node, Wall, Dock}
 
 public class Boat : MonoBehaviour
 {
@@ -12,12 +12,14 @@ public class Boat : MonoBehaviour
 	public float minDistance = 0.5f;
 	public GameObject nodePrefab;
 
-	//Private fields
+    //Private fields
+    bool crashed;
 	List<Transform> nodes;
 
     // Start is called before the first frame update
     void Start()
     {
+        crashed = false;
 		nodes = new List<Transform>();
 		nodes.Add(transform.Find("Boat"));
 		CreateNode();
@@ -40,6 +42,9 @@ public class Boat : MonoBehaviour
 	/// </summary>
 	void Move()
 	{
+        if (crashed)
+            return;
+
 		//Rotate and translate boat
 		if (Input.GetAxisRaw("Horizontal") != 0)
 		{
@@ -81,20 +86,62 @@ public class Boat : MonoBehaviour
 		nodes.Add(newNode);
 	}
 
-	/// <summary>
-	/// Resolve a collision of the given type
-	/// </summary>
-	/// <param name="collisionType">The type of collision</param>
-	public void Collision(CollisionTypes collisionType)
+    /// <summary>
+    /// Resolve a collision of the given type
+    /// </summary>
+    /// <param name="collisionType">The type of collision</param>
+    /// <param name="col">The collider of the object's collision</param>
+    public void Collision(CollisionTypes collisionType, Collider col)
 	{
+        if (crashed)
+            return;
+
 		switch (collisionType)
 		{
-			case CollisionTypes.Node:
-				Debug.Log("Collision with node!");
+            case CollisionTypes.Swimmer:
+                CollisionSwimmer(col);
+                break;
+            case CollisionTypes.Dock:
+                CollisionDock();
+                break;
+            case CollisionTypes.Node:
+                Crash();
 				break;
 			case CollisionTypes.Wall:
-				Debug.Log("Collision with wall!");
+                Crash();
 				break;
 		}
 	}
+
+    /// <summary>
+    /// When the boat collides with a swimmer
+    /// </summary>
+    /// <param name="col">The collider of the object's collision</param>
+    void CollisionSwimmer(Collider col)
+    {
+        CreateNode();
+        Destroy(col.gameObject);
+        GameManager.Instance.CreateSwimmer();
+    }
+
+    /// <summary>
+    /// When the boat collides with the dock
+    /// </summary>
+    void CollisionDock()
+    {
+        //Add to the score
+        GameManager.Instance.AddToScore(nodes.Count);
+
+        //Remove tail
+        for(int i = nodes.Count - 1; i > 1; i--)
+        {
+            Destroy(nodes[i].gameObject);
+            nodes.RemoveAt(i);
+        }
+    }
+
+    void Crash()
+    {
+        crashed = true;
+    }
 }

@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Node
   - Wall
+  - Swimmer
+  - Dock
   layers:
   - Default
   - TransparentFX

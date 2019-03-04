@@ -21,9 +21,16 @@ public class BoatCollision : MonoBehaviour
 
 	//Detect collisions with the head
 	private void OnTriggerEnter(Collider other)
-	{
-
-		if (other.transform.tag == "Node")
+    {
+        if (other.transform.tag == "Swimmer")
+        {
+            boatScript.Collision(CollisionTypes.Swimmer, other);
+        }
+        else if (other.transform.tag == "Dock")
+        {
+            boatScript.Collision(CollisionTypes.Dock, other);
+        }
+        else if (other.transform.tag == "Node")
 		{
 			//The first collision is always the first node at the start of the game.
 			//	Make sure we don't die then
@@ -33,11 +40,12 @@ public class BoatCollision : MonoBehaviour
 				return;
 			}
 
-			boatScript.Collision(CollisionTypes.Node);
+			boatScript.Collision(CollisionTypes.Node, other);
 		}
 		else if (other.transform.tag == "Wall")
 		{
-			boatScript.Collision(CollisionTypes.Wall);
+			boatScript.Collision(CollisionTypes.Wall, other);
 		}
+
 	}
 }
