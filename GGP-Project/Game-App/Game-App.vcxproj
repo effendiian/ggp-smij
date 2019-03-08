@@ -20,10 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{6B72B24E-E693-457D-9663-4E455600D2CD}</ProjectGuid>
-    <RootNamespace>Cpp-DirectX-Engine</RootNamespace>
+    <ProjectGuid>{EB73F8F5-BECE-4FEC-BA29-AE261379F510}</ProjectGuid>
+    <RootNamespace>Game-App</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
-    <ProjectName>Cpp-DirectX-Engine</ProjectName>
+    <ProjectName>Game-App</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -56,6 +56,7 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\Rescue-Engine\Rescue-Engine.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -92,6 +93,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)Rescue-Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -112,34 +114,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DXCore.cpp" />
-    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Lights.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="SimpleShader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="DXCore.h" />
-    <ClInclude Include="Entity.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Lights.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="SimpleShader.h" />
-    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

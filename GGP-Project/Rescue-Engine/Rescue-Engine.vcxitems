@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{d1d54c58-6246-45f0-85ee-fe8c76190775}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Entity.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)GameObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InputManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Lights.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Material.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Mesh.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Renderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SimpleShader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Entity.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameObject.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InputManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Lights.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Material.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Mesh.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Renderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SimpleShader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Vertex.h" />
+  </ItemGroup>
+</Project>
