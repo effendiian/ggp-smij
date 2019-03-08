@@ -37,91 +37,110 @@ Renderer::~Renderer()
 // Draw all entities in the render list
 void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 {
-	//TODO: Sort enties based on meshes/materials
+	//TODO: Finish refactoring renderer to sort based on mesh/material combo
 	//TODO: Assign lights to entities
 	//TODO: Apply attenuation
-	for (size_t i = 0; i < renderList.size(); i++)
+	for (size_t j = 0; j < renderLists.size(); j++)
 	{
-		Material* mat = renderList[i]->GetMaterial();
+		Material* mat = renderLists[j][0]->GetMaterial();
+		for (size_t i = 0; i < renderLists[j].size(); i++)
+		{
+			Entity* ent = renderLists[j][i];
 
-		//Get the entity's shaders
-		vertexShader = renderList[i]->GetVertexShader();
-		pixelShader = renderList[i]->GetPixelShader();
+			//Get the entity's shaders
+			vertexShader = ent->GetVertexShader();
+			pixelShader = ent->GetPixelShader();
 
-		// Send data to shader variables
-		//  - Do this ONCE PER OBJECT you're drawing
-		//  - This is actually a complex process of copying data to a local buffer
-		//    and then copying that entire buffer to the GPU.  
-		//  - The "SimpleShader" class handles all of that for you.
-		vertexShader->SetMatrix4x4("world", renderList[i]->GetWorldMatrix());
-		vertexShader->SetMatrix4x4("view", camera->GetViewMatrix());
-		vertexShader->SetMatrix4x4("projection", camera->GetProjectionMatrix());
-		vertexShader->SetMatrix4x4("worldInvTrans", renderList[i]->GetWorldInvTransMatrix());
-	
-		pixelShader->SetData("light1", dLight->GetLightStruct(), sizeof(LightStruct));
-		pixelShader->SetData("light2", pLight->GetLightStruct(), sizeof(LightStruct));
-		pixelShader->SetData("light3", sLight->GetLightStruct(), sizeof(LightStruct));
-		pixelShader->SetFloat4("surfaceColor", mat->GetSurfaceColor());
-		pixelShader->SetFloat3("cameraPosition", camera->GetPosition());
-		pixelShader->SetFloat("specularity", mat->GetSpecularity());
-		pixelShader->SetShaderResourceView("diffuseTexture", mat->GetResourceView());
-		pixelShader->SetSamplerState("basicSampler", mat->GetSamplerState());
+			// Send data to shader variables
+			//  - Do this ONCE PER OBJECT you're drawing
+			//  - This is actually a complex process of copying data to a local buffer
+			//    and then copying that entire buffer to the GPU.  
+			//  - The "SimpleShader" class handles all of that for you.
+			vertexShader->SetMatrix4x4("world", ent->GetWorldMatrix());
+			vertexShader->SetMatrix4x4("view", camera->GetViewMatrix());
+			vertexShader->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+			vertexShader->SetMatrix4x4("worldInvTrans", ent->GetWorldInvTransMatrix());
 
-		// Once you've set all of the data you care to change for
-		// the next draw call, you need to actually send it to the GPU
-		//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
-		vertexShader->CopyAllBufferData();
-		pixelShader->CopyAllBufferData();
+			pixelShader->SetData("light1", dLight->GetLightStruct(), sizeof(LightStruct));
+			pixelShader->SetData("light2", pLight->GetLightStruct(), sizeof(LightStruct));
+			pixelShader->SetData("light3", sLight->GetLightStruct(), sizeof(LightStruct));
+			pixelShader->SetFloat4("surfaceColor", mat->GetSurfaceColor());
+			pixelShader->SetFloat3("cameraPosition", camera->GetPosition());
+			pixelShader->SetFloat("specularity", mat->GetSpecularity());
+			pixelShader->SetShaderResourceView("diffuseTexture", mat->GetResourceView());
+			pixelShader->SetSamplerState("basicSampler", mat->GetSamplerState());
 
-		// Set the vertex and pixel shaders to use for the next Draw() command
-		//  - These don't technically need to be set every frame...YET
-		//  - Once you start applying different shaders to different objects,
-		//    you'll need to swap the current shaders before each draw
-		vertexShader->SetShader();
-		pixelShader->SetShader();
+			// Once you've set all of the data you care to change for
+			// the next draw call, you need to actually send it to the GPU
+			//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
+			vertexShader->CopyAllBufferData();
+			pixelShader->CopyAllBufferData();
 
-		// Set buffers in the input assembler
-		//  - Do this ONCE PER OBJECT you're drawing, since each object might
-		//    have different geometry.
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
+			// Set the vertex and pixel shaders to use for the next Draw() command
+			//  - These don't technically need to be set every frame...YET
+			//  - Once you start applying different shaders to different objects,
+			//    you'll need to swap the current shaders before each draw
+			vertexShader->SetShader();
+			pixelShader->SetShader();
 
-		ID3D11Buffer* vertexBuffer = renderList[i]->GetVertexBuffer();
-		ID3D11Buffer* indexBuffer = renderList[i]->GetIndexBuffer();
-		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+			// Set buffers in the input assembler
+			//  - Do this ONCE PER OBJECT you're drawing, since each object might
+			//    have different geometry.
+			UINT stride = sizeof(Vertex);
+			UINT offset = 0;
 
-		// Finally do the actual drawing
-		//  - Do this ONCE PER OBJECT you intend to draw
-		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-		//     vertices in the currently set VERTEX BUFFER
-		context->DrawIndexed(
-			renderList[i]->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+			ID3D11Buffer* vertexBuffer = ent->GetVertexBuffer();
+			ID3D11Buffer* indexBuffer = ent->GetIndexBuffer();
+			context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+			context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+			// Finally do the actual drawing
+			//  - Do this ONCE PER OBJECT you intend to draw
+			//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+			//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+			//     vertices in the currently set VERTEX BUFFER
+			context->DrawIndexed(
+				ent->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+				0,     // Offset to the first index we want to use
+				0);    // Offset to add to each index when looking up vertices
+		}
 	}
 }
 
 // Add an entity to the render list
 void Renderer::AddEntityToRenderList(Entity* e)
 {
-	renderList.push_back(e);
+	//Look for existing mesh/material combos and add 
+	//	the entity there if it exists
+	for (size_t i = 0; i < renderLists.size(); i++)
+	{
+		if (renderLists[i][0]->GetMesh() == e->GetMesh() &&
+			renderLists[i][0]->GetMaterial() == e->GetMaterial())
+		{
+			renderLists[i].push_back(e);
+			return;
+		}
+	}
+
+	//Create a new list and add it to the master render list
+	std::vector<Entity*> newList;
+	newList.push_back(e);
+	renderLists.push_back(newList);
 }
 
 // Remove an entity from the render list
 void Renderer::RemoveEntityFromRenderList(Entity* e)
 {
 	//Early return if render list is empty
-	if (renderList.size() == 0)
+	if (renderLists.size() == 0)
 		return;
 
 	//Get the index of the entity
 	size_t* index = nullptr;
 	size_t i;
-	for (i = 0; i < renderList.size(); i++)
+	for (i = 0; i < renderLists.size(); i++)
 	{
-		if (e == renderList[i])
+		if (e == renderLists[i])
 		{
 			index = &i;
 			break;

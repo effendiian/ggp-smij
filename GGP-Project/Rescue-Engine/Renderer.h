@@ -15,7 +15,7 @@
 class Renderer
 {
 private:
-	std::vector<Entity*> renderList;
+	std::vector<std::vector<Entity*>> renderLists;
 	
 	//Test lighting
 	DirectionalLight* dLight;
