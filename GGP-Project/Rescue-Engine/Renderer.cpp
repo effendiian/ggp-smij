@@ -37,11 +37,8 @@ Renderer::~Renderer()
 // Draw all entities in the render list
 void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 {
-	//TODO: Finish refactoring renderer to sort based on mesh/material combo
-	//TODO: Assign lights to entities
+	//TODO: Have materials set themselves
 	//TODO: Apply attenuation
-
-	//for (size_t j = 0; j < renderMap.; j++)
 	for (auto const& x : renderMap)
 	{
 		if (x.second.size() < 1)
@@ -54,8 +51,9 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 
 		//Get shaders
 		pixelShader = mat->GetPixelShader();
+		vertexShader = mat->GetVertexShader();
 
-		//Set pixel shader variables
+		//Send data to pixel shader
 		pixelShader->SetData("light1", dLight->GetLightStruct(), sizeof(LightStruct));
 		pixelShader->SetData("light2", pLight->GetLightStruct(), sizeof(LightStruct));
 		pixelShader->SetData("light3", sLight->GetLightStruct(), sizeof(LightStruct));
@@ -65,10 +63,15 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 		pixelShader->SetShaderResourceView("diffuseTexture", mat->GetResourceView());
 		pixelShader->SetSamplerState("basicSampler", mat->GetSamplerState());
 
+		//Send data to vertex shader
+		vertexShader->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+		vertexShader->SetMatrix4x4("view", camera->GetViewMatrix());
+
 		//Send data to GPU
 		pixelShader->CopyAllBufferData();
 
-		//Set pixel shader
+		//Set shaders
+		vertexShader->SetShader();
 		pixelShader->SetShader();
 
 		// Set buffers in the input assembler
@@ -84,23 +87,12 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 		{
 			Entity* ent = list[i];
 
-			vertexShader = ent->GetMaterial()->GetVertexShader();
-
-			// Send data to shader variables
-			//  - Do this ONCE PER OBJECT you're drawing
-			//  - This is actually a complex process of copying data to a local buffer
-			//    and then copying that entire buffer to the GPU.  
-			//  - The "SimpleShader" class handles all of that for you.
+			// Send data to vertex shader
 			vertexShader->SetMatrix4x4("world", ent->GetWorldMatrix());
-			vertexShader->SetMatrix4x4("projection", camera->GetProjectionMatrix());
 			vertexShader->SetMatrix4x4("worldInvTrans", ent->GetWorldInvTransMatrix());
-			vertexShader->SetMatrix4x4("view", camera->GetViewMatrix());
 
 			//Send data to GPU
 			vertexShader->CopyAllBufferData();
-
-			//Set vertex shader
-			vertexShader->SetShader();
 
 			// Finally do the actual drawing
 			//  - Do this ONCE PER OBJECT you intend to draw
