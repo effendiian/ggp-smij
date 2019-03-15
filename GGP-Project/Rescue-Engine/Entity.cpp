@@ -1,3 +1,4 @@
+#include "Entity.h"
 #include "Renderer.h"
 #include <sstream> 
 #include <string> 
@@ -17,7 +18,8 @@ Entity::Entity(Mesh* mesh, Material* material)
 	const void * addressMesh = static_cast<const void*>(mesh);
 	std::stringstream ss;
 	ss << addressMat << addressMesh;
-	identifier = ss.str().c_str;
+	std::string temp = ss.str();
+	identifier = temp;
 
 	Renderer::GetInstance()->AddEntityToRenderList(this);
 }
@@ -53,7 +55,7 @@ void Entity::RemoveFromRenderList()
 }
 
 // Get the material/mesh identifier
-char* Entity::GetMatMeshIdentifier()
+std::string Entity::GetMatMeshIdentifier()
 {
 	return identifier;
 }

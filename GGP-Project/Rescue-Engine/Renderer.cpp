@@ -40,16 +40,51 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 	//TODO: Finish refactoring renderer to sort based on mesh/material combo
 	//TODO: Assign lights to entities
 	//TODO: Apply attenuation
-	for (size_t j = 0; j < renderLists.size(); j++)
-	{
-		Material* mat = renderLists[j][0]->GetMaterial();
-		for (size_t i = 0; i < renderLists[j].size(); i++)
-		{
-			Entity* ent = renderLists[j][i];
 
-			//Get the entity's shaders
-			vertexShader = ent->GetVertexShader();
-			pixelShader = ent->GetPixelShader();
+	//for (size_t j = 0; j < renderMap.; j++)
+	for (auto const& x : renderMap)
+	{
+		if (x.second.size() < 1)
+			return;
+
+		//Get material and mesh
+		std::vector<Entity*> list = x.second;
+		Material* mat = list[0]->GetMaterial();
+		Mesh* mesh = list[0]->GetMesh();
+
+		//Get shaders
+		pixelShader = mat->GetPixelShader();
+
+		//Set pixel shader variables
+		pixelShader->SetData("light1", dLight->GetLightStruct(), sizeof(LightStruct));
+		pixelShader->SetData("light2", pLight->GetLightStruct(), sizeof(LightStruct));
+		pixelShader->SetData("light3", sLight->GetLightStruct(), sizeof(LightStruct));
+		pixelShader->SetFloat4("surfaceColor", mat->GetSurfaceColor());
+		pixelShader->SetFloat3("cameraPosition", camera->GetPosition());
+		pixelShader->SetFloat("specularity", mat->GetSpecularity());
+		pixelShader->SetShaderResourceView("diffuseTexture", mat->GetResourceView());
+		pixelShader->SetSamplerState("basicSampler", mat->GetSamplerState());
+
+		//Send data to GPU
+		pixelShader->CopyAllBufferData();
+
+		//Set pixel shader
+		pixelShader->SetShader();
+
+		// Set buffers in the input assembler
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer* vertexBuffer = mesh->GetVertexBuffer();
+		ID3D11Buffer* indexBuffer = mesh->GetIndexBuffer();
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		//Loop through each entity in the list
+		for (size_t i = 0; i < list.size(); i++)
+		{
+			Entity* ent = list[i];
+
+			vertexShader = ent->GetMaterial()->GetVertexShader();
 
 			// Send data to shader variables
 			//  - Do this ONCE PER OBJECT you're drawing
@@ -57,42 +92,15 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 			//    and then copying that entire buffer to the GPU.  
 			//  - The "SimpleShader" class handles all of that for you.
 			vertexShader->SetMatrix4x4("world", ent->GetWorldMatrix());
-			vertexShader->SetMatrix4x4("view", camera->GetViewMatrix());
 			vertexShader->SetMatrix4x4("projection", camera->GetProjectionMatrix());
 			vertexShader->SetMatrix4x4("worldInvTrans", ent->GetWorldInvTransMatrix());
+			vertexShader->SetMatrix4x4("view", camera->GetViewMatrix());
 
-			pixelShader->SetData("light1", dLight->GetLightStruct(), sizeof(LightStruct));
-			pixelShader->SetData("light2", pLight->GetLightStruct(), sizeof(LightStruct));
-			pixelShader->SetData("light3", sLight->GetLightStruct(), sizeof(LightStruct));
-			pixelShader->SetFloat4("surfaceColor", mat->GetSurfaceColor());
-			pixelShader->SetFloat3("cameraPosition", camera->GetPosition());
-			pixelShader->SetFloat("specularity", mat->GetSpecularity());
-			pixelShader->SetShaderResourceView("diffuseTexture", mat->GetResourceView());
-			pixelShader->SetSamplerState("basicSampler", mat->GetSamplerState());
-
-			// Once you've set all of the data you care to change for
-			// the next draw call, you need to actually send it to the GPU
-			//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
+			//Send data to GPU
 			vertexShader->CopyAllBufferData();
-			pixelShader->CopyAllBufferData();
 
-			// Set the vertex and pixel shaders to use for the next Draw() command
-			//  - These don't technically need to be set every frame...YET
-			//  - Once you start applying different shaders to different objects,
-			//    you'll need to swap the current shaders before each draw
+			//Set vertex shader
 			vertexShader->SetShader();
-			pixelShader->SetShader();
-
-			// Set buffers in the input assembler
-			//  - Do this ONCE PER OBJECT you're drawing, since each object might
-			//    have different geometry.
-			UINT stride = sizeof(Vertex);
-			UINT offset = 0;
-
-			ID3D11Buffer* vertexBuffer = ent->GetVertexBuffer();
-			ID3D11Buffer* indexBuffer = ent->GetIndexBuffer();
-			context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-			context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 			// Finally do the actual drawing
 			//  - Do this ONCE PER OBJECT you intend to draw
@@ -100,7 +108,7 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 			//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
 			//     vertices in the currently set VERTEX BUFFER
 			context->DrawIndexed(
-				ent->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+				mesh->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
 				0,     // Offset to the first index we want to use
 				0);    // Offset to add to each index when looking up vertices
 		}
@@ -110,37 +118,43 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 // Add an entity to the render list
 void Renderer::AddEntityToRenderList(Entity* e)
 {
-	//Look for existing mesh/material combos and add 
-	//	the entity there if it exists
-	for (size_t i = 0; i < renderLists.size(); i++)
+	bool isInList = IsEntityInRenderList(e);
+	if (IsEntityInRenderList(e))
 	{
-		if (renderLists[i][0]->GetMesh() == e->GetMesh() &&
-			renderLists[i][0]->GetMaterial() == e->GetMaterial())
-		{
-			renderLists[i].push_back(e);
-			return;
-		}
+		printf("Cannot add entity because it is already in render list");
+		return;
 	}
 
-	//Create a new list and add it to the master render list
-	std::vector<Entity*> newList;
-	newList.push_back(e);
-	renderLists.push_back(newList);
+	//Look for existing mesh/material combos
+	if (renderMap.find(e->GetMatMeshIdentifier()) != renderMap.end())
+	{
+		renderMap[e->GetMatMeshIdentifier()].push_back(e);
+	}
+	//Make a new entry
+	else
+	{
+		std::vector<Entity*> list;
+		list.push_back(e);
+		renderMap.emplace(e->GetMatMeshIdentifier(), list);
+	}
 }
 
 // Remove an entity from the render list
 void Renderer::RemoveEntityFromRenderList(Entity* e)
 {
-	//Early return if render list is empty
-	if (renderLists.size() == 0)
+	//Early return if render list is empty and if the entity is in it
+	if (renderMap.find(e->GetMatMeshIdentifier()) == renderMap.end())
 		return;
+
+	//Get correct render list
+	std::vector<Entity*> list = renderMap[e->GetMatMeshIdentifier()];
 
 	//Get the index of the entity
 	size_t* index = nullptr;
 	size_t i;
-	for (i = 0; i < renderLists.size(); i++)
+	for (i = 0; i < list.size(); i++)
 	{
-		if (e == renderLists[i])
+		if (e == list[i])
 		{
 			index = &i;
 			break;
@@ -149,29 +163,47 @@ void Renderer::RemoveEntityFromRenderList(Entity* e)
 
 	//Entity is not in the render list
 	if (index == nullptr)
+	{
+		printf("Cannont remove entity because it is not in render list");
 		return;
+	}
 
 	//If the entity is not the very last we swap it for the last one
-	if (*index != renderList.size() - 1)
+	if (*index != list.size() - 1)
 	{
-		std::swap(renderList[*index], renderList[renderList.size() - 1]);
+		std::swap(list[*index], list[list.size() - 1]);
 	}
 
 	//Pop the last one
-	renderList.pop_back();
+	list.pop_back();
+
+	//Check if the list is empty
+	if (list.size() == 0)
+	{
+		//Erase
+		renderMap.erase(e->GetMatMeshIdentifier());
+	}
 }
 
 // Check if an entity is in the render list. O(n) complexity
+//	(n is the amount of entities that share the material and mesh)
 bool Renderer::IsEntityInRenderList(Entity* e)
 {
+	//Early return if render list is empty and if the entity is in it
+	if (renderMap.find(e->GetMatMeshIdentifier()) == renderMap.end())
+		return false;
+
+	//Get render list
+	std::vector<Entity*> list = renderMap[e->GetMatMeshIdentifier()];
+
 	//Early return if render list is empty
-	if (renderList.size() == 0)
+	if (list.size() == 0)
 		return false;
 
 	//Get the index of the entity
-	for (size_t i = 0; i < renderList.size(); i++)
+	for (size_t i = 0; i < list.size(); i++)
 	{
-		if (e == renderList[i])
+		if (e == list[i])
 		{
 			return true;
 		}

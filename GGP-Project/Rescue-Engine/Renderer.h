@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <map>
 #include "SimpleShader.h"
 #include "Entity.h"
 #include "Camera.h"
@@ -15,8 +16,10 @@
 class Renderer
 {
 private:
-	std::vector<std::vector<Entity*>> renderLists;
-	
+	//Render list management
+	//renderMap uses Mat/Mesh identifiers to point to the correct list
+	std::map<std::string, std::vector<Entity*>> renderMap;
+
 	//Test lighting
 	DirectionalLight* dLight;
 	PointLight* pLight;

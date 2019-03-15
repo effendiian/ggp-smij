@@ -15,7 +15,7 @@ private:
 	//Rendering
 	Mesh* mesh;
 	Material* material;
-	char* identifier;
+	std::string identifier;
 
 public:
 	// --------------------------------------------------------
@@ -54,6 +54,6 @@ public:
 	// --------------------------------------------------------
 	// Get the material/mesh identifier
 	// --------------------------------------------------------
-	char* GetMatMeshIdentifier();
+	std::string GetMatMeshIdentifier();
 };
 
