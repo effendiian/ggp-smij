@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "LightManager.h"
 
 using namespace DirectX;
 
@@ -9,30 +10,25 @@ void Renderer::Init()
 	vertexShader = 0;
 	pixelShader = 0;
 
+	//Set ambient light
+	LightManager* lightManager = LightManager::GetInstance();
+	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
+
 	//Directional lights
-	dLight = new DirectionalLight(XMFLOAT4(0.1f, 0.1f, 0.1f, 1), XMFLOAT4(1, 1, 1, 1), 1);
+	lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
 
 	//Point light
-	pLight = new PointLight(5, XMFLOAT4(0, 1, 0, 1), 1);
+	pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
 	pLight->SetPosition(0, -2, 3);
 
 	//Spot light
-	sLight = new SpotLight(5, XMFLOAT4(0, 0, 1, 1), 1);
-	sLight->SetPosition(2, 0, -1);
-	sLight->SetRotation(0, -90, 0);
+	pLight2 = lightManager->CreatePointLight(5, XMFLOAT3(0, 0, 1), 1);
+	pLight2->SetPosition(2, 0, -1);
 }
 
 // Destructor for when the singleton instance is deleted
 Renderer::~Renderer()
-{ 
-	//Release lights
-	if (dLight)
-		delete dLight;
-	if (pLight)
-		delete pLight;
-	if (sLight)
-		delete sLight;
-}
+{ }
 
 // Draw all entities in the render list
 void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)

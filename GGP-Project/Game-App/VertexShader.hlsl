@@ -27,8 +27,8 @@ struct VertexShaderInput
 	//  |    |                |
 	//  v    v                v
 	float3 position		: POSITION;	     // XYZ position
-	float3 normal		: NORMAL;        // XYZ normal
 	float2 uv			: TEXCOORD;		 // XY uv
+	float3 normal		: NORMAL;        // XYZ normal
 	float3 tangent		: TANGENT;
 };
 
@@ -45,10 +45,10 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 position		: SV_POSITION;	 // XYZW position (System Value Position)
-	float3 normal		: NORMAL;        // XYZ normal
-	float3 worldPos		: POSITION;		 // world position of the vertex
 	float2 uv			: TEXCOORD;		 // XY uv
+	float3 normal		: NORMAL;        // XYZ normal
 	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION;		 // world position of the vertex
 };
 
 // --------------------------------------------------------

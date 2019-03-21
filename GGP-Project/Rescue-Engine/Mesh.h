@@ -21,6 +21,11 @@ private:
 	// --------------------------------------------------------
 	void CreateBuffers(Vertex* vertices, int vertexCount, unsigned* indices, int indexCount, ID3D11Device* device);
 
+	// --------------------------------------------------------
+	// Calculates the tangents of the vertices in a mesh
+	// --------------------------------------------------------
+	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
+
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up fields and buffers

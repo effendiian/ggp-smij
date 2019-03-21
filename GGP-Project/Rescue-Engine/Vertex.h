@@ -10,6 +10,7 @@
 struct Vertex
 {
 	DirectX::XMFLOAT3 Position;	    // The position of the vertex
-	DirectX::XMFLOAT3 Normal;
-	DirectX::XMFLOAT2 UV;
+	DirectX::XMFLOAT2 UV;           // UV Coordinate for texturing (soon)
+	DirectX::XMFLOAT3 Normal;       // Normal for lighting
+	DirectX::XMFLOAT3 Tangent;       // Tangents for normal mapping
 };

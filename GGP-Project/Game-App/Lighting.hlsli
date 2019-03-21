@@ -5,6 +5,7 @@
 #define LIGHT_TYPE_DIRECTIONAL	0
 #define LIGHT_TYPE_POINT		1
 #define LIGHT_TYPE_SPOT			2
+#define MAX_LIGHTS 10
 
 struct Light
 {
@@ -19,6 +20,12 @@ struct Light
 
 	float	SpotFalloff;
 	float3	Padding;	// 64 bytes
+};
+
+struct AmbientLight
+{
+	float	Intensity;
+	float3	Color;		// 16 bytes
 };
 
 // === UTILITY FUNCTIONS ============================================

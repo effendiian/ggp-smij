@@ -21,9 +21,8 @@ private:
 	std::map<std::string, std::vector<Entity*>> renderMap;
 
 	//Test lighting
-	DirectionalLight* dLight;
 	PointLight* pLight;
-	SpotLight* sLight;
+	PointLight* pLight2;
 
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;

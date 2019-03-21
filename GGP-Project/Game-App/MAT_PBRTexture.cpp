@@ -1,4 +1,5 @@
 #include "MAT_PBRTexture.h"
+#include "LightManager.h"
 
 // Constructor - Set up a material
 MAT_PBRTexture::MAT_PBRTexture(SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader,
@@ -19,12 +20,13 @@ MAT_PBRTexture::MAT_PBRTexture(SimpleVertexShader* vertexShader, SimplePixelShad
 
 // Release all data in the material
 MAT_PBRTexture::~MAT_PBRTexture()
-{
-}
+{ }
 
 // Prepare this material's shader's per MatMesh combo variables
 void MAT_PBRTexture::PrepareMaterialCombo(GameObject* entityObj, Camera* cam)
 {
+	LightManager* lightManager = LightManager::GetInstance();
+
 	// Turn shaders on
 	vertexShader->SetShader();
 	pixelShader->SetShader();
@@ -32,11 +34,19 @@ void MAT_PBRTexture::PrepareMaterialCombo(GameObject* entityObj, Camera* cam)
 	// Vertex shader data
 	vertexShader->SetMatrix4x4("projection", cam->GetProjectionMatrix());
 	vertexShader->SetMatrix4x4("view", cam->GetViewMatrix());
+	vertexShader->SetFloat2("uvScale", uvScale);
 	vertexShader->CopyBufferData("perCombo");
 
 	//Pixel shader data
 	pixelShader->SetFloat3("CameraPosition", cam->GetPosition());
-	pixelShader->SetFloat("LightCount", 0);
+	//Set lights
+	int amnt = lightManager->GetLightAmnt();
+	LightStruct* arr = nullptr;
+	lightManager->GetLightStructArray(&arr);
+	pixelShader->SetData("Lights", (void*)arr,
+		sizeof(LightStruct) * MAX_LIGHTS);
+	pixelShader->SetInt("LightCount", amnt);
+	pixelShader->SetData("AmbLight", lightManager->GetAmbientLight(), sizeof(AmbientLightStruct));
 	pixelShader->CopyBufferData("perCombo");
 
 	pixelShader->SetShaderResourceView("AlbedoTexture", albedoSRV);

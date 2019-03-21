@@ -2,12 +2,14 @@
 #include <DirectXMath.h>
 #include "GameObject.h"
 
-enum class LightTypes { AmbientLight = 0, DirectionalLight = 1, PointLight = 2, SpotLight = 3};
+enum class LightType { DirectionalLight = 0, PointLight = 1, SpotLight = 2};
+
+#define MAX_LIGHTS 10
 
 // --------------------------------------------------------
-// A directional light struct definition
+// A light struct definition
 //
-// Directional Light data to be passed to shaders
+// Light data to be passed to shaders
 // --------------------------------------------------------
 struct LightStruct
 {
@@ -25,6 +27,17 @@ struct LightStruct
 };
 
 // --------------------------------------------------------
+// An ambient light struct definition
+//
+// Ambient light data to be passed to shaders
+// --------------------------------------------------------
+struct AmbientLightStruct
+{
+	float				Intensity;
+	DirectX::XMFLOAT3	Color;		// 48 bytes
+};
+
+// --------------------------------------------------------
 // A light definition
 //
 // Base light to be inherited by other classes
@@ -37,16 +50,19 @@ protected:
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up a light with default values.
+	//
+	// type - the type of light this is
 	// --------------------------------------------------------
-	Light();
+	Light(LightType type);
 
 	// --------------------------------------------------------
 	// Constructor - Set up a light
 	//
-	// diffuseColor - Diffuse color of the light
+	// type - the type of light this is
+	// color - Diffuse color of the light
 	// intensity - how intense the light is
 	// --------------------------------------------------------
-	Light(DirectX::XMFLOAT4 diffuseColor, float intensity);
+	Light(LightType type, DirectX::XMFLOAT3 color, float intensity);
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
@@ -59,9 +75,14 @@ public:
 	LightStruct* GetLightStruct();
 
 	// --------------------------------------------------------
+	// Get the type of light
+	// --------------------------------------------------------
+	LightType GetType();
+
+	// --------------------------------------------------------
 	// Set the diffuse color of this light
 	// --------------------------------------------------------
-	void SetDiffuseColor(DirectX::XMFLOAT4 diffuseColor);
+	void SetColor(DirectX::XMFLOAT3 color);
 
 	// --------------------------------------------------------
 	// Set the diffuse color of this light
@@ -69,14 +90,13 @@ public:
 	// r - red
 	// g - green
 	// b - blue
-	// a - alpha
 	// --------------------------------------------------------
-	void SetDiffuseColor(float r, float g, float b, float a);
+	void SetColor(float r, float g, float b);
 
 	// --------------------------------------------------------
 	// Get the diffuse color of this light
 	// --------------------------------------------------------
-	DirectX::XMFLOAT4 GetDiffuseColor();
+	DirectX::XMFLOAT3 GetColor();
 
 	// --------------------------------------------------------
 	// Get the intensity for this light
@@ -87,28 +107,6 @@ public:
 	// Set the intensity for this light
 	// --------------------------------------------------------
 	void SetIntensity(float intensity);
-};
-
-class AmbientLight : public Light
-{
-public:
-	// --------------------------------------------------------
-	// Constructor - Set up an ambient light with default values.
-	// --------------------------------------------------------
-	AmbientLight();
-
-	// --------------------------------------------------------
-	// Constructor - Set up an ambient light
-	//
-	// ambientColor - color of the light
-	// intensity - how intense the light is
-	// --------------------------------------------------------
-	AmbientLight(DirectX::XMFLOAT4 ambientColor, float intensity);
-
-	// --------------------------------------------------------
-	// Destructor for when an instance is deleted
-	// --------------------------------------------------------
-	~AmbientLight();
 };
 
 // --------------------------------------------------------
@@ -127,11 +125,10 @@ public:
 	// --------------------------------------------------------
 	// Constructor - Set up a directional light
 	//
-	// ambientColor - Ambient color of the light
-	// diffuseColor - Diffuse color of the light
+	// color - Diffuse color of the light
 	// intensity - how intense the light is
 	// --------------------------------------------------------
-	DirectionalLight(DirectX::XMFLOAT4 ambientColor, DirectX::XMFLOAT4 diffuseColor, float intensity);
+	DirectionalLight(DirectX::XMFLOAT3 color, float intensity);
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
@@ -151,9 +148,6 @@ public:
 // --------------------------------------------------------
 class PointLight : public Light
 {
-private:
-	float radius;
-
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up a point light with default values.
@@ -164,10 +158,10 @@ public:
 	// Constructor - Set up a point light
 	//
 	// radius - radius of the point light's sphere
-	// diffuseColor - Diffuse color of the light
+	// color - Diffuse color of the light
 	// intensity - how intense the light is
 	// --------------------------------------------------------
-	PointLight(float radius, DirectX::XMFLOAT4 diffuseColor, float intensity);
+	PointLight(float radius, DirectX::XMFLOAT3 color, float intensity);
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
@@ -193,9 +187,6 @@ public:
 // --------------------------------------------------------
 class SpotLight : public Light
 {
-private:
-	float spotRadius;
-
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up a spot light with default values.
@@ -205,11 +196,12 @@ public:
 	// --------------------------------------------------------
 	// Constructor - Set up a spot light
 	//
-	// spotRadius - radius of the spot light's "spot"
-	// diffuseColor - Diffuse color of the light
+	// range - the range of this spotlight
+	// spotFallOff - the falloff for this spotlight
+	// color - Diffuse color of the light
 	// intensity - how intense the light is
 	// --------------------------------------------------------
-	SpotLight(float spotRadius, DirectX::XMFLOAT4 diffuseColor, float intensity);
+	SpotLight(float range, float spotFalloff, DirectX::XMFLOAT3 color, float intensity);
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
@@ -217,14 +209,24 @@ public:
 	~SpotLight();
 
 	// --------------------------------------------------------
+	// Set the falloff of this spotlight
+	// --------------------------------------------------------
+	void SetSpotFalloff(float spotFallOff);
+
+	// --------------------------------------------------------
+	// Get the spot falloff of this light
+	// --------------------------------------------------------
+	float GetSpotFalloff();
+
+	// --------------------------------------------------------
 	// Set the spot radius of this light
 	// --------------------------------------------------------
-	void SetSpotRadius(float radius);
+	void SetRange(float radius);
 
 	// --------------------------------------------------------
 	// Get the spot radius of this light
 	// --------------------------------------------------------
-	float GetSpotRadius();
+	float GetRange();
 
 	// --------------------------------------------------------
 	// Get the direction of this light

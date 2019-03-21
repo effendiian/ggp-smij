@@ -2,14 +2,14 @@
 #include "Lighting.hlsli"
 
 // How many lights could we handle?
-#define MAX_LIGHTS 6
 
 //Data that changes once per MatMesh combo
 cbuffer perCombo : register(b0)
 {
-	//Light Lights[MAX_LIGHTS]; //array of lights
+	Light Lights[MAX_LIGHTS]; //array of lights
 	int LightCount; //amount of lights
 	float3 CameraPosition;
+	AmbientLight AmbLight;
 }
 
 
@@ -60,7 +60,9 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Total color for this pixel
 	float3 totalColor = float3(0,0,0);
 
-	/*
+	//Add ambient light
+	totalColor += AmbLight.Color * AmbLight.Intensity * surfaceColor.rgb;
+
 	// Loop through all lights this frame
 	for (int i = 0; i < LightCount; i++)
 	{
@@ -80,7 +82,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 			break;
 		}
 	}
-	*/
+
 	// Adjust the light color by the light amount
 	float3 gammaCorrect = pow(totalColor, 1.0 / 2.2);
 	return float4(gammaCorrect, 1);
