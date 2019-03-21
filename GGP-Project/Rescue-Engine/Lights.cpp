@@ -11,10 +11,10 @@ using namespace DirectX;
 Light::Light()
 {
 	lightStruct = new LightStruct();
-	lightStruct->DiffuseColor = XMFLOAT4(0.5f, 0.5f, 0.5f, 1);
+	lightStruct->Color = XMFLOAT4(0.5f, 0.5f, 0.5f, 1);
 	lightStruct->AmbientColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1);
 	SetRotation(0, 0, 0);
-	lightStruct->intensity = 1;
+	lightStruct->Intensity = 1;
 }
 
 // Constructor - Set up a light
@@ -24,7 +24,7 @@ Light::Light(XMFLOAT4 diffuseColor, float intensity)
 	lightStruct->DiffuseColor = diffuseColor;
 	lightStruct->AmbientColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1);
 	SetRotation(0, 0, 0);
-	lightStruct->intensity = intensity;
+	lightStruct->Intensity = intensity;
 }
 
 // Destructor for when an instance is deleted

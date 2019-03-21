@@ -2,6 +2,8 @@
 #include <DirectXMath.h>
 #include "GameObject.h"
 
+enum class LightTypes { AmbientLight = 0, DirectionalLight = 1, PointLight = 2, SpotLight = 3};
+
 // --------------------------------------------------------
 // A directional light struct definition
 //
@@ -9,12 +11,17 @@
 // --------------------------------------------------------
 struct LightStruct
 {
-	DirectX::XMFLOAT4 AmbientColor;
-	DirectX::XMFLOAT4 DiffuseColor;
-	DirectX::XMFLOAT3 Position;
-	float dummy; //dummy float because of 16-byte rule with DirectX
-	DirectX::XMFLOAT3 Direction;
-	float intensity;
+	int					Type;
+	DirectX::XMFLOAT3	Direction;	// 16 bytes
+
+	float				Range;
+	DirectX::XMFLOAT3	Position;	// 32 bytes
+
+	float				Intensity;
+	DirectX::XMFLOAT3	Color;		// 48 bytes
+
+	float				SpotFalloff;
+	DirectX::XMFLOAT3	Padding;	// 64 bytes
 };
 
 // --------------------------------------------------------
@@ -82,6 +89,28 @@ public:
 	void SetIntensity(float intensity);
 };
 
+class AmbientLight : public Light
+{
+public:
+	// --------------------------------------------------------
+	// Constructor - Set up an ambient light with default values.
+	// --------------------------------------------------------
+	AmbientLight();
+
+	// --------------------------------------------------------
+	// Constructor - Set up an ambient light
+	//
+	// ambientColor - color of the light
+	// intensity - how intense the light is
+	// --------------------------------------------------------
+	AmbientLight(DirectX::XMFLOAT4 ambientColor, float intensity);
+
+	// --------------------------------------------------------
+	// Destructor for when an instance is deleted
+	// --------------------------------------------------------
+	~AmbientLight();
+};
+
 // --------------------------------------------------------
 // A directional light definition
 //
@@ -108,26 +137,6 @@ public:
 	// Destructor for when an instance is deleted
 	// --------------------------------------------------------
 	~DirectionalLight();
-	
-	// --------------------------------------------------------
-	// Set the ambient color of this light
-	// --------------------------------------------------------
-	void SetAmbientColor(DirectX::XMFLOAT4 ambientColor);
-	
-	// --------------------------------------------------------
-	// Set the diffuse color of this light
-	//
-	// r - red
-	// g - green
-	// b - blue
-	// a - alpha
-	// --------------------------------------------------------
-	void SetAmbientColor(float r, float g, float b, float a);
-
-	// --------------------------------------------------------
-	// Get the ambient color of this light
-	// --------------------------------------------------------
-	DirectX::XMFLOAT4 GetAmbientColor();
 
 	// --------------------------------------------------------
 	// Get the direction of this light

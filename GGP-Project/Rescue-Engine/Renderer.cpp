@@ -37,42 +37,19 @@ Renderer::~Renderer()
 // Draw all entities in the render list
 void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 {
-	//TODO: Have materials set themselves
 	//TODO: Apply attenuation
 	for (auto const& x : renderMap)
 	{
 		if (x.second.size() < 1)
 			return;
 
-		//Get material and mesh
+		//Get list, material, and mesh
 		std::vector<Entity*> list = x.second;
 		Material* mat = list[0]->GetMaterial();
 		Mesh* mesh = list[0]->GetMesh();
 
-		//Get shaders
-		pixelShader = mat->GetPixelShader();
-		vertexShader = mat->GetVertexShader();
-
-		//Send data to pixel shader
-		pixelShader->SetData("light1", dLight->GetLightStruct(), sizeof(LightStruct));
-		pixelShader->SetData("light2", pLight->GetLightStruct(), sizeof(LightStruct));
-		pixelShader->SetData("light3", sLight->GetLightStruct(), sizeof(LightStruct));
-		pixelShader->SetFloat4("surfaceColor", mat->GetSurfaceColor());
-		pixelShader->SetFloat3("cameraPosition", camera->GetPosition());
-		pixelShader->SetFloat("specularity", mat->GetSpecularity());
-		pixelShader->SetShaderResourceView("diffuseTexture", mat->GetResourceView());
-		pixelShader->SetSamplerState("basicSampler", mat->GetSamplerState());
-
-		//Send data to vertex shader
-		vertexShader->SetMatrix4x4("projection", camera->GetProjectionMatrix());
-		vertexShader->SetMatrix4x4("view", camera->GetViewMatrix());
-
-		//Send data to GPU
-		pixelShader->CopyAllBufferData();
-
-		//Set shaders
-		vertexShader->SetShader();
-		pixelShader->SetShader();
+		//Prepare the material's combo specific variables
+		mat->PrepareMaterialCombo(list[0], camera);
 
 		// Set buffers in the input assembler
 		UINT stride = sizeof(Vertex);
@@ -85,14 +62,8 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 		//Loop through each entity in the list
 		for (size_t i = 0; i < list.size(); i++)
 		{
-			Entity* ent = list[i];
-
-			// Send data to vertex shader
-			vertexShader->SetMatrix4x4("world", ent->GetWorldMatrix());
-			vertexShader->SetMatrix4x4("worldInvTrans", ent->GetWorldInvTransMatrix());
-
-			//Send data to GPU
-			vertexShader->CopyAllBufferData();
+			//Prepare the material's object specific variables
+			mat->PrepareMaterialObject(list[i]);
 
 			// Finally do the actual drawing
 			//  - Do this ONCE PER OBJECT you intend to draw

@@ -1,5 +1,7 @@
 #pragma once
 #include "SimpleShader.h"
+#include "GameObject.h"
+#include "Camera.h"
 
 // --------------------------------------------------------
 // A material definition.
@@ -8,24 +10,20 @@
 // --------------------------------------------------------
 class Material
 {
-private:
+
+protected:
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
-	ID3D11ShaderResourceView* resourceView;
-	ID3D11SamplerState* samplerState;
-	DirectX::XMFLOAT4 surfaceColor;
-	float specularity;
 
-public:
 	// --------------------------------------------------------
 	// Constructor - Set up a material
 	//
 	// vertexShader - The vertex shader this material uses
 	// pixelShader - The pixel shader this material uses
 	// --------------------------------------------------------
-	Material(SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader, 
-		ID3D11ShaderResourceView* resourceView, ID3D11SamplerState* samplerState);
-	
+	Material(SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader);
+
+public:
 	// --------------------------------------------------------
 	// Release all data in the material
 	// --------------------------------------------------------
@@ -42,33 +40,13 @@ public:
 	SimplePixelShader* GetPixelShader();
 
 	// --------------------------------------------------------
-	// Get this material's resource view
+	// Prepare this material's shader's per MatMesh combo variables
 	// --------------------------------------------------------
-	ID3D11ShaderResourceView* GetResourceView();
+	virtual void PrepareMaterialCombo(GameObject* entityObj, Camera* cam) = 0;
 
 	// --------------------------------------------------------
-	// Get this material's sampler state
+	// Prepare this material's shader's per object variables
 	// --------------------------------------------------------
-	ID3D11SamplerState* GetSamplerState();
-
-	// --------------------------------------------------------
-	// Set this material's surface color
-	// --------------------------------------------------------
-	void SetSurfaceColor(DirectX::XMFLOAT4 color);
-
-	// --------------------------------------------------------
-	// Get this material's surface color
-	// --------------------------------------------------------
-	DirectX::XMFLOAT4 GetSurfaceColor();
-
-	// --------------------------------------------------------
-	// Set this material's specularity
-	// --------------------------------------------------------
-	void SetSpecularity(float spec);
-
-	// --------------------------------------------------------
-	// Get this material's specularity
-	// --------------------------------------------------------
-	float GetSpecularity();
+	virtual void PrepareMaterialObject(GameObject* entityObj) = 0;
 };
 
