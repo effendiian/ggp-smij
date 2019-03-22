@@ -10,7 +10,7 @@ LightManager::~LightManager()
 	{
 		if (lightList[i]) { delete lightList[i]; }
 	}
-	if (lightStructArr) { delete lightStructArr; }
+	if (lightStructArr) { delete[] lightStructArr; }
 }
 
 // Initialize values in the LightManager
@@ -33,6 +33,7 @@ DirectionalLight* LightManager::CreateDirectionalLight()
 
 	listDirty = true;
 	DirectionalLight* light = new DirectionalLight();
+	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
@@ -48,6 +49,7 @@ DirectionalLight* LightManager::CreateDirectionalLight(XMFLOAT3 color, float int
 
 	listDirty = true;
 	DirectionalLight* light = new DirectionalLight(color, intensity);
+	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
@@ -63,6 +65,7 @@ PointLight* LightManager::CreatePointLight()
 
 	listDirty = true;
 	PointLight* light = new PointLight();
+	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
@@ -78,6 +81,7 @@ PointLight* LightManager::CreatePointLight(float radius, XMFLOAT3 color, float i
 
 	listDirty = true;
 	PointLight* light = new PointLight(radius, color, intensity);
+	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
@@ -93,6 +97,7 @@ SpotLight* LightManager::CreateSpotLight()
 
 	listDirty = true;
 	SpotLight* light = new SpotLight();
+	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
@@ -108,6 +113,7 @@ SpotLight* LightManager::CreateSpotLight(float range, float spotFalloff, XMFLOAT
 
 	listDirty = true;
 	SpotLight* light = new SpotLight(range, spotFalloff, color, intensity);
+	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
@@ -128,6 +134,7 @@ void LightManager::AddLight(Light* light)
 	}
 
 	listDirty = true;
+	SetInLightManager(light, true);
 	lightList.push_back(light);
 }
 
@@ -143,7 +150,10 @@ void LightManager::RemoveLight(Light* light, bool deleteLight)
 
 		//Delete instance if user wants to
 		if (deleteLight)
+		{
 			delete *it;
+		}
+		else SetInLightManager(light, false);
 
 		lightList.erase(it);
 	}
@@ -190,13 +200,13 @@ int LightManager::GetLightAmnt()
 }
 
 // Get the array of light structs for sending to a shader
-void LightManager::GetLightStructArray(LightStruct** arr)
+LightStruct* LightManager::GetLightStructArray()
 {
 	if (listDirty)
 		RebuildLightStructArray();
 
 	//return lightStructArray[0];
-	*arr = lightStructArr[0];
+	return lightStructArr;
 }
 
 // Rebuild the light struct array from all lights in the lightList
@@ -206,11 +216,19 @@ void LightManager::RebuildLightStructArray()
 
 	//Reset array
 	if (lightStructArr) { delete lightStructArr; }
-	lightStructArr = new LightStruct*[MAX_LIGHTS];
+	lightStructArr = new LightStruct[MAX_LIGHTS];
 
 	//Rebuild
 	for (size_t i = 0; i < lightList.size(); i++)
 	{
-		lightStructArr[i] = lightList[i]->GetLightStruct();
+		lightStructArr[i] = *(lightList[i]->GetLightStruct());
 	}
+}
+
+// Set whether this light is in the light manager.
+// THIS FUNCTION CAN ONLY BE ACCESSED BY THE LIGHT MANAGER
+//		IN LightManager.cpp
+void SetInLightManager(Light* light, bool val)
+{
+	light->inLightManager = val;
 }

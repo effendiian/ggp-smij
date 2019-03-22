@@ -9,21 +9,6 @@ void Renderer::Init()
 	// Initialize fields
 	vertexShader = 0;
 	pixelShader = 0;
-
-	//Set ambient light
-	LightManager* lightManager = LightManager::GetInstance();
-	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
-
-	//Directional lights
-	lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
-
-	//Point light
-	pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
-	pLight->SetPosition(0, -2, 3);
-
-	//Spot light
-	pLight2 = lightManager->CreatePointLight(5, XMFLOAT3(0, 0, 1), 1);
-	pLight2->SetPosition(2, 0, -1);
 }
 
 // Destructor for when the singleton instance is deleted

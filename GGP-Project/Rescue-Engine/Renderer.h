@@ -4,7 +4,6 @@
 #include "SimpleShader.h"
 #include "Entity.h"
 #include "Camera.h"
-#include "Lights.h"
 
 // Basis from: https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
 
@@ -19,10 +18,6 @@ private:
 	//Render list management
 	//renderMap uses Mat/Mesh identifiers to point to the correct list
 	std::map<std::string, std::vector<Entity*>> renderMap;
-
-	//Test lighting
-	PointLight* pLight;
-	PointLight* pLight2;
 
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;

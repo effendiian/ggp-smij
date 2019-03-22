@@ -41,8 +41,7 @@ void MAT_PBRTexture::PrepareMaterialCombo(GameObject* entityObj, Camera* cam)
 	pixelShader->SetFloat3("CameraPosition", cam->GetPosition());
 	//Set lights
 	int amnt = lightManager->GetLightAmnt();
-	LightStruct* arr = nullptr;
-	lightManager->GetLightStructArray(&arr);
+	LightStruct* arr = lightManager->GetLightStructArray();
 	pixelShader->SetData("Lights", (void*)arr,
 		sizeof(LightStruct) * MAX_LIGHTS);
 	pixelShader->SetInt("LightCount", amnt);

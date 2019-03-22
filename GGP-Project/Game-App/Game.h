@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include "Renderer.h"
 #include "MAT_PBRTexture.h"
+#include "LightManager.h"
 #include "InputManager.h"
 #include "FirstPersonCamera.h"
 #include "WICTextureLoader.h"

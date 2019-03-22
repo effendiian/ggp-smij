@@ -1,4 +1,4 @@
-#include "Lights.h"
+#include "LightManager.h"
 
 using namespace DirectX;
 
@@ -10,6 +10,8 @@ using namespace DirectX;
 // Constructor - Set up a light with default values.
 Light::Light(LightType type)
 {
+	inLightManager = false;
+
 	lightStruct = new LightStruct();
 	lightStruct->Type = (int)type;
 
@@ -25,6 +27,8 @@ Light::Light(LightType type)
 // Constructor - Set up a light
 Light::Light(LightType type, XMFLOAT3 color, float intensity)
 {
+	inLightManager = false;
+
 	lightStruct = new LightStruct();
 	lightStruct->Type = (int)type;
 	lightStruct->Color = color;
@@ -59,12 +63,18 @@ LightType Light::GetType()
 // Set the diffuse color of this light
 void Light::SetColor(XMFLOAT3 color)
 {
+	if (inLightManager)
+		SetLightListDirty(LightManager::GetInstance());
+
 	lightStruct->Color = color;
 }
 
 // Set the diffuse color of this light
 void Light::SetColor(float r, float g, float b)
 {
+	if (inLightManager)
+		SetLightListDirty(LightManager::GetInstance());
+
 	lightStruct->Color = XMFLOAT3(r, g, b);
 }
 
@@ -83,6 +93,9 @@ float Light::GetIntensity()
 // Set the intensity for this light
 void Light::SetIntensity(float intensity)
 {
+	if (inLightManager)
+		SetLightListDirty(LightManager::GetInstance());
+
 	lightStruct->Intensity = intensity;
 }
 #pragma endregion
@@ -140,6 +153,9 @@ PointLight::~PointLight()
 // Set the radius of this light
 void PointLight::SetRadius(float radius)
 {
+	if (inLightManager)
+		SetLightListDirty(LightManager::GetInstance());
+
 	lightStruct->Range = radius;
 }
 
@@ -178,6 +194,9 @@ SpotLight::~SpotLight()
 // Set the falloff of this spotlight
 void SpotLight::SetSpotFalloff(float spotFallOff)
 {
+	if (inLightManager)
+		SetLightListDirty(LightManager::GetInstance());
+
 	lightStruct->SpotFalloff = spotFallOff;
 }
 
@@ -190,6 +209,9 @@ float SpotLight::GetSpotFalloff()
 // Set the spot radius of this light
 void SpotLight::SetRange(float spotRadius)
 {
+	if (inLightManager)
+		SetLightListDirty(LightManager::GetInstance());
+
 	lightStruct->Range = spotRadius;
 }
 
@@ -205,3 +227,10 @@ XMFLOAT3 SpotLight::GetDirection()
 	return GetForwardAxis();
 }
 #pragma endregion
+
+//Set the light manager's light list to dirty
+// THIS FRIEND FUNCTION CAN ONLY BE ACCESSED BY THE LIGHT
+//		IN Lights.cpp
+void SetLightListDirty(LightManager* lightManager) {
+	lightManager->listDirty = true;
+}

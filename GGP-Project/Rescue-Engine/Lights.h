@@ -44,10 +44,21 @@ struct AmbientLightStruct
 // --------------------------------------------------------
 class Light : public GameObject
 {
+private:
+
+	// --------------------------------------------------------
+	// Set whether this light is in the light manager.
+	// THIS FUNCTION CAN ONLY BE ACCESSED BY THE LIGHT MANAGER
+	//		IN LightManager.cpp
+	// --------------------------------------------------------
+	friend void SetInLightManager(Light* light, bool val);
+
 protected:
+	bool inLightManager;
 	LightStruct* lightStruct;
 
 public:
+
 	// --------------------------------------------------------
 	// Constructor - Set up a light with default values.
 	//

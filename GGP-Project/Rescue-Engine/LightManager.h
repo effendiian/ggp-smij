@@ -22,7 +22,14 @@ private:
 
 	//Light struct array helpers
 	bool listDirty;
-	LightStruct** lightStructArr;
+	LightStruct* lightStructArr;
+
+	// --------------------------------------------------------
+	//Set the light manager's light list to dirty
+	// THIS FRIEND FUNCTION CAN ONLY BE ACCESSED BY THE LIGHT
+	//		IN Lights.cpp
+	// --------------------------------------------------------
+	friend void SetLightListDirty(LightManager* lightManager);
 
 	// --------------------------------------------------------
 	// Rebuild the light struct array from all lights in the lightList
@@ -135,6 +142,6 @@ public:
 	// --------------------------------------------------------
 	// Get the array of light structs for sending to a shader
 	// --------------------------------------------------------
-	void GetLightStructArray(LightStruct** arr);
+	LightStruct* GetLightStructArray();
 };
 

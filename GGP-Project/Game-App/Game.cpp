@@ -100,6 +100,23 @@ void Game::Init()
 	rotSpeed = 20;
 	scale = 1;
 
+	//Initialize lights
+	//Set ambient light
+	LightManager* lightManager = LightManager::GetInstance();
+	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
+
+	//Directional lights
+	lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
+
+	//Point light
+	PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
+	pLight->SetPosition(0, -2, 3);
+
+	//Spot light
+	SpotLight* sLight = lightManager->CreateSpotLight(5, 5, XMFLOAT3(0, 0, 1), 1);
+	sLight->SetPosition(2, 0, -1);
+	sLight->SetRotation(0, -90, 0);
+
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
