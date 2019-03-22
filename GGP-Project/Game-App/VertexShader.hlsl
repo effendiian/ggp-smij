@@ -1,17 +1,18 @@
 
-// Constant Buffer
-// - Allows us to define a buffer of individual variables 
-//    which will (eventually) hold data from our C++ code
-// - All non-pipeline variables that get their values from 
-//    our C++ code must be defined inside a Constant Buffer
-// - The name of the cbuffer itself is unimportant
-cbuffer externalData : register(b0)
+//Data that changes once per MatMesh combo
+cbuffer perCombo : register(b0)
 {
-	matrix world;
 	matrix view;
 	matrix projection;
+	float2 uvScale;
+}
+
+//Data that changes once per MatMesh combo
+cbuffer perObject : register(b1)
+{
+	matrix world;
 	matrix worldInvTrans;
-};
+}
 
 // Struct representing a single vertex worth of data
 // - This should match the vertex definition in our C++ code
@@ -26,8 +27,9 @@ struct VertexShaderInput
 	//  |    |                |
 	//  v    v                v
 	float3 position		: POSITION;	     // XYZ position
-	float3 normal		: NORMAL;        // XYZ normal
 	float2 uv			: TEXCOORD;		 // XY uv
+	float3 normal		: NORMAL;        // XYZ normal
+	float3 tangent		: TANGENT;
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -43,9 +45,10 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 position		: SV_POSITION;	 // XYZW position (System Value Position)
-	float3 normal		: NORMAL;        // XYZ normal
-	float3 worldPos		: POSITION;		 // world position of the vertex
 	float2 uv			: TEXCOORD;		 // XY uv
+	float3 normal		: NORMAL;        // XYZ normal
+	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION;		 // world position of the vertex
 };
 
 // --------------------------------------------------------
@@ -55,7 +58,7 @@ struct VertexToPixel
 // - Output is a single struct of data to pass down the pipeline
 // - Named "main" because that's the default the shader compiler looks for
 // --------------------------------------------------------
-VertexToPixel main( VertexShaderInput input )
+VertexToPixel main(VertexShaderInput input )
 {
 	// Set up output struct
 	VertexToPixel output;
@@ -77,7 +80,8 @@ VertexToPixel main( VertexShaderInput input )
 	output.position = mul(float4(input.position, 1.0f), worldViewProj);
 	output.worldPos = mul(float4(input.position, 1.0f), world).xyz;
 	output.normal = normalize(mul(input.normal, (float3x3)worldInvTrans));
-	output.uv = input.uv;
+	output.tangent = normalize(mul(input.tangent, (float3x3)worldInvTrans));
+	output.uv = input.uv * uvScale;
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)
