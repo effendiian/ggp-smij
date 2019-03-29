@@ -36,16 +36,16 @@ Game::Game(HINSTANCE hInstance)
 // --------------------------------------------------------
 Game::~Game()
 {
-	//Delete demo meshes
-	for (int i = 0; i < 4; i++)
+	//Delete meshes
+	for (int i = 0; i < NUM_MESHES; i++)
 	{
 		if (meshes[i]) { delete meshes[i]; }
 	}
 	
 	//Delete textures
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < NUM_TEXTURES; i++)
 	{
-		if (srvs[i]) { srvs[i]->Release(); }
+		if (texture_srvs[i]) { texture_srvs[i]->Release(); }
 	}
 	samplerState->Release();
 
@@ -54,13 +54,13 @@ Game::~Game()
 	if (pixelShader) { delete pixelShader; }
 
 	//Delete materials
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < NUM_MATS; i++)
 	{
 		if (materials[i]) { delete materials[i]; }
 	}
 
 	//Delete demo entities
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < NUM_ENTITIES; i++)
 	{
 		if (entities[i]) { delete entities[i]; }
 	}
@@ -91,7 +91,7 @@ void Game::Init()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
-	CreateBasicGeometry();
+	LoadAssets();
 	CreateEntities();
 
 	//Initialize transformation modifiers
@@ -99,6 +99,23 @@ void Game::Init()
 	rotation = 0;
 	rotSpeed = 20;
 	scale = 1;
+
+	//Initialize lights
+	//Set ambient light
+	LightManager* lightManager = LightManager::GetInstance();
+	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
+
+	//Directional lights
+	lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
+
+	//Point light
+	PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
+	pLight->SetPosition(0, -2, 3);
+
+	//Spot light
+	SpotLight* sLight = lightManager->CreateSpotLight(5, 5, XMFLOAT3(0, 0, 1), 1);
+	sLight->SetPosition(2, 0, -1);
+	sLight->SetRotation(0, -90, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -118,13 +135,13 @@ void Game::LoadShaders()
 	vertexShader->LoadShaderFile(L"VertexShader.cso");
 
 	pixelShader = new SimplePixelShader(device, context);
-	pixelShader->LoadShaderFile(L"PixelShader.cso");
+	pixelShader->LoadShaderFile(L"PixelShaderPBR.cso");
 }
 
 // --------------------------------------------------------
 // Creates the geometry we're going to draw - a single triangle for now
 // --------------------------------------------------------
-void Game::CreateBasicGeometry()
+void Game::LoadAssets()
 {
 	//Create meshes
 	meshes[0] = new Mesh("Assets\\Models\\torus.obj", device);
@@ -133,37 +150,42 @@ void Game::CreateBasicGeometry()
 	meshes[3] = new Mesh("Assets\\Models\\sphere.obj", device);
 
 	//Load textures
-	wchar_t* path1 = L"Assets\\Textures\\pat_road_orange\\diffuse.png";
-	if (!CreateWICTextureFromFile(device, context, path1, 0, &srvs[0]) == S_OK)
-	{
-		printf("Could not load %ls", path1);
-	}
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_albedo.png", 0, &texture_srvs[0]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_normals.png", 0, &texture_srvs[1]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_roughness.png", 0, &texture_srvs[2]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_metal.png", 0, &texture_srvs[3]);
 
-	wchar_t* path2 = L"Assets\\Textures\\pat_road_mossy\\diffuse.png";
-	if (!CreateWICTextureFromFile(device, context, path2, 0, &srvs[1]) == S_OK)
-	{
-		printf("Could not load %ls", path2);
-	}
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_albedo.png", 0, &texture_srvs[4]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_normals.png", 0, &texture_srvs[5]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_roughness.png", 0, &texture_srvs[6]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_metal.png", 0, &texture_srvs[7]);
+
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_albedo.png", 0, &texture_srvs[8]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_normals.png", 0, &texture_srvs[9]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_roughness.png", 0, &texture_srvs[10]);
+	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_metal.png", 0, &texture_srvs[11]);
 
 	//Create sampler state
-	samplerState = nullptr;
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; //Trilinear filter
-	//samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; //Anisotropic filtering filter
-	//samplerDesc.MaxAnisotropy = 16;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; //Anisotropic filtering
+	samplerDesc.MaxAnisotropy = 16;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&samplerDesc, &samplerState);
+
+	//Create materials
+	materials[0] = new MAT_PBRTexture(vertexShader, pixelShader, 1024.0f, XMFLOAT2(2, 2),
+		texture_srvs[0], texture_srvs[1], texture_srvs[2], texture_srvs[3], samplerState);
+	materials[1] = new MAT_PBRTexture(vertexShader, pixelShader, 1024.0f, XMFLOAT2(2, 2),
+		texture_srvs[4], texture_srvs[5], texture_srvs[6], texture_srvs[7], samplerState);
+	materials[2] = new MAT_PBRTexture(vertexShader, pixelShader, 1024.0f, XMFLOAT2(2, 2), 
+		texture_srvs[8], texture_srvs[9], texture_srvs[10], texture_srvs[11], samplerState);
 }
 
 void Game::CreateEntities()
 {
-	//Create the materials
-	materials[0] = new Material(vertexShader, pixelShader, srvs[0], samplerState);
-	materials[1] = new Material(vertexShader, pixelShader, srvs[1], samplerState);
-
 	//Cube
 	entities[0] = new Entity(meshes[1], materials[1]);
 	entities[0]->SetPosition(2, 1, 0);
@@ -174,13 +196,13 @@ void Game::CreateEntities()
 	entities[1]->SetScale(0.75f, 0.75f, 0.75f);
 
 	//Torus 1
-	entities[2] = new Entity(meshes[0], materials[0]);
+	entities[2] = new Entity(meshes[0], materials[2]);
 	entities[2]->SetPosition(position, -1, 0);
 	entities[2]->SetScale(0.5f, 0.5f, 0.5f);
 	entities[2]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
 
 	//Torus 2
-	entities[3] = new Entity(meshes[0], materials[1]);
+	entities[3] = new Entity(meshes[0], materials[2]);
 	entities[3]->SetPosition(0, 1.70f, 0);
 	entities[3]->SetRotation(0, 0, 180);
 	entities[3]->SetScale(0.25f, 0.25f, 0.25f);

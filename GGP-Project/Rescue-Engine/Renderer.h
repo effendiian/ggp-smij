@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
+#include <map>
 #include "SimpleShader.h"
 #include "Entity.h"
 #include "Camera.h"
-#include "Lights.h"
 
 // Basis from: https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
 
@@ -15,12 +15,9 @@
 class Renderer
 {
 private:
-	std::vector<Entity*> renderList;
-	
-	//Test lighting
-	DirectionalLight* dLight;
-	PointLight* pLight;
-	SpotLight* sLight;
+	//Render list management
+	//renderMap uses Mat/Mesh identifiers to point to the correct list
+	std::map<std::string, std::vector<Entity*>> renderMap;
 
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;
