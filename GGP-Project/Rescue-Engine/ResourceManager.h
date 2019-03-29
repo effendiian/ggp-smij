@@ -1,5 +1,6 @@
 #pragma once
 #include "WICTextureLoader.h"
+#include "DDSTextureLoader.h"
 #include <map>
 #include "Mesh.h"
 #include "Material.h"
@@ -14,19 +15,17 @@ private:
 	~ResourceManager();
 
 	//Resource maps
-	std::map<std::string, ID3D11ShaderResourceView*> texture2DMap;
-	std::map<std::string, ID3D11ShaderResourceView*> cubemapMap;
+	std::map<std::wstring, ID3D11ShaderResourceView*> texture2DMap;
+	std::map<std::wstring, ID3D11ShaderResourceView*> cubemapMap;
 	std::map<std::string, Mesh*> meshMap;
 	std::map<std::string, Material*> materialMap;
-	std::map<std::string, SimplePixelShader> pixelShaderMap;
-	std::map<std::string, SimpleVertexShader> vertexShaderMap;
+	std::map<std::wstring, SimplePixelShader*> pixelShaderMap;
+	std::map<std::wstring, SimpleVertexShader*> vertexShaderMap;
 
 public:
 	// --------------------------------------------------------
-	// Initialize values in the ResourceManager
+	// Get the singleton instance of the ResourceManager
 	// --------------------------------------------------------
-	void Init();
-
 	static ResourceManager* GetInstance()
 	{
 		static ResourceManager instance;
@@ -39,39 +38,85 @@ public:
 	void operator=(ResourceManager const&) = delete;
 
 	// --------------------------------------------------------
-	// Load a texture 2D from the specified address with MipMaps
+	// Load a Texture2D from the specified address with MipMaps
 	// --------------------------------------------------------
-	bool LoadTexture2D(const wchar_t* address, ID3D11Device* device, ID3D11DeviceContext* context);
+	bool LoadTexture2D(const char* address, ID3D11Device* device, ID3D11DeviceContext* context);
 
 	// --------------------------------------------------------
-	// Load a texture 2D from the specified address with NO MipMaps
+	// Load a Texture2D from the specified address with NO MipMaps
 	// --------------------------------------------------------
-	bool LoadTexture2D(const wchar_t* address, ID3D11Device* device);
+	bool LoadTexture2D(const char* address, ID3D11Device* device);
 
 	// --------------------------------------------------------
-	// Load a cubemap from the specified address
+	// Load a CubeMap from the specified address with MipMaps
 	// --------------------------------------------------------
-	bool LoadCubeMap(const wchar_t* address);
+	bool LoadCubeMap(const char* address, ID3D11Device* device, ID3D11DeviceContext* context);
 
 	// --------------------------------------------------------
-	// Load a mesh from the specified address
+	// Load a CubeMap from the specified address with NO MipMaps
 	// --------------------------------------------------------
-	bool LoadMesh(const wchar_t* address);
+	bool LoadCubeMap(const char* address, ID3D11Device* device);
 
 	// --------------------------------------------------------
-	// Load a material from the specified address
+	// Load a Mesh from the specified address
 	// --------------------------------------------------------
-	bool LoadMaterial(const wchar_t* address);
+	bool LoadMesh(const char* address, ID3D11Device* device);
 
 	// --------------------------------------------------------
-	// Load a pixel shader from the specified address
+	// Add an existing Material to the manager
 	// --------------------------------------------------------
-	bool LoadPixelShader(const wchar_t* address);
+	bool AddMaterial(const char* name, Material* material);
 
 	// --------------------------------------------------------
-	// Load a vertex shader from the specified address
+	// Load a Pixel Shader from the specified address
 	// --------------------------------------------------------
-	bool LoadVertexShader(const wchar_t* address);
+	bool LoadPixelShader(const char* name, ID3D11Device* device, ID3D11DeviceContext* context);
 
+	// --------------------------------------------------------
+	// Load a Vertex Shader from the specified address
+	// --------------------------------------------------------
+	bool LoadVertexShader(const char* name, ID3D11Device* device, ID3D11DeviceContext* context);
+
+	// --------------------------------------------------------
+	// Get a loaded Texture2D
+	//
+	// address - The file address of the Texture2D
+	// --------------------------------------------------------
+	ID3D11ShaderResourceView* GetTexture2D(std::wstring address);
+
+	// --------------------------------------------------------
+	// Get a loaded CubeMap
+	//
+	// address - The file address of the CubeMap
+	// --------------------------------------------------------
+	ID3D11ShaderResourceView* GetCubeMap(std::wstring address);
+
+	// --------------------------------------------------------
+	// Get a loaded Mesh
+	//
+	// address - The file address of the Mesh
+	// --------------------------------------------------------
+	Mesh* GetMesh(std::string address);
+
+	// --------------------------------------------------------
+	// Get a added Material
+	//
+	// name - The name of the Material
+	// --------------------------------------------------------
+	Material* GetMaterial(std::string name);
+
+	// --------------------------------------------------------
+	// Get a loaded Pixel Shader
+	//
+	// name - The name of the Pixel Shader file
+	// --------------------------------------------------------
+	SimplePixelShader* GetPixelShader(std::wstring name);
+
+	// --------------------------------------------------------
+	// Get a loaded Vertex Shader
+	//
+	// name - The name of the Vertex Shader file
+	// --------------------------------------------------------
+	SimpleVertexShader* GetVertexShader(std::wstring name);
 };
 
