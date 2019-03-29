@@ -28,17 +28,17 @@ Collider::~Collider()
 {
 }
 
-DirectX::XMFLOAT3 Collider::GetPosition()
+DirectX::XMFLOAT3 Collider::getPosition()
 {
 	return position;
 }
 
-DirectX::XMFLOAT3 Collider::GetSize()
+DirectX::XMFLOAT3 Collider::getSize()
 {
 	return size;
 }
 
-void Collider::SetPosition(DirectX::XMFLOAT3 newPosition)
+void Collider::setPosition(DirectX::XMFLOAT3 newPosition)
 {
 	XMVECTOR newPos = XMLoadFloat3(&newPosition);
 	XMVECTOR off = XMLoadFloat3(&offset);
@@ -52,24 +52,8 @@ bool Collider::Collides(Collider other)
 	//	(a.minY <= b.maxY && a.maxY >= b.minY) &&
 	//	(a.minZ <= b.maxZ && a.maxZ >= b.minZ);
 
-	//AABB
-	return (position.x - (size.x / 2) <= other.GetPosition().x + (other.GetSize().x) && position.x + (size.x / 2) >= other.GetPosition().x - (other.GetSize().x) &&
-		position.y - (size.y / 2) <= other.GetPosition().y + (other.GetSize().y) && position.y + (size.y / 2) >= other.GetPosition().y - (other.GetSize().y) &&
-		position.z - (size.z / 2) <= other.GetPosition().z + (other.GetSize().z) && position.z + (size.z / 2) >= other.GetPosition().z - (other.GetSize().z)
+	return (position.x - (size.x / 2) <= other.getPosition().x + (other.getSize().x) && position.x + (size.x / 2) >= other.getPosition().x - (other.getSize().x) &&
+		position.y - (size.y / 2) <= other.getPosition().y + (other.getSize().y) && position.y + (size.y / 2) >= other.getPosition().y - (other.getSize().y) &&
+		position.z - (size.z / 2) <= other.getPosition().z + (other.getSize().z) && position.z + (size.z / 2) >= other.getPosition().z - (other.getSize().z)
 		);
-
-	//Circle Collision
-	/*XMVECTOR thisPos = XMLoadFloat3(&position);
-	XMVECTOR otherPos = XMLoadFloat3(&other.GetPosition());
-
-	XMFLOAT3 vDistance;
-	XMStoreFloat3(&vDistance, otherPos - thisPos);
-
-	float distance = (vDistance.x * vDistance.x) + (vDistance.y * vDistance.y) + (vDistance.z * vDistance.z);
-
-	distance = sqrtf(distance);
-
-	if (distance < 0.5f) return true;
-	else return false;*/
-	
 }
