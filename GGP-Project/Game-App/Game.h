@@ -3,9 +3,16 @@
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include "Renderer.h"
+#include "MAT_PBRTexture.h"
+#include "LightManager.h"
 #include "InputManager.h"
 #include "FirstPersonCamera.h"
 #include "WICTextureLoader.h"
+
+#define NUM_MESHES 4
+#define NUM_TEXTURES 12
+#define NUM_MATS 3
+#define NUM_ENTITIES 5
 
 class Game 
 	: public DXCore
@@ -36,13 +43,13 @@ private:
 	InputManager* inputManager;
 
 	//Meshes and entities
-	Mesh* meshes[4];
-	Entity* entities[5];
+	Mesh* meshes[NUM_MESHES];
+	Entity* entities[NUM_ENTITIES];
 
 	//Materials and textures
-	Material* materials[2];
+	Material* materials[NUM_MATS];
 	ID3D11SamplerState* samplerState;
-	ID3D11ShaderResourceView* srvs[2];
+	ID3D11ShaderResourceView* texture_srvs[NUM_TEXTURES];
 
 	//Transformation modifiers
 	float position;
@@ -56,7 +63,7 @@ private:
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadShaders();
-	void CreateBasicGeometry();
+	void LoadAssets();
 	void CreateEntities();
 };
 

@@ -15,6 +15,7 @@ private:
 	//Rendering
 	Mesh* mesh;
 	Material* material;
+	std::string identifier;
 
 public:
 	// --------------------------------------------------------
@@ -34,16 +35,6 @@ public:
 	// Get the material this entity uses
 	// --------------------------------------------------------
 	Material* GetMaterial();
-
-	// --------------------------------------------------------
-	// Get the vertex shader this entity's material uses
-	// --------------------------------------------------------
-	SimpleVertexShader* GetVertexShader();
-
-	// --------------------------------------------------------
-	// Get the pixel this entity's material uses
-	// --------------------------------------------------------
-	SimplePixelShader* GetPixelShader();
 	
 	// --------------------------------------------------------
 	// Get the mesh this entity uses
@@ -51,28 +42,17 @@ public:
 	Mesh* GetMesh();
 
 	// --------------------------------------------------------
-	// Get the vertex buffer the entity's mesh uses
-	// --------------------------------------------------------
-	ID3D11Buffer* GetVertexBuffer();
-
-	// --------------------------------------------------------
-	// Get the index buffer the entity's mesh uses
-	// --------------------------------------------------------
-	ID3D11Buffer* GetIndexBuffer();
-
-	// --------------------------------------------------------
-	// Get the number of indicies this entity's mesh uses
-	// --------------------------------------------------------
-	int GetIndexCount();
-
-	// --------------------------------------------------------
 	// Add this entity to the render list
 	// --------------------------------------------------------
-	void AddThisEntityToRenderList();
+	void AddToRenderList();
 
 	// --------------------------------------------------------
 	// Remove this entity from the render list
 	// --------------------------------------------------------
-	void RemoveThisEntityFromRenderList();
-};
+	void RemoveFromRenderList();
 
+	// --------------------------------------------------------
+	// Get the material/mesh identifier
+	// --------------------------------------------------------
+	std::string GetMatMeshIdentifier();
+};
