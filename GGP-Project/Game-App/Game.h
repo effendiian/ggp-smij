@@ -7,7 +7,7 @@
 #include "LightManager.h"
 #include "InputManager.h"
 #include "FirstPersonCamera.h"
-#include "WICTextureLoader.h"
+#include "ResourceManager.h"
 
 #define NUM_MESHES 4
 #define NUM_TEXTURES 12
