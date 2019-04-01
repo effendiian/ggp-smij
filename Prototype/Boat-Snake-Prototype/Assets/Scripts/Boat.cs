@@ -16,6 +16,9 @@ public class Boat : MonoBehaviour
     bool crashed;
 	List<Transform> nodes;
 
+	List<Vector3> path;
+	float timer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,27 +26,16 @@ public class Boat : MonoBehaviour
 		nodes = new List<Transform>();
 		nodes.Add(transform.Find("Boat"));
 		CreateNode();
+
+		timer = 0;
+		path = new List<Vector3>();
     }
 
     // Update is called once per frame
     void Update()
     {
-		Move();
-
-		//DEBUG: Create a node with the space key
-		if (Input.GetKeyDown(KeyCode.Space))
-		{
-			CreateNode();
-		}
-    }
-
-	/// <summary>
-	/// Move the snake
-	/// </summary>
-	void Move()
-	{
-        if (crashed)
-            return;
+		if (crashed)
+			return;
 
 		//Rotate and translate boat
 		if (Input.GetAxisRaw("Horizontal") != 0)
@@ -56,25 +48,12 @@ public class Boat : MonoBehaviour
 		}
 		nodes[0].Translate(nodes[0].forward * speed * Time.deltaTime, Space.World);
 
-		//Rotate and translate nodes
-		Transform currNode = null;
-		Transform prevNode = null;
-		for(int i = 1; i < nodes.Count; i++)
+		//DEBUG: Create a node with the space key
+		if (Input.GetKeyDown(KeyCode.Space))
 		{
-			currNode = nodes[i];
-			prevNode = nodes[i - 1];
-
-			float dis = Vector3.Distance(prevNode.position, currNode.position);
-			Vector3 newPos = prevNode.position;
-
-			//Calculate and apply slerps
-			float t = Time.deltaTime * dis / minDistance * speed;
-			if (t > 0.5f)
-				t = 0.5f;
-			currNode.position = Vector3.Lerp(currNode.position, newPos, t);
-			currNode.rotation = Quaternion.Lerp(currNode.rotation, prevNode.rotation, t);
+			CreateNode();
 		}
-	}
+    }
 
 	/// <summary>
 	/// Create a node at the end of the trail
@@ -82,6 +61,7 @@ public class Boat : MonoBehaviour
 	void CreateNode()
 	{
 		Transform newNode = Instantiate(nodePrefab, nodes[nodes.Count - 1].position, nodes[nodes.Count - 1].rotation).transform;
+		newNode.GetComponent<BoatFollower>().leader = nodes[nodes.Count - 1];
 		newNode.SetParent(transform);
 		nodes.Add(newNode);
 	}
