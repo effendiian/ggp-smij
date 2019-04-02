@@ -8,6 +8,92 @@ using namespace Input;
 // INTERFACES
 ///////////////////////////
 
+#pragma region InputValue
+
+//////////////////
+// Constructors.
+
+// Construct the input value object with known current and past values.
+InputValue::InputValue(float currentValue, float previousValue) 
+{
+	this->SetCurrentValue(currentValue);
+	this->SetPreviousValue(previousValue);
+	this->CalculateDelta();
+}
+
+// Construct the input value object. Both current and previous values are set to the same value.
+InputValue::InputValue(float currentValue) : InputValue(currentValue, currentValue) {}
+
+//////////////////
+// Interface Methods.
+
+// Hard set the current value. No side effects.
+void InputValue::SetCurrentValue(float value) 
+{
+	this->_currentValue = value;
+}
+
+// Hard set the previous value. No side effects.
+void InputValue::SetPreviousValue(float value) 
+{
+	this->_previousValue = value;
+}
+
+// Hard set the delta value. No side effects.
+void InputValue::SetDeltaValue(float value) 
+{
+	this->_deltaValue = value;
+}
+
+// Updates the current, previous, and delta values.
+void InputValue::Update(float value)
+{
+	this->SetPreviousValue(this->Current);
+	this->SetCurrentValue(value);
+	this->CalculateDelta();
+}
+
+// Updates and sets the delta value based on the current values.
+void InputValue::CalculateDelta() 
+{
+	float difference = this->Current - this->Previous;
+	this->SetDeltaValue(difference);
+}
+
+#pragma endregion
+
+#pragma region CommandValue
+
+// Default, empty value.
+CommandValue::CommandValue() : CommandValue(0.0f) {}
+
+// Set current value to start with.
+CommandValue::CommandValue(float currentValue) : CommandValue(currentValue, 0.0f) {}
+
+// Set the current value and threshold to start with.
+CommandValue::CommandValue(float currentValue, float threshold) : InputValue(currentValue), _threshold(threshold) {}
+
+// Set the current and prevous value and threshold to start with.
+CommandValue::CommandValue(float currentValue, float previousValue, float threshold) : InputValue(currentValue, previousValue), _threshold(threshold) {}
+
+// Treat any value below threshold as 'zero'.
+void CommandValue::Update(float value) 
+{
+	float adjustedValue = value;
+	if (value < this->Threshold) {
+		adjustedValue = 0.0f;
+	}
+	this->InputValue::Update(adjustedValue);
+}
+
+// Hard set the threshold value.
+void CommandValue::SetThreshold(float threshold) 
+{
+	this->_threshold = threshold;
+}
+
+#pragma endregion
+
 #pragma region IEnableState
 
 // --------------------------------------------------------
@@ -26,7 +112,7 @@ IEnableState::IEnableState() : IEnableState(true) {}
 /// </summary>
 IEnableState::IEnableState(bool _state) 
 {
-	_enable = _state ? 1 : 0;
+	this->Enable = _state ? 1 : 0;
 }
 
 /// <summary>
@@ -34,7 +120,7 @@ IEnableState::IEnableState(bool _state)
 /// </summary>
 void IEnableState::Enable()
 {
-	this->_enable = true;
+	this->Enable = true;
 }
 
 /// <summary>
@@ -42,7 +128,7 @@ void IEnableState::Enable()
 /// </summary>
 void IEnableState::Disable() 
 {
-	this->_enable = false;
+	this->Enable = false;
 }
 
 /// <summary>
@@ -50,23 +136,7 @@ void IEnableState::Disable()
 /// </summary>
 void IEnableState::ToggleEnabledState()
 {
-	this->_enable = !_enable;
-}
-
-/// <summary>
-/// Determines whether this instance is enabled.
-/// </summary>
-bool IEnableState::IsEnabled()
-{
-	return (_enable);
-}
-
-/// <summary>
-/// Determines whether this instance is disabled.
-/// </summary>
-bool IEnableState::IsDisabled()
-{
-	return !IsEnabled();
+	this->Enable = !Enable;
 }
 
 #pragma endregion
@@ -84,8 +154,8 @@ bool IEnableState::IsDisabled()
 /// <summary>
 /// Finalizes an instance of the <see cref="Channel"/> class.
 /// </summary>
-Channel::Channel(InputIdentifier _inputDeviceId, InputDevice _inputDeviceType, InputCode _inputCode)
-	: INPUT_DEVICE_ID( _inputDeviceId ), INPUT_DEVICE( _inputDeviceType ), INPUT_CODE( _inputCode )
+Channel::Channel(InputIdentifier inputDeviceId, InputDevice inputDeviceType, InputCode inputCode)
+	: INPUT_DEVICE_ID( inputDeviceId ), INPUT_DEVICE( inputDeviceType ), INPUT_CODE( inputCode )
 {
 	_value = 0; // Set channel to zero.
 }
@@ -156,11 +226,14 @@ bool Channel::IsNullDevice() const
 /// </returns>
 bool Channel::IsNullCode() const
 {
+
 	return (InputCode::NULL == INPUT_CODE);
 }
 
 
 #pragma endregion
+
+#pragma region Command
 
 // --------------------------------------------------------
 // interface Command
@@ -169,14 +242,19 @@ bool Channel::IsNullCode() const
 // device channels.
 // --------------------------------------------------------
 
-///////////////////////////
-// Constructors.
-///////////////////////////
+Command::Command(InputType inputType, float threshold, bool normalized) 
+	: IEnableState(true), _threshold(threshold), Type(inputType), Normalize(normalized)
+{
+	_previousValue = 0;
+	_currentValue = 0;
+	_deltaValue = 0;
 
-Command::Command() {
-	
+
 }
 
-Command::~Command() {
-	
+Command::Command() : Command(InputType::NULL, 0.0f, true) {
+
 }
+
+#pragma endregion
+
