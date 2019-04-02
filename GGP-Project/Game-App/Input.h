@@ -359,10 +359,14 @@ namespace Input {
 		///////////////////////////
 		// CONFIGURATION SETTINGS
 <<<<<<< HEAD
+<<<<<<< HEAD
 		/////////////////////////// 
 =======
 		///////////////////////////
 >>>>>>> Add InputCode enum values.
+=======
+		/////////////////////////// 
+>>>>>>> Edit whitespace in Input.h.
 
 
 		
