@@ -30,6 +30,9 @@
     <Filter Include="Header Files\Entities">
       <UniqueIdentifier>{21723a57-2723-40f0-ba53-75f0b6a33168}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Input">
+      <UniqueIdentifier>{f9d2efe1-1de5-43b6-a80a-8f27bbede4f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXCore.cpp">
