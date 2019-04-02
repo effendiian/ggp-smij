@@ -36,6 +36,114 @@ namespace Input {
 		RANGE,
 		NULL
 	};
+
+	// --------------------------------------------------------
+	// enum InputCode
+	//
+	// Definitions for possible input codes. Does not map
+	// directly to WPARAMs. That must be done when the input
+	// manager is being setup.
+	// --------------------------------------------------------
+	enum InputCode 
+	{
+
+		///////////////////////////
+		// KEYBOARD CODES
+		///////////////////////////
+
+		KEYBOARD_A,
+		KEYBOARD_B,
+		KEYBOARD_C,
+		KEYBOARD_D,
+		KEYBOARD_E,
+		KEYBOARD_F,
+		KEYBOARD_G,
+		KEYBOARD_H,
+		KEYBOARD_I,
+		KEYBOARD_J,
+		KEYBOARD_K,
+		KEYBOARD_L,
+		KEYBOARD_M,
+		KEYBOARD_N,
+		KEYBOARD_O,
+		KEYBOARD_P,
+		KEYBOARD_Q,
+		KEYBOARD_R,
+		KEYBOARD_S,
+		KEYBOARD_T,
+		KEYBOARD_U,
+		KEYBOARD_V,
+		KEYBOARD_W,
+		KEYBOARD_X,
+		KEYBOARD_Y,
+		KEYBOARD_Z,
+
+		KEYBOARD_0,
+		KEYBOARD_1,
+		KEYBOARD_2,
+		KEYBOARD_3,
+		KEYBOARD_4,
+		KEYBOARD_5,
+		KEYBOARD_6,
+		KEYBOARD_7,
+		KEYBOARD_8,
+		KEYBOARD_9,
+
+		KEYBOARD_UP,
+		KEYBOARD_DOWN,
+		KEYBOARD_LEFT,
+		KEYBOARD_RIGHT,
+		KEYBOARD_SPACE,
+		KEYBOARD_LSHIFT,
+		KEYBOARD_RSHIFT,
+		KEYBOARD_LCTRL,
+		KEYBOARD_RCTRL,
+		KEYBOARD_LALT,
+		KEYBOARD_RALT,
+
+		///////////////////////////
+		// POINTER CODES
+		///////////////////////////
+
+		POINTER_UP,
+		POINTER_DOWN,
+		POINTER_LEFT,
+		POINTER_RIGHT,
+		POINTER_0,
+		POINTER_1,
+		POINTER_3,
+
+		///////////////////////////
+		// GAMEPAD CODES
+		///////////////////////////
+
+		GAMEPAD_A,
+		GAMEPAD_B,
+		GAMEPAD_X,
+		GAMEPAD_Y,
+		GAMEPAD_Z,
+		GAMEPAD_LB,
+		GAMEPAD_RB,
+		GAMEPAD_LT,
+		GAMEPAD_RT,
+		GAMEPAD_START,
+		GAMEPAD_SELECT,
+		GAMEPAD_L,
+		GAMEPAD_L_UP,
+		GAMEPAD_L_RIGHT,
+		GAMEPAD_L_LEFT,
+		GAMEPAD_L_RIGHT,
+		GAMEPAD_R,
+		GAMEPAD_R_UP,
+		GAMEPAD_R_DOWN,
+		GAMEPAD_R_LEFT,
+		GAMEPAD_R_RIGHT,
+		GAMEPAD_DPAD_UP,
+		GAMEPAD_DPAD_DOWN,
+		GAMEPAD_DPAD_LEFT,
+		GAMEPAD_DPAD_RIGHT
+
+	};
 	
 	// --------------------------------------------------------
 	// interface Pointer
@@ -46,7 +154,29 @@ namespace Input {
 	class Pointer {
 	private:
 
+		///////////////////////////
+		// DATA MEMBERS
+		///////////////////////////
+
+		bool _pointerMoved;
+		bool _pointerPressed;
+
+		float _previousX;
+		float _previousY;
+		float _currentX;
+		float _currentY;
+		float _deltaX;
+		float _deltaY;
+
+		unsigned int _identifier;
+				
 	public:
+
+		///////////////////////////
+		// CONFIGURATION SETTINGS
+		///////////////////////////
+
+
 		
 	};
 
