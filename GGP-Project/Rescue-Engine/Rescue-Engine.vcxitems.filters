@@ -1,20 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{6a4ea159-bc86-4064-b266-fb5d0081a68b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{9c2c0608-6bdf-43c4-8f5e-0a45ae84927a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Singletons">
-      <UniqueIdentifier>{f0f74e19-2418-4bfa-8f8c-d12e2691aea9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Singletons">
-      <UniqueIdentifier>{4b066e20-1f58-4222-a57c-1dfd7bb50373}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -39,14 +25,17 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)InputManager.cpp">
       <Filter>Source Files\Singletons</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Renderer.cpp">
-      <Filter>Source Files\Singletons</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)LightManager.cpp">
       <Filter>Source Files\Singletons</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)ResourceManager.cpp">
       <Filter>Source Files\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Renderer.cpp">
+      <Filter>Source Files\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,9 +63,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Renderer.h">
-      <Filter>Header Files\Singletons</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)InputManager.h">
       <Filter>Header Files\Singletons</Filter>
     </ClInclude>
@@ -86,5 +72,25 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ResourceManager.h">
       <Filter>Header Files\Singletons</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Renderer.h">
+      <Filter>Header Files\Singletons</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Collider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{ce6a9f74-524c-49e9-8262-e8a4e176e1cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2f887cb5-e19e-4463-8909-27dd82acb410}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Singletons">
+      <UniqueIdentifier>{3a869162-8660-47ad-a6d9-7568b924e872}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Singletons">
+      <UniqueIdentifier>{37f409bb-db92-4a0b-8340-6f5eb4925519}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

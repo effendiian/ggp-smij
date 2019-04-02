@@ -189,6 +189,7 @@ void Game::CreateEntities()
 		resourceManager->GetMaterial("wood"));
 	entities[2]->SetPosition(position, -1, 0);
 	entities[2]->SetScale(0.5f, 0.5f, 0.5f);
+	entities[2]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
 
 	//Torus 2
 	entities[3] = new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"),
@@ -200,6 +201,7 @@ void Game::CreateEntities()
 	//Sphere
 	entities[4] = new Entity(resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
 		resourceManager->GetMaterial("scratched"));
+	entities[4]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
 }
 
 // --------------------------------------------------------
@@ -239,7 +241,7 @@ void Game::Update(float deltaTime, float totalTime)
 	//Move position around
 	position = sin(totalTime / 2) * 2.5f;
 	entities[2]->SetPosition(position, -1, 0);
-	entities[4]->SetPosition(0, 0, position);
+	entities[4]->SetPosition(0, -1, position);
 
 	//Rotate
 	rotation += rotSpeed * deltaTime;
@@ -248,6 +250,31 @@ void Game::Update(float deltaTime, float totalTime)
 	//Scale
 	scale = (sin(totalTime / 2) + 1) / 2;
 	entities[0]->SetScale(scale, scale, scale);
+
+	//Placeholder entity updater
+	for (int i = 0; i < 5; i++)
+	{
+		entities[i]->Update();
+	}
+
+	//Placeholder collision checker
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			if (i != j)
+			{
+				if (entities[i]->GetCollider() != nullptr && entities[j]->GetCollider())
+				{
+					if (entities[i]->GetCollider()->Collides(*entities[j]->GetCollider()))
+					{
+						//printf("collision!");
+					}
+				}
+
+			}
+		}
+	}
 
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager

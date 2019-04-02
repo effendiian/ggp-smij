@@ -13,11 +13,34 @@ GameObject::GameObject()
 	scale = XMFLOAT3(1, 1, 1);
 	worldDirty = false;
 	RebuildWorld();
+	
+	collider = nullptr;
+	//collider = new Collider(position, XMFLOAT3(0.5f, 0.5f, 0.5f));
+}
+
+GameObject::GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
+{
+	//Set default transformation values
+	world = XMFLOAT4X4();
+	position = XMFLOAT3(0, 0, 0);
+	SetRotation(0, 0, 0);
+	scale = XMFLOAT3(1, 1, 1);
+	worldDirty = false;
+	RebuildWorld();
+
+	collider = new Collider(position, size, offset);
 }
 
 // Destructor for when an instance is deleted
 GameObject::~GameObject()
-{ }
+{ 
+	if(collider != nullptr) delete collider;
+}
+
+void GameObject::Update()
+{
+	if(collider != nullptr) collider->SetPosition(position);
+}
 
 // Get the world matrix for this GameObject (rebuilding if necessary)
 XMFLOAT4X4 GameObject::GetWorldMatrix()
@@ -81,6 +104,8 @@ void GameObject::SetPosition(float x, float y, float z)
 
 	//Set values
 	position = XMFLOAT3(x, y, z);
+
+	//collider->setPosition(position);
 }
 
 // Moves this GameObject in absolute space by a given vector.
@@ -179,4 +204,17 @@ void GameObject::SetScale(float x, float y, float z)
 
 	//Set values
 	scale = XMFLOAT3(x, y, z);
+}
+
+Collider * GameObject::GetCollider()
+{
+	return collider;
+}
+
+void GameObject::AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
+{
+	if (collider == nullptr)
+	{
+		collider = new Collider(position, size, offset);
+	}
 }
