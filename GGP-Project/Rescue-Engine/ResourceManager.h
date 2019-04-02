@@ -15,12 +15,12 @@ private:
 	~ResourceManager();
 
 	//Resource maps
-	std::map<std::wstring, ID3D11ShaderResourceView*> texture2DMap;
-	std::map<std::wstring, ID3D11ShaderResourceView*> cubemapMap;
+	std::map<std::string, ID3D11ShaderResourceView*> texture2DMap;
+	std::map<std::string, ID3D11ShaderResourceView*> cubemapMap;
 	std::map<std::string, Mesh*> meshMap;
 	std::map<std::string, Material*> materialMap;
-	std::map<std::wstring, SimplePixelShader*> pixelShaderMap;
-	std::map<std::wstring, SimpleVertexShader*> vertexShaderMap;
+	std::map<std::string, SimplePixelShader*> pixelShaderMap;
+	std::map<std::string, SimpleVertexShader*> vertexShaderMap;
 
 public:
 	// --------------------------------------------------------
@@ -82,14 +82,14 @@ public:
 	//
 	// address - The file address of the Texture2D
 	// --------------------------------------------------------
-	ID3D11ShaderResourceView* GetTexture2D(std::wstring address);
+	ID3D11ShaderResourceView* GetTexture2D(std::string address);
 
 	// --------------------------------------------------------
 	// Get a loaded CubeMap
 	//
 	// address - The file address of the CubeMap
 	// --------------------------------------------------------
-	ID3D11ShaderResourceView* GetCubeMap(std::wstring address);
+	ID3D11ShaderResourceView* GetCubeMap(std::string address);
 
 	// --------------------------------------------------------
 	// Get a loaded Mesh
@@ -110,13 +110,13 @@ public:
 	//
 	// name - The name of the Pixel Shader file
 	// --------------------------------------------------------
-	SimplePixelShader* GetPixelShader(std::wstring name);
+	SimplePixelShader* GetPixelShader(std::string name);
 
 	// --------------------------------------------------------
 	// Get a loaded Vertex Shader
 	//
 	// name - The name of the Vertex Shader file
 	// --------------------------------------------------------
-	SimpleVertexShader* GetVertexShader(std::wstring name);
+	SimpleVertexShader* GetVertexShader(std::string name);
 };
 

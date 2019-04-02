@@ -59,9 +59,9 @@ bool ResourceManager::LoadTexture2D(const char* address, ID3D11Device* device, I
 	const wchar_t* lAddress = lStr.c_str();
 
 	//Check if the Texture2D is already in the map
-	if (texture2DMap.find(lStr) != texture2DMap.end())
+	if (texture2DMap.find(str) != texture2DMap.end())
 	{
-		printf("Texture2D at address \"%ls\" already exists in the resource manager\n", lAddress);
+		printf("Texture2D at address \"%s\" already exists in the resource manager\n", address);
 		return false;
 	}
 
@@ -69,12 +69,12 @@ bool ResourceManager::LoadTexture2D(const char* address, ID3D11Device* device, I
 	ID3D11ShaderResourceView* tex;
 	if (CreateWICTextureFromFile(device, context, lAddress, 0, &tex) != S_OK)
 	{
-		printf("Could not load texture2D %ls\n", lAddress);
+		printf("Could not load texture2D %s\n", address);
 		return false;
 	}
 
 	//Add to map
-	texture2DMap.emplace(lStr, tex);
+	texture2DMap.emplace(str, tex);
 	return true;
 }
 
@@ -89,9 +89,9 @@ bool ResourceManager::LoadTexture2D(const char* address, ID3D11Device * device)
 	const wchar_t* lAddress = lStr.c_str();
 
 	//Check if the Texture2D is already in the map
-	if (texture2DMap.find(lStr) != texture2DMap.end())
+	if (texture2DMap.find(str) != texture2DMap.end())
 	{
-		printf("Texture2D at address \"%ls\" already exists in the resource manager\n", lAddress);
+		printf("Texture2D at address \"%s\" already exists in the resource manager\n", address);
 		return false;
 	}
 
@@ -99,12 +99,12 @@ bool ResourceManager::LoadTexture2D(const char* address, ID3D11Device * device)
 	ID3D11ShaderResourceView* tex;
 	if (CreateWICTextureFromFile(device, lAddress, 0, &tex) != S_OK)
 	{
-		printf("Could not load Texture2D \"%ls\"\n", lAddress);
+		printf("Could not load Texture2D \"%s\"\n", address);
 		return false;
 	}
 
 	//Add to map
-	texture2DMap.emplace(lStr, tex);
+	texture2DMap.emplace(str, tex);
 	return true;
 }
 
@@ -119,9 +119,9 @@ bool ResourceManager::LoadCubeMap(const char* address, ID3D11Device* device, ID3
 	const wchar_t* lAddress = lStr.c_str();
 
 	//Check if the CubeMap is already in the map
-	if (cubemapMap.find(lStr) != cubemapMap.end())
+	if (cubemapMap.find(str) != cubemapMap.end())
 	{
-		printf("CubeMap at address \"%ls\" already exists in the resource manager\n", lAddress);
+		printf("CubeMap at address \"%s\" already exists in the resource manager\n", address);
 		return false;
 	}
 
@@ -129,12 +129,12 @@ bool ResourceManager::LoadCubeMap(const char* address, ID3D11Device* device, ID3
 	ID3D11ShaderResourceView* tex;
 	if(CreateDDSTextureFromFile(device, context, lAddress, 0, &tex) != S_OK)
 	{
-		printf("Could not load CubeMap \"%ls\"\n", lAddress);
+		printf("Could not load CubeMap \"%s\"\n", address);
 		return false;
 	}
 
 	//Add to map
-	cubemapMap.emplace(lStr, tex);
+	cubemapMap.emplace(str, tex);
 	return true;
 }
 
@@ -149,9 +149,9 @@ bool ResourceManager::LoadCubeMap(const char* address, ID3D11Device* device)
 	const wchar_t* lAddress = lStr.c_str();
 
 	//Check if the CubeMap is already in the map
-	if (cubemapMap.find(lStr) != cubemapMap.end())
+	if (cubemapMap.find(str) != cubemapMap.end())
 	{
-		printf("CubeMap at address \"%ls\" already exists in the resource manager\n", lAddress);
+		printf("CubeMap at address \"%s\" already exists in the resource manager\n", address);
 		return false;
 	}
 
@@ -159,12 +159,12 @@ bool ResourceManager::LoadCubeMap(const char* address, ID3D11Device* device)
 	ID3D11ShaderResourceView* tex;
 	if (CreateDDSTextureFromFile(device, lAddress, 0, &tex) != S_OK)
 	{
-		printf("Could not load CubeMap \"%ls\"\n", lAddress);
+		printf("Could not load CubeMap \"%s\"\n", address);
 		return false;
 	}
 
 	//Add to map
-	cubemapMap.emplace(lStr, tex);
+	cubemapMap.emplace(str, tex);
 	return true;
 }
 
@@ -228,9 +228,9 @@ bool ResourceManager::LoadPixelShader(const char* name, ID3D11Device* device, ID
 	const wchar_t* lName = lStr.c_str();
 
 	//Check if the Pixel Shader is already in the map
-	if (pixelShaderMap.find(lStr) != pixelShaderMap.end())
+	if (pixelShaderMap.find(str) != pixelShaderMap.end())
 	{
-		printf("Pixel Shader of name \"%ls\" already exists in the resource manager\n", lName);
+		printf("Pixel Shader of name \"%s\" already exists in the resource manager\n", name);
 		return false;
 	}
 
@@ -238,12 +238,12 @@ bool ResourceManager::LoadPixelShader(const char* name, ID3D11Device* device, ID
 	SimplePixelShader* ps = new SimplePixelShader(device, context);
 	if (!ps->LoadShaderFile(lName))
 	{
-		printf("Could not load Pixel Shader \"%ls\"\n", lName);
+		printf("Could not load Pixel Shader \"%s\"\n", name);
 		return false;
 	}
 
 	//Add to map
-	pixelShaderMap.emplace(lStr, ps);
+	pixelShaderMap.emplace(str, ps);
 	return false;
 }
 
@@ -258,9 +258,9 @@ bool ResourceManager::LoadVertexShader(const char* name, ID3D11Device* device, I
 	const wchar_t* lName = lStr.c_str();
 
 	//Check if the Vertex Shader is already in the map
-	if (vertexShaderMap.find(lStr) != vertexShaderMap.end())
+	if (vertexShaderMap.find(str) != vertexShaderMap.end())
 	{
-		printf("Vertex Shader of name \"%ls\" already exists in the resource manager\n", lName);
+		printf("Vertex Shader of name \"%s\" already exists in the resource manager\n", name);
 		return false;
 	}
 
@@ -268,22 +268,22 @@ bool ResourceManager::LoadVertexShader(const char* name, ID3D11Device* device, I
 	SimpleVertexShader* vs = new SimpleVertexShader(device, context);
 	if (!vs->LoadShaderFile(lName))
 	{
-		printf("Could not load Vertex Shader \"%ls\"\n", lName);
+		printf("Could not load Vertex Shader \"%s\"\n", name);
 		return false;
 	}
 
 	//Add to map
-	vertexShaderMap.emplace(lStr, vs);
+	vertexShaderMap.emplace(str, vs);
 	return false;
 }
 
 // Get a loaded Texture2D
-ID3D11ShaderResourceView* ResourceManager::GetTexture2D(std::wstring address)
+ID3D11ShaderResourceView* ResourceManager::GetTexture2D(std::string address)
 {
 	//Check if the Texture2D is in the map
 	if (texture2DMap.find(address) == texture2DMap.end())
 	{
-		printf("Texture2D at address \"%ls\" does not exist in the resource manager\n", address.c_str());
+		printf("Texture2D at address \"%s\" does not exist in the resource manager\n", address.c_str());
 		return nullptr;
 	}
 
@@ -291,12 +291,12 @@ ID3D11ShaderResourceView* ResourceManager::GetTexture2D(std::wstring address)
 }
 
 // Get a loaded CubeMap
-ID3D11ShaderResourceView* ResourceManager::GetCubeMap(std::wstring address)
+ID3D11ShaderResourceView* ResourceManager::GetCubeMap(std::string address)
 {
 	//Check if the CubeMap is in the map
 	if (cubemapMap.find(address) == cubemapMap.end())
 	{
-		printf("CubeMap at address \"%ls\" does not exist in the resource manager\n", address.c_str());
+		printf("CubeMap at address \"%s\" does not exist in the resource manager\n", address.c_str());
 		return nullptr;
 	}
 
@@ -330,12 +330,12 @@ Material* ResourceManager::GetMaterial(std::string name)
 }
 
 // Get a loaded Pixel Shader
-SimplePixelShader* ResourceManager::GetPixelShader(std::wstring name)
+SimplePixelShader* ResourceManager::GetPixelShader(std::string name)
 {
 	//Check if the Pixel Shader is in the map
 	if (pixelShaderMap.find(name) == pixelShaderMap.end())
 	{
-		printf("Pixel Shader of name \"%ls\" does not exist in the resource manager\n", name.c_str());
+		printf("Pixel Shader of name \"%s\" does not exist in the resource manager\n", name.c_str());
 		return nullptr;
 	}
 
@@ -343,12 +343,12 @@ SimplePixelShader* ResourceManager::GetPixelShader(std::wstring name)
 }
 
 // Get a loaded Vertex Shader
-SimpleVertexShader* ResourceManager::GetVertexShader(std::wstring name)
+SimpleVertexShader* ResourceManager::GetVertexShader(std::string name)
 {
 	//Check if the Vertex Shader is in the map
 	if (vertexShaderMap.find(name) == vertexShaderMap.end())
 	{
-		printf("Vertex Shader of name \"%ls\" does not exist in the resource manager\n", name.c_str());
+		printf("Vertex Shader of name \"%s\" does not exist in the resource manager\n", name.c_str());
 		return nullptr;
 	}
 

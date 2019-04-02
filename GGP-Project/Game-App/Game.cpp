@@ -143,30 +143,30 @@ void Game::LoadAssets()
 	device->CreateSamplerState(&samplerDesc, &samplerState);
 
 	//Create materials
-	SimpleVertexShader* vs = resourceManager->GetVertexShader(L"VertexShader.cso");
-	SimplePixelShader* ps = resourceManager->GetPixelShader(L"PixelShaderPBR.cso");
+	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
+	SimplePixelShader* ps = resourceManager->GetPixelShader("PixelShaderPBR.cso");
 
 	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D(L"Assets/Textures/Floor/floor_albedo.png"), 
-		resourceManager->GetTexture2D(L"Assets/Textures/Floor/floor_normals.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Floor/floor_roughness.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Floor/floor_metal.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"), 
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_normals.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_roughness.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_metal.png"),
 		samplerState);
 	resourceManager->AddMaterial("floor", mat1);
 
 	Material* mat2 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D(L"Assets/Textures/Scratched/scratched_albedo.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Scratched/scratched_normals.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Scratched/scratched_roughness.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Scratched/scratched_metal.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_normals.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_roughness.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_metal.png"),
 		samplerState);
 	resourceManager->AddMaterial("scratched", mat2);
 
 	Material* mat3 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D(L"Assets/Textures/Wood/wood_albedo.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Wood/wood_normals.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Wood/wood_roughness.png"),
-		resourceManager->GetTexture2D(L"Assets/Textures/Wood/wood_metal.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_normals.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
 		samplerState);
 	resourceManager->AddMaterial("wood", mat3);
 }
