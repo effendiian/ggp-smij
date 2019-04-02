@@ -122,6 +122,7 @@
     <ClCompile Include="DXCore.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MAT_PBRTexture.cpp" />
     <ClCompile Include="MAT_Water.cpp" />
@@ -135,6 +136,7 @@
     <ClInclude Include="MAT_Water.h" />
     <ClInclude Include="SwimmerManager.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="MAT_PBRTexture.h" />
     <ClInclude Include="Swimmer.h" />
   </ItemGroup>

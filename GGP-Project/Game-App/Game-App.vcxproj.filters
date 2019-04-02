@@ -33,6 +33,9 @@
     <Filter Include="Header Files\Input">
       <UniqueIdentifier>{f9d2efe1-1de5-43b6-a80a-8f27bbede4f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Input">
+      <UniqueIdentifier>{b60e3c2e-8381-469d-9608-e6864035fa40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXCore.cpp">
@@ -62,6 +65,9 @@
     <ClCompile Include="MAT_Water.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXCore.h">
@@ -87,6 +93,9 @@
     </ClInclude>
     <ClInclude Include="MAT_Water.h">
       <Filter>Header Files\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Header Files\Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
