@@ -97,6 +97,9 @@
     <ClInclude Include="Input.h">
       <Filter>Header Files\Input</Filter>
     </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Header Files\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

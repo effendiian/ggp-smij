@@ -112,11 +112,7 @@ IEnableState::IEnableState() : IEnableState(true) {}
 /// </summary>
 IEnableState::IEnableState(bool _state) 
 {
-<<<<<<< HEAD
 	this->Enable = _state ? 1 : 0;
-=======
-	_enable = _state ? 1 : 0;
->>>>>>> Update Input::Channel class implementation.
 }
 
 /// <summary>
@@ -230,16 +226,11 @@ bool Channel::IsNullDevice() const
 /// </returns>
 bool Channel::IsNullCode() const
 {
-
 	return (InputCode::NULL == INPUT_CODE);
 }
 
-
 #pragma endregion
 
-<<<<<<< HEAD
-#pragma region Command
-=======
 #pragma region Channel
 
 // --------------------------------------------------------
@@ -253,8 +244,8 @@ bool Channel::IsNullCode() const
 /// <summary>
 /// Finalizes an instance of the <see cref="Channel"/> class.
 /// </summary>
-Channel::Channel(InputIdentifier _inputDeviceId, InputDevice _inputDeviceType, InputCode _inputCode)
-	: INPUT_DEVICE_ID( _inputDeviceId ), INPUT_DEVICE( _inputDeviceType ), INPUT_CODE( _inputCode )
+Channel::Channel(InputIdentifier inputDeviceId, InputDevice inputDeviceType, InputCode inputCode)
+	: INPUT_DEVICE_ID( inputDeviceId ), INPUT_DEVICE( inputDeviceType ), INPUT_CODE( inputCode )
 {
 	_value = 0; // Set channel to zero.
 }
@@ -325,12 +316,14 @@ bool Channel::IsNullDevice() const
 /// </returns>
 bool Channel::IsNullCode() const
 {
+
 	return (InputCode::NULL == INPUT_CODE);
 }
 
 
 #pragma endregion
->>>>>>> Update Input::Channel class implementation.
+
+#pragma region Command
 
 // --------------------------------------------------------
 // interface Command
@@ -345,8 +338,6 @@ Command::Command(InputType inputType, float threshold, bool normalized)
 	_previousValue = 0;
 	_currentValue = 0;
 	_deltaValue = 0;
-
-
 }
 
 Command::Command() : Command(InputType::NULL, 0.0f, true) {

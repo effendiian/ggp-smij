@@ -58,22 +58,11 @@ namespace Input {
 	};
 
 	// --------------------------------------------------------
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Add IEnableState interface definition and implementation.
 	// enum InputDevice
 	//
 	// Definitions for known devices.
 	// --------------------------------------------------------
 	enum InputDevice {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> Add IEnableState interface definition and implementation.
-=======
->>>>>>> Update Input::Channel class implementation.
 		KEYBOARD,
 		POINTER,
 		GAMEPAD,
@@ -81,11 +70,6 @@ namespace Input {
 	};
 
 	// --------------------------------------------------------
-<<<<<<< HEAD
-=======
->>>>>>> Add InputCode enum values.
-=======
->>>>>>> Add IEnableState interface definition and implementation.
 	// enum InputCode
 	//
 	// Definitions for possible input codes. Does not map
@@ -189,10 +173,6 @@ namespace Input {
 		GAMEPAD_DPAD_UP,
 		GAMEPAD_DPAD_DOWN,
 		GAMEPAD_DPAD_LEFT,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Add IEnableState interface definition and implementation.
 		GAMEPAD_DPAD_RIGHT,
 
 		///////////////////////////
@@ -200,7 +180,6 @@ namespace Input {
 		///////////////////////////
 
 		NULL
-<<<<<<< HEAD
 
 	};
 	
@@ -333,16 +312,112 @@ namespace Input {
 		virtual void Enable(); // Enable the input object.
 		virtual void Disable(); // Disable the input object.
 		virtual void ToggleEnabledState(); // Toggle the value of enabled.
-=======
-		GAMEPAD_DPAD_RIGHT
->>>>>>> Add InputCode enum values.
-=======
->>>>>>> Add IEnableState interface definition and implementation.
+
 
 	};
 	
 	// <TODO> - Add input code map to WPARAMs in InputManager.
+
+	// --------------------------------------------------------
+	// interface InputValue
+	//
+	// Struct to wrap logic for swapping current/previous values
+	// and calculating the delta between them. Virtual methods
+	// are exposed such that implementations can vary in children.
+	// --------------------------------------------------------
+	struct InputValue {
+	private:
+
+		///////////////////////////
+		// DATA MEMBERS
+		///////////////////////////
+
+		float _currentValue;
+		float _previousValue;
+		float _deltaValue;
+
+	protected:
+
+		//////////////////
+		// Mutator Methods.
+
+		virtual void SetCurrentValue(float value);
+		virtual void SetPreviousValue(float value);
+		virtual void SetDeltaValue(float value);
+				
+	public:
+
+		///////////////////////////
+		// PROPERTIES
+		///////////////////////////
+
+		const float& Current = _currentValue;
+		const float& Previous = _previousValue;
+		const float& Delta = _deltaValue;
+		
+		///////////////////////////
+		// CONSTRUCTORS
+		///////////////////////////
+
+		InputValue(float currentValue);
+		InputValue(float currentValue, float previousValue);
+
+		///////////////////////////
+		// INTERFACE METHODS
+		///////////////////////////
+
+		virtual void Update(float value);
+		virtual void CalculateDelta();
+
+	};
 	
+	// --------------------------------------------------------
+	// interface CommandValue
+	//
+	// Command value includes a threshold value that affects
+	// how current values are set.
+	// --------------------------------------------------------
+	struct CommandValue : InputValue {
+	private:
+
+		///////////////////////////
+		// DATA MEMBERS
+		///////////////////////////
+
+		float _threshold;
+
+	protected:
+
+		//////////////////
+		// Mutator Methods.
+
+		virtual void SetThreshold(float value);
+
+	public:
+
+		///////////////////////////
+		// PROPERTIES
+		///////////////////////////
+
+		const float& Threshold = _threshold;
+
+		///////////////////////////
+		// CONSTRUCTORS
+		///////////////////////////
+
+		CommandValue();
+		CommandValue(float currentValue);
+		CommandValue(float currentValue, float threshold);
+		CommandValue(float currentValue, float previousValue, float threshold);
+
+		///////////////////////////
+		// INTERFACE METHODS
+		///////////////////////////
+
+		virtual void Update(float value);
+
+	};
+
 	// --------------------------------------------------------
 	// interface IEnable
 	//
@@ -355,15 +430,13 @@ namespace Input {
 		IEnableState(bool _state);
 		IEnableState();
 
-	private:
-
-		///////////////////////////
-		// DATA MEMBERS
-		///////////////////////////
-
-		unsigned int _enable; // Internal flag to store enable/disable status.
-
 	public:
+
+		///////////////////////////
+		// PROPERTIES
+		///////////////////////////
+
+		bool Enable;
 
 		///////////////////////////
 		// INTERFACE METHODS
@@ -373,16 +446,8 @@ namespace Input {
 		virtual void Disable(); // Disable the input object.
 		virtual void ToggleEnabledState(); // Toggle the value of enabled.
 
-		///////////////////////////
-		// ACCESSORS METHODS
-		///////////////////////////
-
-		bool IsEnabled(); // Return respective flag value.
-		bool IsDisabled(); // Return respective flag value.
-
 	};
-
-
+	
 	// --------------------------------------------------------
 	// interface Pointer
 	//
@@ -397,18 +462,8 @@ namespace Input {
 		///////////////////////////
 
 		bool _pointerMoved;
-		bool _pointerPressed;
-<<<<<<< HEAD
-<<<<<<< HEAD
-		
+		bool _pointerPressed;		
 		float _pointerSpeed; 
-=======
-
->>>>>>> Add InputCode enum values.
-=======
-		
-		float _pointerSpeed; 
->>>>>>> Add IEnableState interface definition and implementation.
 		float _previousX;
 		float _previousY;
 		float _currentX;
@@ -422,28 +477,12 @@ namespace Input {
 
 		///////////////////////////
 		// CONFIGURATION SETTINGS
-<<<<<<< HEAD
-<<<<<<< HEAD
 		/////////////////////////// 
-=======
-		///////////////////////////
->>>>>>> Add InputCode enum values.
-=======
-		/////////////////////////// 
->>>>>>> Edit whitespace in Input.h.
-
-
 		
 	};
 
 	// --------------------------------------------------------
 	// interface Channel
-<<<<<<< HEAD
-	//
-	// Channel interface contains device type, device identity,
-	// and control code that a particular command will route
-	// to. Children must implement the 'Update' method.
-=======
 	//
 	// Channel interface contains device type, device identity,
 	// and control code that a particular command will route
@@ -469,7 +508,7 @@ namespace Input {
 		const Input::InputDevice INPUT_DEVICE; // Device type the channel should read from.
 		const Input::InputCode INPUT_CODE; // Specific key, button, or axes the channel should update value for.
 
-		Channel(Input::InputIdentifier _inputDeviceId, Input::InputDevice _inputDeviceType, Input::InputCode _inputCode);
+		Channel(Input::InputIdentifier inputDeviceId, Input::InputDevice inputDeviceType, Input::InputCode inputCode);
 		
 		///////////////////////////
 		// INTERFACE METHODS
@@ -490,41 +529,38 @@ namespace Input {
 		// convert between the WPARAM and the Input::InputCode.
 
 		float GetValue() const; // Route to get updated value.
+		bool IsNullDevice() const;
+		bool IsNullCode() const;
 
 	};
-
 
 	// --------------------------------------------------------
 	// interface Command
 	//
 	// Commands track current values for inputs based on
 	// device channels.
->>>>>>> Add IEnableState interface definition and implementation.
 	// --------------------------------------------------------
-	class Channel : IEnableState
+	class Command : IEnableState
 	{
 	private:
 
 		///////////////////////////
 		// DATA MEMBERS
 		///////////////////////////
-<<<<<<< HEAD
 
 		float _value; // Internal store for updated value.
-=======
-		
 		float _threshold; // Deadzone threshold for axes. Defaults to zero for other types.
 		float _previousValue; // Contains last frame's command state value.
 		float _currentValue; // Contains current frame's command state value.
 		float _deltaValue; // Contains change in value.
 
-
->>>>>>> Add IEnableState interface definition and implementation.
-
+		Input::CommandValue _value; // Value that is updated every frame.
+		Input::InputType _type; // Input type for the command.
+		
 	public:
 
 		///////////////////////////
-		// CONFIGURATION SETTINGS
+		// PROPERTIES
 		///////////////////////////
 
 		const Input::InputIdentifier INPUT_DEVICE_ID; // Unique identifier for the channel device. (eg. If there are multiple gamepads, this can be used to differentiate between them).
@@ -533,38 +569,37 @@ namespace Input {
 
 		Channel(Input::InputIdentifier inputDeviceId, Input::InputDevice inputDeviceType, Input::InputCode inputCode);
 		
-<<<<<<< HEAD
-=======
 		Input::InputType Type; // Input type for the command.
 		unsigned int Enabled; // Is the current command active? (0 or 1).
 		unsigned int Normalize; // Determines which axis value should be used. (0 or 1).
 
-		Command();
-		~Command();
+		const Input::CommandValue& Value = _value; // Read-only reference to the data member.
+		const Input::InputType& Type; // Read-only reference to the input type.
+		bool Normalize; // Determines which axis value should be used. (0 or 1).
 
->>>>>>> Add IEnableState interface definition and implementation.
+		///////////////////////////
+		// CONSTRUCTORS
+		///////////////////////////
+
+		Command();
+		Command(Input::InputType inputType, float threshold = 0.0f, bool normalized = true);
+
 		///////////////////////////
 		// INTERFACE METHODS
 		///////////////////////////
 
-<<<<<<< HEAD
 		virtual void Update() = 0; // Abstract method for updating channel value based on channel description.
 		virtual bool IsDevice(Input::InputIdentifier deviceId, Input::InputDevice deviceType) = 0;
 		virtual bool IsDeviceType(Input::InputDevice deviceType) = 0;
 		virtual bool IsCode(Input::InputCode code) = 0;
-		
-=======
-		virtual void Update(); // Update previous and current values.
 		virtual void AssignChannel(); // <TODO>.
 		virtual void RemoveChannel(); // <TODO>.
 		virtual void Reset(); // Removes all channels and resets the command.
 
->>>>>>> Add IEnableState interface definition and implementation.
 		///////////////////////////
 		// SERVICE METHODS
 		///////////////////////////
 
-<<<<<<< HEAD
 		// Note: This class does not store the value;
 		// it is not responsible for maintaining state or processing
 		// the raw value. It acts as a simple wrapper to
@@ -594,7 +629,7 @@ namespace Input {
 		Input::InputType _type; // Input type for the command.
 		
 	public:
-=======
+
 		void Enable(); // Enable the command.
 		void Disable(); // Disable the command.
 		 
@@ -603,11 +638,7 @@ namespace Input {
 	class AxisCommand : Command {
 	public:
 
-
-
-
 	};
->>>>>>> Add IEnableState interface definition and implementation.
 
 		///////////////////////////
 		// PROPERTIES
@@ -634,9 +665,6 @@ namespace Input {
 		virtual void Reset(); // Removes all channels and resets the command.
 
 	};
-
-
-
 
 
 
