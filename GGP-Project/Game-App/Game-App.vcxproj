@@ -117,6 +117,7 @@
     <ClCompile Include="DXCore.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MAT_PBRTexture.cpp" />
   </ItemGroup>
@@ -124,6 +125,7 @@
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="MAT_PBRTexture.h" />
   </ItemGroup>
   <ItemGroup>
