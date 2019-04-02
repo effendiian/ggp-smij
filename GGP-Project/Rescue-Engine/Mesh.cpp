@@ -19,10 +19,12 @@ Mesh::Mesh(Vertex* vertices, int vertexCount, unsigned* indices, int indexCount,
 	this->indexCount = indexCount;
 }
 
-Mesh::Mesh(char* objFile, ID3D11Device* device)
+Mesh::Mesh(const char* objFile, ID3D11Device* device)
 {
 	// File input object
 	std::ifstream obj(objFile);
+	this->indexBuffer = nullptr;
+	this->vertexBuffer = nullptr;
 
 	// Check for successful open
 	if (!obj.is_open())
@@ -341,4 +343,9 @@ ID3D11Buffer* Mesh::GetIndexBuffer()
 int Mesh::GetIndexCount()
 {
 	return indexCount;
+}
+
+bool Mesh::IsMeshLoaded()
+{
+	return (this->indexBuffer != nullptr) && (this->vertexBuffer != nullptr);
 }

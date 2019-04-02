@@ -39,7 +39,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MAT_PBRTexture.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -53,7 +53,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MAT_PBRTexture.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Materials</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

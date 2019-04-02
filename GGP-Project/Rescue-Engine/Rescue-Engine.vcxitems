@@ -24,6 +24,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Material.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Mesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Renderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResourceManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SimpleShader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +38,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Material.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Mesh.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Renderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResourceManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SimpleShader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Vertex.h" />
   </ItemGroup>
