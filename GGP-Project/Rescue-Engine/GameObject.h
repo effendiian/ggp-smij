@@ -1,5 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
+#include "Collider.h"
 
 // --------------------------------------------------------
 // A GameObject definition.
@@ -19,6 +20,8 @@ private:
 	DirectX::XMFLOAT3 scale;
 	bool worldDirty;
 
+	Collider* collider;
+
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up the gameobject.
@@ -26,9 +29,22 @@ public:
 	GameObject();
 
 	// --------------------------------------------------------
+	// Collider Constructor - Set up the gameobject with a collider
+	//
+	// size - dimensions of bounding box
+	// offset - offset of collider from position of game object
+	// --------------------------------------------------------
+	GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
+
+	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
 	// --------------------------------------------------------
 	~GameObject();
+
+	// --------------------------------------------------------
+	// Called every frame
+	// --------------------------------------------------------
+	virtual void Update();
 
 	// --------------------------------------------------------
 	// Get the world matrix for this GameObject (rebuilding if necessary)
@@ -134,5 +150,18 @@ public:
 	// z - new z scale
 	// --------------------------------------------------------
 	void SetScale(float x, float y, float z);
+
+	// --------------------------------------------------------
+	// Get this object's collider
+	// --------------------------------------------------------
+	Collider* GetCollider();
+
+	// --------------------------------------------------------
+	// Add a collider to this object if it has none
+	//
+	// size - dimensions of bounding box
+	// offset - offset of collider from position of game object
+	// --------------------------------------------------------
+	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
 };
 

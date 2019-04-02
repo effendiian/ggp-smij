@@ -8,7 +8,7 @@
 #include "InputManager.h"
 #include "EntityManager.h"
 #include "FirstPersonCamera.h"
-#include "WICTextureLoader.h"
+#include "ResourceManager.h"
 
 #define NUM_MESHES 4
 #define NUM_TEXTURES 12
@@ -42,15 +42,13 @@ private:
 	//Singletons
 	Renderer* renderer;
 	InputManager* inputManager;
+	ResourceManager* resourceManager;
 
-	//Meshes and entities
-	Mesh* meshes[NUM_MESHES];
+	//Entities
 	Entity* entities[NUM_ENTITIES];
 
-	//Materials and textures
-	Material* materials[NUM_MATS];
+	//Sampler state
 	ID3D11SamplerState* samplerState;
-	ID3D11ShaderResourceView* texture_srvs[NUM_TEXTURES];
 
 	//Transformation modifiers
 	float position;
@@ -58,12 +56,7 @@ private:
 	float rotSpeed;
 	float scale;
 
-	// Wrappers for DirectX shaders to provide simplified functionality
-	SimpleVertexShader* vertexShader;
-	SimplePixelShader* pixelShader;
-
 	// Initialization helper methods - feel free to customize, combine, etc.
-	void LoadShaders();
 	void LoadAssets();
 	void CreateEntities();
 };

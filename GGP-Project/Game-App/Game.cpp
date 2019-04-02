@@ -36,30 +36,10 @@ Game::Game(HINSTANCE hInstance)
 // --------------------------------------------------------
 Game::~Game()
 {
-	//Delete meshes
-	for (int i = 0; i < NUM_MESHES; i++)
-	{
-		if (meshes[i]) { delete meshes[i]; }
-	}
-	
-	//Delete textures
-	for (int i = 0; i < NUM_TEXTURES; i++)
-	{
-		if (texture_srvs[i]) { texture_srvs[i]->Release(); }
-	}
+	//Delete sampler state
 	samplerState->Release();
 
-	//Delete shaders
-	if (vertexShader) { delete vertexShader; }
-	if (pixelShader) { delete pixelShader; }
-
-	//Delete materials
-	for (int i = 0; i < NUM_MATS; i++)
-	{
-		if (materials[i]) { delete materials[i]; }
-	}
-
-	//Delete demo entities
+	//Delete entities
 	for (int i = 0; i < NUM_ENTITIES; i++)
 	{
 		if (entities[i]) { delete entities[i]; }
@@ -78,6 +58,7 @@ void Game::Init()
 	//Initialize singletons
 	inputManager = InputManager::GetInstance();
 	renderer = Renderer::GetInstance();
+	resourceManager = ResourceManager::GetInstance();
 
 	//Initialize singleton data
 	inputManager->Init(hWnd);
@@ -87,10 +68,7 @@ void Game::Init()
 	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
 	camera->SetPosition(0, 0, -5);
 
-	// Helper methods for loading shaders, creating some basic
-	// geometry to draw and some simple camera matrices.
-	//  - You'll be expanding and/or replacing these later
-	LoadShaders();
+	//Load all needed assets
 	LoadAssets();
 	CreateEntities();
 
@@ -124,46 +102,35 @@ void Game::Init()
 }
 
 // --------------------------------------------------------
-// Loads shaders from compiled shader object (.cso) files using
-// my SimpleShader wrapper for DirectX shader manipulation.
-// - SimpleShader provides helpful methods for sending
-//   data to individual variables on the GPU
-// --------------------------------------------------------
-void Game::LoadShaders()
-{
-	vertexShader = new SimpleVertexShader(device, context);
-	vertexShader->LoadShaderFile(L"VertexShader.cso");
-
-	pixelShader = new SimplePixelShader(device, context);
-	pixelShader->LoadShaderFile(L"PixelShaderPBR.cso");
-}
-
-// --------------------------------------------------------
 // Creates the geometry we're going to draw - a single triangle for now
 // --------------------------------------------------------
 void Game::LoadAssets()
 {
+	//Load shaders
+	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
+	resourceManager->LoadPixelShader("PixelShaderPBR.cso", device, context);
+
 	//Create meshes
-	meshes[0] = new Mesh("Assets\\Models\\torus.obj", device);
-	meshes[1] = new Mesh("Assets\\Models\\cube.obj", device);
-	meshes[2] = new Mesh("Assets\\Models\\helix.obj", device);
-	meshes[3] = new Mesh("Assets\\Models\\sphere.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\torus.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\cube.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\helix.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\sphere.obj", device);
 
 	//Load textures
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_albedo.png", 0, &texture_srvs[0]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_normals.png", 0, &texture_srvs[1]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_roughness.png", 0, &texture_srvs[2]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Floor/floor_metal.png", 0, &texture_srvs[3]);
+	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_normals.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_roughness.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_metal.png", device, context);
 
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_albedo.png", 0, &texture_srvs[4]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_normals.png", 0, &texture_srvs[5]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_roughness.png", 0, &texture_srvs[6]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Scratched/scratched_metal.png", 0, &texture_srvs[7]);
+	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_normals.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_roughness.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_metal.png", device, context);
 
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_albedo.png", 0, &texture_srvs[8]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_normals.png", 0, &texture_srvs[9]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_roughness.png", 0, &texture_srvs[10]);
-	CreateWICTextureFromFile(device, context, L"Assets/Textures/Wood/wood_metal.png", 0, &texture_srvs[11]);
+	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_normals.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_roughness.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_metal.png", device, context);
 
 	//Create sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -176,38 +143,65 @@ void Game::LoadAssets()
 	device->CreateSamplerState(&samplerDesc, &samplerState);
 
 	//Create materials
-	materials[0] = new MAT_PBRTexture(vertexShader, pixelShader, 1024.0f, XMFLOAT2(2, 2),
-		texture_srvs[0], texture_srvs[1], texture_srvs[2], texture_srvs[3], samplerState);
-	materials[1] = new MAT_PBRTexture(vertexShader, pixelShader, 1024.0f, XMFLOAT2(2, 2),
-		texture_srvs[4], texture_srvs[5], texture_srvs[6], texture_srvs[7], samplerState);
-	materials[2] = new MAT_PBRTexture(vertexShader, pixelShader, 1024.0f, XMFLOAT2(2, 2), 
-		texture_srvs[8], texture_srvs[9], texture_srvs[10], texture_srvs[11], samplerState);
+	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
+	SimplePixelShader* ps = resourceManager->GetPixelShader("PixelShaderPBR.cso");
+
+	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"), 
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_normals.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_roughness.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_metal.png"),
+		samplerState);
+	resourceManager->AddMaterial("floor", mat1);
+
+	Material* mat2 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_normals.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_roughness.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_metal.png"),
+		samplerState);
+	resourceManager->AddMaterial("scratched", mat2);
+
+	Material* mat3 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_normals.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
+		samplerState);
+	resourceManager->AddMaterial("wood", mat3);
 }
 
 void Game::CreateEntities()
 {
 	//Cube
-	entities[0] = new Entity(meshes[1], materials[1]);
+	entities[0] = new Entity(resourceManager->GetMesh("Assets\\Models\\cube.obj"), 
+		resourceManager->GetMaterial("scratched"));
 	entities[0]->SetPosition(2, 1, 0);
 
 	//Helix
-	entities[1] = new Entity(meshes[2], materials[0]);
+	entities[1] = new Entity(resourceManager->GetMesh("Assets\\Models\\helix.obj"), 
+		resourceManager->GetMaterial("floor"));
 	entities[1]->SetPosition(-2, 1, 0);
 	entities[1]->SetScale(0.75f, 0.75f, 0.75f);
 
 	//Torus 1
-	entities[2] = new Entity(meshes[0], materials[2]);
+	entities[2] = new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"), 
+		resourceManager->GetMaterial("wood"));
 	entities[2]->SetPosition(position, -1, 0);
 	entities[2]->SetScale(0.5f, 0.5f, 0.5f);
+	entities[2]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
 
 	//Torus 2
-	entities[3] = new Entity(meshes[0], materials[2]);
+	entities[3] = new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"),
+		resourceManager->GetMaterial("wood"));
 	entities[3]->SetPosition(0, 1.70f, 0);
 	entities[3]->SetRotation(0, 0, 180);
 	entities[3]->SetScale(0.25f, 0.25f, 0.25f);
 
 	//Sphere
-	entities[4] = new Entity(meshes[3], materials[1]);
+	entities[4] = new Entity(resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
+		resourceManager->GetMaterial("scratched"));
+	entities[4]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
 }
 
 // --------------------------------------------------------
@@ -247,7 +241,7 @@ void Game::Update(float deltaTime, float totalTime)
 	//Move position around
 	position = sin(totalTime / 2) * 2.5f;
 	entities[2]->SetPosition(position, -1, 0);
-	entities[4]->SetPosition(0, 0, position);
+	entities[4]->SetPosition(0, -1, position);
 
 	//Rotate
 	rotation += rotSpeed * deltaTime;
@@ -256,6 +250,31 @@ void Game::Update(float deltaTime, float totalTime)
 	//Scale
 	scale = (sin(totalTime / 2) + 1) / 2;
 	entities[0]->SetScale(scale, scale, scale);
+
+	//Placeholder entity updater
+	for (int i = 0; i < 5; i++)
+	{
+		entities[i]->Update();
+	}
+
+	//Placeholder collision checker
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			if (i != j)
+			{
+				if (entities[i]->GetCollider() != nullptr && entities[j]->GetCollider())
+				{
+					if (entities[i]->GetCollider()->Collides(*entities[j]->GetCollider()))
+					{
+						//printf("collision!");
+					}
+				}
+
+			}
+		}
+	}
 
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager

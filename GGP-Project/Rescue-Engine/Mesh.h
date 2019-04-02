@@ -42,7 +42,7 @@ public:
 	//
 	// filePath	- The path to the mesh file
 	// --------------------------------------------------------
-	Mesh(char* objFile, ID3D11Device* device);
+	Mesh(const char* objFile, ID3D11Device* device);
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
 	// --------------------------------------------------------
@@ -66,5 +66,10 @@ public:
 	// Get the number of indicies in this mesh
 	// --------------------------------------------------------
 	int GetIndexCount();
+
+	// --------------------------------------------------------
+	// Check if this mesh is loaded into memory
+	// --------------------------------------------------------
+	bool IsMeshLoaded();
 };
 
