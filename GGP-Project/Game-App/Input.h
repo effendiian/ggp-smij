@@ -322,6 +322,8 @@ namespace Input {
 
 	};
 	
+	// <TODO> - Add input code map to WPARAMs in InputManager.
+
 	// --------------------------------------------------------
 	// interface Pointer
 	//
