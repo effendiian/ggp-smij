@@ -38,6 +38,19 @@ namespace Input {
 	};
 
 	// --------------------------------------------------------
+	// enum InputDevice
+	//
+	// Definitions for known devices.
+	// --------------------------------------------------------
+	enum InputDevice {
+
+		KEYBOARD,
+		POINTER,
+		GAMEPAD,
+		NULL
+	};
+
+	// --------------------------------------------------------
 	// enum InputCode
 	//
 	// Definitions for possible input codes. Does not map
@@ -141,11 +154,51 @@ namespace Input {
 		GAMEPAD_DPAD_UP,
 		GAMEPAD_DPAD_DOWN,
 		GAMEPAD_DPAD_LEFT,
-		GAMEPAD_DPAD_RIGHT
+		GAMEPAD_DPAD_RIGHT,
+
+		///////////////////////////
+		// NULL CODE
+		///////////////////////////
+
+		NULL
 
 	};
 	
 	// <TODO> - Add input code map to WPARAMs in InputManager.
+	
+	// --------------------------------------------------------
+	// interface IEnable
+	//
+	// Interface that allows children to be enabled/disabled.
+	// --------------------------------------------------------
+	class IEnableState {
+	private:
+
+		///////////////////////////
+		// DATA MEMBERS
+		///////////////////////////
+
+		unsigned int _enable; // Internal flag to store enable/disable status.
+
+	public:
+
+		///////////////////////////
+		// INTERFACE METHODS
+		///////////////////////////
+
+		virtual void Enable(); // Enable the input object.
+		virtual void Disable(); // Disable the input object.
+		virtual void ToggleEnabledState(); // Toggle the value of enabled.
+
+		///////////////////////////
+		// ACCESSORS METHODS
+		///////////////////////////
+
+		bool IsEnabled(); // Return respective flag value.
+		bool IsDisabled(); // Return respective flag value.
+
+	};
+
 
 	// --------------------------------------------------------
 	// interface Pointer
@@ -162,7 +215,8 @@ namespace Input {
 
 		bool _pointerMoved;
 		bool _pointerPressed;
-
+		
+		float _pointerSpeed; 
 		float _previousX;
 		float _previousY;
 		float _currentX;
@@ -183,9 +237,63 @@ namespace Input {
 	};
 
 	// --------------------------------------------------------
+	// interface Channel
+	//
+	// Channel interface contains device type, device identity,
+	// and control code that a particular command will route
+	// to. Children must implement the 'Update' method.
+	// --------------------------------------------------------
+	class Channel
+	{	
+	private:
+
+		///////////////////////////
+		// DATA MEMBERS
+		///////////////////////////
+
+		float _enable; // Internal store of enabled status.
+		float _value; // Internal store for updated value.
+
+	public:
+
+		///////////////////////////
+		// CONFIGURATION SETTINGS
+		///////////////////////////
+
+		const unsigned int IDENTIFIER; // Unique identifier for the channel device. (eg. If there are multiple gamepads, this can be used to differentiate between them).
+		const Input::InputDevice DEVICE; // Device type the channel should read from.
+		const Input::InputCode CODE; // Specific key, button, or axes the channel should update value for.
+
+		///////////////////////////
+		// INTERFACE METHODS
+		///////////////////////////
+
+		virtual void Update() = 0; // Abstract method for updating channel value based on channel description.
+		virtual bool IsDevice(Input::InputDevice inputDeviceType, unsigned int inputDeviceId) = 0;
+		virtual bool IsDeviceType(Input::InputDevice inputDeviceType) = 0;
+		virtual bool IsCode(Input::InputCode inputCode) = 0;
+		
+		///////////////////////////
+		// SERVICE METHODS
+		///////////////////////////
+
+		// Note: This class does not store the value;
+		// it is not responsible for maintaining state or processing
+		// the raw value. It acts as a simple wrapper to
+		// convert between the WPARAM and the Input::InputCode.
+
+		float GetValue() const; // Route to get updated value.
+		bool Enable(); // Enable the channel.
+		bool Disable(); // Disable the channel.
+
+	};
+
+
+	// --------------------------------------------------------
 	// interface Command
 	//
-	// <TODO>.
+	// Commands track current values for inputs based on
+	// device channels.
 	// --------------------------------------------------------
 	class Command
 	{
@@ -198,6 +306,9 @@ namespace Input {
 		float _threshold; // Deadzone threshold for axes. Defaults to zero for other types.
 		float _previousValue; // Contains last frame's command state value.
 		float _currentValue; // Contains current frame's command state value.
+		float _deltaValue; // Contains change in value.
+
+
 
 	public:
 
@@ -206,13 +317,37 @@ namespace Input {
 		///////////////////////////
 		
 		Input::InputType Type; // Input type for the command.
+		unsigned int Enabled; // Is the current command active? (0 or 1).
 		unsigned int Normalize; // Determines which axis value should be used. (0 or 1).
-		
-		// Command updates.
-		virtual void Update();
+
+		Command();
+		~Command();
+
+		///////////////////////////
+		// INTERFACE METHODS
+		///////////////////////////
+
+		virtual void Update(); // Update previous and current values.
+		virtual void AssignChannel(); // <TODO>.
+		virtual void RemoveChannel(); // <TODO>.
+		virtual void Reset(); // Removes all channels and resets the command.
+
+		///////////////////////////
+		// SERVICE METHODS
+		///////////////////////////
+
+		void Enable(); // Enable the command.
+		void Disable(); // Disable the command.
 		 
 	};
 
+	class AxisCommand : Command {
+	public:
+
+
+
+
+	};
 
 
 
