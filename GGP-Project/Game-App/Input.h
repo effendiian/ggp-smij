@@ -58,6 +58,7 @@ namespace Input {
 	};
 
 	// --------------------------------------------------------
+<<<<<<< HEAD
 	// enum InputDevice
 	//
 	// Definitions for known devices.
@@ -70,6 +71,8 @@ namespace Input {
 	};
 
 	// --------------------------------------------------------
+=======
+>>>>>>> Add InputCode enum values.
 	// enum InputCode
 	//
 	// Definitions for possible input codes. Does not map
@@ -173,6 +176,7 @@ namespace Input {
 		GAMEPAD_DPAD_UP,
 		GAMEPAD_DPAD_DOWN,
 		GAMEPAD_DPAD_LEFT,
+<<<<<<< HEAD
 		GAMEPAD_DPAD_RIGHT,
 
 		///////////////////////////
@@ -312,6 +316,9 @@ namespace Input {
 		virtual void Enable(); // Enable the input object.
 		virtual void Disable(); // Disable the input object.
 		virtual void ToggleEnabledState(); // Toggle the value of enabled.
+=======
+		GAMEPAD_DPAD_RIGHT
+>>>>>>> Add InputCode enum values.
 
 	};
 	
@@ -330,8 +337,12 @@ namespace Input {
 
 		bool _pointerMoved;
 		bool _pointerPressed;
+<<<<<<< HEAD
 		
 		float _pointerSpeed; 
+=======
+
+>>>>>>> Add InputCode enum values.
 		float _previousX;
 		float _previousY;
 		float _currentX;
@@ -345,7 +356,11 @@ namespace Input {
 
 		///////////////////////////
 		// CONFIGURATION SETTINGS
+<<<<<<< HEAD
 		/////////////////////////// 
+=======
+		///////////////////////////
+>>>>>>> Add InputCode enum values.
 
 
 		
