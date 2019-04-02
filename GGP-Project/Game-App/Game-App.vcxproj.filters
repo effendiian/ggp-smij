@@ -24,6 +24,9 @@
     <Filter Include="Header Files\Materials">
       <UniqueIdentifier>{f1727701-816b-42d6-abac-265e6a38ac0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Input">
+      <UniqueIdentifier>{f9d2efe1-1de5-43b6-a80a-8f27bbede4f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXCore.cpp">
