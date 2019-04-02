@@ -21,6 +21,26 @@ namespace Input {
 	// Action - Action that collects the 'Context.Actions'
 
 	// --------------------------------------------------------
+	// enum InputIdentifier
+	//
+	// Definitions for unique device ID's. Supports up to 8
+	// unique ID's for each type of device. Support for up to
+	// 8 gamepads, 8 keyboards, 8 pointers, etc.
+	// --------------------------------------------------------
+	enum InputIdentifier {
+		DEVICE_1,
+		DEVICE_2,
+		DEVICE_3,
+		DEVICE_4,
+		DEVICE_5,
+		DEVICE_6,
+		DEVICE_7,
+		DEVICE_8,
+		ALL,
+		NULL
+	};
+
+	// --------------------------------------------------------
 	// enum InputType
 	//
 	// Definitions for possible input types. 
@@ -43,7 +63,6 @@ namespace Input {
 	// Definitions for known devices.
 	// --------------------------------------------------------
 	enum InputDevice {
-
 		KEYBOARD,
 		POINTER,
 		GAMEPAD,
@@ -172,6 +191,12 @@ namespace Input {
 	// Interface that allows children to be enabled/disabled.
 	// --------------------------------------------------------
 	class IEnableState {
+	protected:
+
+		// Protected constructor to enable inheritance construction only.
+		IEnableState(bool _state);
+		IEnableState();
+
 	private:
 
 		///////////////////////////
@@ -243,15 +268,14 @@ namespace Input {
 	// and control code that a particular command will route
 	// to. Children must implement the 'Update' method.
 	// --------------------------------------------------------
-	class Channel
-	{	
+	class Channel : IEnableState
+	{
 	private:
 
 		///////////////////////////
 		// DATA MEMBERS
 		///////////////////////////
 
-		float _enable; // Internal store of enabled status.
 		float _value; // Internal store for updated value.
 
 	public:
@@ -260,18 +284,20 @@ namespace Input {
 		// CONFIGURATION SETTINGS
 		///////////////////////////
 
-		const unsigned int IDENTIFIER; // Unique identifier for the channel device. (eg. If there are multiple gamepads, this can be used to differentiate between them).
-		const Input::InputDevice DEVICE; // Device type the channel should read from.
-		const Input::InputCode CODE; // Specific key, button, or axes the channel should update value for.
+		const Input::InputIdentifier INPUT_DEVICE_ID; // Unique identifier for the channel device. (eg. If there are multiple gamepads, this can be used to differentiate between them).
+		const Input::InputDevice INPUT_DEVICE; // Device type the channel should read from.
+		const Input::InputCode INPUT_CODE; // Specific key, button, or axes the channel should update value for.
 
+		Channel(Input::InputIdentifier _inputDeviceId, Input::InputDevice _inputDeviceType, Input::InputCode _inputCode);
+		
 		///////////////////////////
 		// INTERFACE METHODS
 		///////////////////////////
 
 		virtual void Update() = 0; // Abstract method for updating channel value based on channel description.
-		virtual bool IsDevice(Input::InputDevice inputDeviceType, unsigned int inputDeviceId) = 0;
-		virtual bool IsDeviceType(Input::InputDevice inputDeviceType) = 0;
-		virtual bool IsCode(Input::InputCode inputCode) = 0;
+		virtual bool IsDevice(Input::InputIdentifier deviceId, Input::InputDevice deviceType) = 0;
+		virtual bool IsDeviceType(Input::InputDevice deviceType) = 0;
+		virtual bool IsCode(Input::InputCode code) = 0;
 		
 		///////////////////////////
 		// SERVICE METHODS
@@ -283,8 +309,6 @@ namespace Input {
 		// convert between the WPARAM and the Input::InputCode.
 
 		float GetValue() const; // Route to get updated value.
-		bool Enable(); // Enable the channel.
-		bool Disable(); // Disable the channel.
 
 	};
 
