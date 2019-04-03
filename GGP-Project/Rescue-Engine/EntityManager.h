@@ -43,8 +43,8 @@ public: // PUBLIC --------------------------------------------------------
 
 private: // PRIVATE ------------------------------------------------------
 
-	static std::vector<std::string> entity_ids; //A vector of entity id's (strings)
-	static std::vector<Entity*> entities;       //A vector of entities
-	static int entities_count;                  //The amount of entities in the manager
+	std::vector<std::string> entity_ids; //A vector of entity id's (strings)
+	std::vector<Entity*> entities;       //A vector of entities
+	int entities_count;                  //The amount of entities in the manager
 	
 };

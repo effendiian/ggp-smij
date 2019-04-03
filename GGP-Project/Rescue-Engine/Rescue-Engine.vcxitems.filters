@@ -48,6 +48,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)EntityManager.cpp">
       <Filter>Source Files\Singletons</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResourceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h">
@@ -86,5 +88,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)EntityManager.h">
       <Filter>Header Files\Singletons</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Collider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResourceManager.h" />
   </ItemGroup>
 </Project>
