@@ -24,6 +24,12 @@
     <Filter Include="Header Files\Materials">
       <UniqueIdentifier>{f1727701-816b-42d6-abac-265e6a38ac0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Entities">
+      <UniqueIdentifier>{c952daf5-a99f-4013-8e9d-0391491234ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Entities">
+      <UniqueIdentifier>{21723a57-2723-40f0-ba53-75f0b6a33168}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXCore.cpp">
@@ -41,6 +47,12 @@
     <ClCompile Include="MAT_PBRTexture.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="Boat.cpp">
+      <Filter>Source Files\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Swimmer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXCore.h">
@@ -54,6 +66,12 @@
     </ClInclude>
     <ClInclude Include="MAT_PBRTexture.h">
       <Filter>Header Files\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Boat.h">
+      <Filter>Header Files\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Swimmer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
