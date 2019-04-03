@@ -6,6 +6,7 @@
 #include "MAT_PBRTexture.h"
 #include "LightManager.h"
 #include "InputManager.h"
+#include "EntityManager.h"
 #include "FirstPersonCamera.h"
 #include "ResourceManager.h"
 #include "Boat.h"
