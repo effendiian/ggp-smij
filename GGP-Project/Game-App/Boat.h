@@ -1,45 +1,52 @@
 #pragma once
 #include <DirectXMath.h>
 #include <vector>
-#include "Entity.h"
+#include "Swimmer.h"
+#include "InputManager.h"
 
 class Boat :
 	public Entity
 {
 private:
-	float speed = 5;
+	//Movement
+	float speed = 2;
 	float turnSpeed = 100;
 	float minDistance = 0.5f;
-
 	bool crashed;
-	std::vector<GameObject*> nodes;
-	std::vector<DirectX::XMFLOAT3> path;
-	float timer;
-public:
-	Boat(Mesh* mesh, Material* material, DirectX::XMFLOAT3 position);
-	~Boat();
+	InputManager* inputManager;
 
-	//methods
+	//Swimmers
+	std::vector<Swimmer*> swimmers;
+	const char* swimmerMesh = "Assets\\Models\\sphere.obj";
+	const char* swimmerMat = "wood";
+
+public:
+	Boat(Mesh* mesh, Material* material);
+	~Boat();
 
 	// --------------------------------------------------------
 	// Calls Input, Move, and CheckCollisions every frame
 	// --------------------------------------------------------
-	void Update();
+	void Update(float deltaTime);
 
 	// --------------------------------------------------------
 	// Interprets key input
 	// --------------------------------------------------------
-	void Input();
+	void Input(float deltaTime);
 
 	// --------------------------------------------------------
 	// Moves the boat forward
 	// --------------------------------------------------------
-	void Move();
+	void Move(float deltaTime);
 
 	// --------------------------------------------------------
 	// Checks for collisions and calls corresponding collide methods
 	// --------------------------------------------------------
 	void CheckCollisions();
 
+	// --------------------------------------------------------
+	// Create a swimmer at the end of the trail
+	// --------------------------------------------------------
+	void CreateSwimmer();
 };
 

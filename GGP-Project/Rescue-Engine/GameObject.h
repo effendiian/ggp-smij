@@ -39,12 +39,12 @@ public:
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
 	// --------------------------------------------------------
-	~GameObject();
+	virtual ~GameObject();
 
 	// --------------------------------------------------------
 	// Called every frame
 	// --------------------------------------------------------
-	virtual void Update();
+	virtual void Update(float deltaTime);
 
 	// --------------------------------------------------------
 	// Get the world matrix for this GameObject (rebuilding if necessary)
@@ -129,6 +129,22 @@ public:
 	// z - z angle
 	// --------------------------------------------------------
 	void SetRotation(float x, float y, float z);
+
+	// --------------------------------------------------------
+	// Rotate this GameObject (Angles)
+	//
+	// newRotation - The vector rotation
+	// --------------------------------------------------------
+	void Rotate(DirectX::XMFLOAT3 newRotation);
+
+	// --------------------------------------------------------
+	// Rotate this GameObject using angles
+	//
+	// x - x angle
+	// y - y angle
+	// z - z angle
+	// --------------------------------------------------------
+	void Rotate(float x, float y, float z);
 
 	// --------------------------------------------------------
 	// Get the scale for this GameObject

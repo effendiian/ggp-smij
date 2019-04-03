@@ -40,7 +40,7 @@ Game::~Game()
 	samplerState->Release();
 
 	//Delete entities
-	for (int i = 0; i < NUM_ENTITIES; i++)
+	for (int i = 0; i < entities.size(); i++)
 	{
 		if (entities[i]) { delete entities[i]; }
 	}
@@ -174,34 +174,38 @@ void Game::LoadAssets()
 void Game::CreateEntities()
 {
 	//Cube
-	entities[0] = new Entity(resourceManager->GetMesh("Assets\\Models\\cube.obj"), 
-		resourceManager->GetMaterial("scratched"));
+	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\cube.obj"), 
+		resourceManager->GetMaterial("scratched")));
 	entities[0]->SetPosition(2, 1, 0);
 
 	//Helix
-	entities[1] = new Entity(resourceManager->GetMesh("Assets\\Models\\helix.obj"), 
-		resourceManager->GetMaterial("floor"));
+	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\helix.obj"), 
+		resourceManager->GetMaterial("floor")));
 	entities[1]->SetPosition(-2, 1, 0);
 	entities[1]->SetScale(0.75f, 0.75f, 0.75f);
 
 	//Torus 1
-	entities[2] = new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"), 
-		resourceManager->GetMaterial("wood"));
+	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"), 
+		resourceManager->GetMaterial("wood")));
 	entities[2]->SetPosition(position, -1, 0);
 	entities[2]->SetScale(0.5f, 0.5f, 0.5f);
 	entities[2]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
 
 	//Torus 2
-	entities[3] = new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"),
-		resourceManager->GetMaterial("wood"));
+	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"),
+		resourceManager->GetMaterial("wood")));
 	entities[3]->SetPosition(0, 1.70f, 0);
 	entities[3]->SetRotation(0, 0, 180);
 	entities[3]->SetScale(0.25f, 0.25f, 0.25f);
 
 	//Sphere
-	entities[4] = new Entity(resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
-		resourceManager->GetMaterial("scratched"));
+	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
+		resourceManager->GetMaterial("scratched")));
 	entities[4]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
+
+	//Player
+	entities.push_back(new Boat(resourceManager->GetMesh("Assets\\Models\\cube.obj"),
+		resourceManager->GetMaterial("wood")));
 }
 
 // --------------------------------------------------------
@@ -252,15 +256,15 @@ void Game::Update(float deltaTime, float totalTime)
 	entities[0]->SetScale(scale, scale, scale);
 
 	//Placeholder entity updater
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < entities.size(); i++)
 	{
-		entities[i]->Update();
+		entities[i]->Update(deltaTime);
 	}
 
 	//Placeholder collision checker
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < entities.size(); i++)
 	{
-		for (int j = 0; j < 5; j++)
+		for (int j = 0; j < entities.size(); j++)
 		{
 			if (i != j)
 			{
