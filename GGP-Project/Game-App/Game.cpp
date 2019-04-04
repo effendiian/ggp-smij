@@ -20,7 +20,6 @@ Game::Game(HINSTANCE hInstance)
 		720,			// Height of the window's client area
 		true)			// Show extra stats (fps) in title bar?
 {
-
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -60,6 +59,7 @@ void Game::Init()
 	renderer = Renderer::GetInstance();
 	resourceManager = ResourceManager::GetInstance();
 	entityManager = EntityManager::GetInstance();
+	swimmerManager = SwimmerManager::GetInstance();
 
 	//Initialize singleton data
 	inputManager->Init(hWnd);
@@ -68,8 +68,8 @@ void Game::Init()
 	//Create the camera and initialize matrices
 	camera = new FirstPersonCamera();
 	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
-	camera->SetRotation(15, 0, 0);
-	camera->SetPosition(0, 5, -10);
+	camera->SetRotation(75, 0, 0);
+	camera->SetPosition(0, 25, -5);
 
 	//Load all needed assets
 	LoadAssets();
@@ -176,26 +176,14 @@ void Game::LoadAssets()
 
 void Game::CreateEntities()
 {
-	// Player (Boat)
-
-	// Create the player.
+	// Player (Boat) - Create the player.
 	Entity* player = new Boat(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
 		resourceManager->GetMaterial("scratched")
 	);
-
-	// Set the player's initial position.
-	player->SetPosition(0, 0, 0);
-	// player->SetPosition(2, 1, 0);
-
-	// Add the player to the entity manager.
-	entityManager->AddEntity(player, "player");
-	
-	//Sphere
-	//entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
-	//	resourceManager->GetMaterial("scratched")));
-	// entities[4]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
-
+	player->SetPosition(0, 0, 0); // Set the player's initial position.
+	player->AddCollider(XMFLOAT3(1.1f, 1.1f, 1.1f), XMFLOAT3(0, 0, 0));
+	entityManager->AddEntity(player, "player"); // Add the player to the entity manager.
 }
 
 // --------------------------------------------------------
@@ -231,6 +219,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 	//Update the camera
 	camera->Update(deltaTime);
+
+	// Updates the swimmer generator/manager.
+	swimmerManager->Update(deltaTime);
 
 	// Updates specific entities.
 	entityManager->Update(deltaTime, "player");

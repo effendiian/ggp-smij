@@ -18,6 +18,7 @@ public:
 	DirectX::XMFLOAT3 GetSize() const;
 	DirectX::XMFLOAT3 GetHalfSize() const;
 	void SetPosition(DirectX::XMFLOAT3 newPosition);
+	void SetSize(DirectX::XMFLOAT3 newSize);
 
 	bool Collides(Collider other); //AABB for now
 };

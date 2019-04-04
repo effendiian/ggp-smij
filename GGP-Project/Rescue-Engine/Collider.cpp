@@ -50,6 +50,13 @@ void Collider::SetPosition(DirectX::XMFLOAT3 newPosition)
 	XMStoreFloat3(&position, newPos + off);
 }
 
+// Set the collider size.
+void Collider::SetSize(DirectX::XMFLOAT3 newSize)
+{
+	XMVECTOR newDimensions = XMLoadFloat3(&newSize);
+	XMStoreFloat3(&size, newDimensions);
+}
+
 // Check if a collision has occured.
 bool Collider::Collides(Collider other)
 {

@@ -22,6 +22,8 @@ public: // PUBLIC --------------------------------------------------------
 	Entity* GetEntity(int);
 	void RemoveEntity(std::string);
 	void RemoveEntity(int);
+	void EnableEntity(std::string);
+	void DisableEntity(std::string);
 
 	// --------------------------------------
 

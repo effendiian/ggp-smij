@@ -9,6 +9,7 @@
 #include "EntityManager.h"
 #include "FirstPersonCamera.h"
 #include "ResourceManager.h"
+#include "SwimmerManager.h"
 #include "Boat.h"
 
 #define NUM_MESHES 4
@@ -44,6 +45,7 @@ private:
 	InputManager* inputManager;
 	ResourceManager* resourceManager;
 	EntityManager* entityManager;
+	SwimmerManager* swimmerManager;
 
 	//Entities
 	// std::vector<Entity*> entities; // Refactored into EntityManager.

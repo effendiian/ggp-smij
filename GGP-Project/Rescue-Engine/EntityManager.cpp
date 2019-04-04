@@ -65,18 +65,39 @@ void EntityManager::RemoveEntity(int index)
 	}
 }
 
+// Enable the entity.
+void EntityManager::EnableEntity(std::string entity_id) 
+{
+	Entity* entity = this->GetEntity(entity_id);
+	if (entity != nullptr) {
+		entity->Enable = true;
+	}
+}
+
+// Disable the entity.
+void EntityManager::DisableEntity(std::string entity_id)
+{
+	Entity* entity = this->GetEntity(entity_id);
+	if (entity != nullptr) {
+		entity->Enable = false;
+	}
+}
+
 //Updates all of the entities in the Entity Manager.
 void EntityManager::Update(float deltaTime)
 {
 	for (auto i = 0; i < entities_count; i++)
 	{
-		for (auto j = 0; j < entities_count; j++) 
+		if (entities[i]->Enable)
 		{
-			if (entities[i]->GetCollider() != nullptr && entities[j]->GetCollider())
+			for (auto j = 0; j < entities_count; j++)
 			{
-				if (entities[i]->GetCollider()->Collides(*entities[j]->GetCollider()))
+				if (i != j && entities[j]->Enable && entities[i]->GetCollider() != nullptr && entities[j]->GetCollider())
 				{
-					printf("collision!");
+					if (entities[i]->GetCollider()->Collides(*entities[j]->GetCollider()))
+					{
+						printf("collision!");
+					}
 				}
 			}
 		}
@@ -88,7 +109,7 @@ void EntityManager::Update(float deltaTime, std::string entityId)
 {
 	for (auto i = 0; i < entities_count; i++)
 	{
-		if (entityId == entity_ids[i]) 
+		if (entityId == entity_ids[i] && entities[i]->Enable) 
 		{
 			entities[i]->Update(deltaTime);
 		}
