@@ -9,11 +9,12 @@
 #include "EntityManager.h"
 #include "FirstPersonCamera.h"
 #include "ResourceManager.h"
+#include "SwimmerManager.h"
+#include "Boat.h"
 
 #define NUM_MESHES 4
 #define NUM_TEXTURES 12
 #define NUM_MATS 3
-#define NUM_ENTITIES 5
 
 class Game 
 	: public DXCore
@@ -43,9 +44,11 @@ private:
 	Renderer* renderer;
 	InputManager* inputManager;
 	ResourceManager* resourceManager;
+	EntityManager* entityManager;
+	SwimmerManager* swimmerManager;
 
 	//Entities
-	Entity* entities[NUM_ENTITIES];
+	// std::vector<Entity*> entities; // Refactored into EntityManager.
 
 	//Sampler state
 	ID3D11SamplerState* samplerState;

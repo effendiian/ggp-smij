@@ -23,6 +23,7 @@ public:
 	// Entities are automatically added to the renderlist
 	//
 	// mesh	- The mesh that this entity displays
+	// material - The material this entity uses.
 	// --------------------------------------------------------
 	Entity(Mesh* mesh, Material* material);
 

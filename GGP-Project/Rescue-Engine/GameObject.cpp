@@ -7,6 +7,7 @@ using namespace DirectX;
 GameObject::GameObject()
 {
 	//Set default transformation values
+	Enable = true;
 	world = XMFLOAT4X4();
 	position = XMFLOAT3(0, 0, 0);
 	SetRotation(0, 0, 0);
@@ -19,28 +20,29 @@ GameObject::GameObject()
 }
 
 GameObject::GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
+	: GameObject()
 {
-	//Set default transformation values
-	world = XMFLOAT4X4();
-	position = XMFLOAT3(0, 0, 0);
-	SetRotation(0, 0, 0);
-	scale = XMFLOAT3(1, 1, 1);
-	worldDirty = false;
-	RebuildWorld();
-
 	collider = new Collider(position, size, offset);
 }
 
 // Destructor for when an instance is deleted
 GameObject::~GameObject()
 { 
+	this->OnDestroy();
 	if(collider != nullptr) delete collider;
 }
 
-void GameObject::Update()
-{
-	if(collider != nullptr) collider->SetPosition(position);
-}
+void GameObject::Start()
+{ }
+
+void GameObject::Reset() 
+{ }
+
+void GameObject::OnDestroy() 
+{ }
+
+void GameObject::Update(float deltaTime)
+{ }
 
 // Get the world matrix for this GameObject (rebuilding if necessary)
 XMFLOAT4X4 GameObject::GetWorldMatrix()
@@ -95,6 +97,7 @@ void GameObject::SetPosition(XMFLOAT3 newPosition)
 {
 	worldDirty = true;
 	position = newPosition;
+	if (collider != nullptr) collider->SetPosition(position);
 }
 
 // Set the position for this GameObject
@@ -104,8 +107,7 @@ void GameObject::SetPosition(float x, float y, float z)
 
 	//Set values
 	position = XMFLOAT3(x, y, z);
-
-	//collider->setPosition(position);
+	if (collider != nullptr) collider->SetPosition(position);
 }
 
 // Moves this GameObject in absolute space by a given vector.
@@ -117,6 +119,7 @@ void GameObject::MoveAbsolute(XMFLOAT3 moveAmnt)
 	//Add the vector to the position
 	XMStoreFloat3(&position, XMVectorAdd(XMLoadFloat3(&position),
 		XMLoadFloat3(&moveAmnt)));
+	if (collider != nullptr) collider->SetPosition(position);
 }
 
 // Moves this GameObject in relative space by a given vector.
@@ -131,6 +134,7 @@ void GameObject::MoveRelative(XMFLOAT3 moveAmnt)
 
 	//Add to position and
 	XMStoreFloat3(&position, XMVectorAdd(XMLoadFloat3(&position), move));
+	if (collider != nullptr) collider->SetPosition(position);
 }
 
 XMFLOAT3 GameObject::GetForwardAxis()
@@ -182,6 +186,22 @@ void GameObject::SetRotation(float x, float y, float z)
 	//Rotate the forward axis
 	XMStoreFloat3(&forwardAxis, XMVector3Normalize(
 		XMVector3Rotate(XMVectorSet(0, 0, 1, 0), quat)));
+}
+
+// Rotate this GameObject (Angles)
+void GameObject::Rotate(DirectX::XMFLOAT3 newRotation)
+{
+	XMFLOAT3 rot;
+	XMStoreFloat3(&rot, XMLoadFloat3(&rotation) + XMLoadFloat3(&newRotation));
+	SetRotation(rot);
+}
+
+// Rotate this GameObject using angles
+void GameObject::Rotate(float x, float y, float z)
+{
+	XMFLOAT3 rot;
+	XMStoreFloat3(&rot, XMLoadFloat3(&rotation) + XMVectorSet(x, y,z, 0));
+	SetRotation(rot);
 }
 
 // Get the scale for this GameObject

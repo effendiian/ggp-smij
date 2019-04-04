@@ -22,12 +22,15 @@ public: // PUBLIC --------------------------------------------------------
 	Entity* GetEntity(int);
 	void RemoveEntity(std::string);
 	void RemoveEntity(int);
+	void EnableEntity(std::string);
+	void DisableEntity(std::string);
 
 	// --------------------------------------
 
 	// Update Methods -----------------------
 
-	void Update();
+	void Update(float deltaTime);
+	void Update(float deltaTime, std::string);
 
 	// --------------------------------------
 
@@ -41,10 +44,13 @@ public: // PUBLIC --------------------------------------------------------
 
 	// --------------------------------------
 
+	// Readonly propreties.
+	int const& EntityCount = entities_count;
+
 private: // PRIVATE ------------------------------------------------------
 
-	static std::vector<std::string> entity_ids; //A vector of entity id's (strings)
-	static std::vector<Entity*> entities;       //A vector of entities
-	static int entities_count;                  //The amount of entities in the manager
+	std::vector<std::string> entity_ids; //A vector of entity id's (strings)
+	std::vector<Entity*> entities;       //A vector of entities
+	int entities_count;                  //The amount of entities in the manager
 	
 };

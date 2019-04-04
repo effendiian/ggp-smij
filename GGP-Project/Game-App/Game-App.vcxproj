@@ -118,17 +118,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Boat.cpp" />
     <ClCompile Include="DXCore.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MAT_PBRTexture.cpp" />
+    <ClCompile Include="Swimmer.cpp" />
+    <ClCompile Include="SwimmerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boat.h" />
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="FirstPersonCamera.h" />
+    <ClInclude Include="SwimmerManager.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="MAT_PBRTexture.h" />
+    <ClInclude Include="Swimmer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
