@@ -39,11 +39,11 @@ Game::~Game()
 	//Delete sampler state
 	samplerState->Release();
 
-	//Delete entities
-	for (int i = 0; i < entities.size(); i++)
-	{
-		if (entities[i]) { delete entities[i]; }
-	}
+	//Delete entities - Refactored into EntityManager.
+	// for (int i = 0; i < entities.size(); i++)
+	// {
+	// 	if (entities[i]) { delete entities[i]; }
+	// }
 
 	//Delete the camera
 	if (camera) { delete camera; }
@@ -59,9 +59,11 @@ void Game::Init()
 	inputManager = InputManager::GetInstance();
 	renderer = Renderer::GetInstance();
 	resourceManager = ResourceManager::GetInstance();
+	entityManager = EntityManager::GetInstance();
 
 	//Initialize singleton data
 	inputManager->Init(hWnd);
+	entityManager->Init();
 
 	//Create the camera and initialize matrices
 	camera = new FirstPersonCamera();
@@ -173,7 +175,10 @@ void Game::LoadAssets()
 
 void Game::CreateEntities()
 {
-	//Cube
+	// Player (Boat)
+	// entityManager->AddEntity()
+
+	/* //Cube
 	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\cube.obj"), 
 		resourceManager->GetMaterial("scratched")));
 	entities[0]->SetPosition(2, 1, 0);
@@ -205,7 +210,7 @@ void Game::CreateEntities()
 
 	//Player
 	entities.push_back(new Boat(resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("wood")));
+		resourceManager->GetMaterial("wood"))); */
 }
 
 // --------------------------------------------------------

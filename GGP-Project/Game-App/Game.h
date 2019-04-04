@@ -43,9 +43,10 @@ private:
 	Renderer* renderer;
 	InputManager* inputManager;
 	ResourceManager* resourceManager;
+	EntityManager* entityManager;
 
 	//Entities
-	std::vector<Entity*> entities;
+	// std::vector<Entity*> entities; // Refactored into EntityManager.
 
 	//Sampler state
 	ID3D11SamplerState* samplerState;
