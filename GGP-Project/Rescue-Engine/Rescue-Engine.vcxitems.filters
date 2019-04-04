@@ -13,6 +13,9 @@
     <Filter Include="Source Files\Singletons">
       <UniqueIdentifier>{4b066e20-1f58-4222-a57c-1dfd7bb50373}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Helpers">
+      <UniqueIdentifier>{68bc4b72-3acc-4837-be87-029f7532be5b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp">
@@ -50,6 +53,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ResourceManager.cpp" />
+    <ClCompile Include="C:\Users\ultim\Documents\GitHub\ggp-smij\GGP-Project\Rescue-Engine\ExtendedMath.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h">
