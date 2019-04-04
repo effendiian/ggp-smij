@@ -12,6 +12,8 @@ private:
 	float speed = 2;
 	float turnSpeed = 100;
 	float minDistance = 0.5f;
+	float levelWidth;
+	float levelHeight;
 	bool crashed;
 	InputManager* inputManager;
 
@@ -45,8 +47,27 @@ public:
 	void CheckCollisions();
 
 	// --------------------------------------------------------
+	// Code called when the player hits the edge of the level
+	// --------------------------------------------------------
+	void GameOver();
+
+	// --------------------------------------------------------
 	// Create a swimmer at the end of the trail
 	// --------------------------------------------------------
 	void CreateSwimmer();
+
+	// --------------------------------------------------------
+	// Clears all swimmers from the boat
+	// --------------------------------------------------------
+	void ClearSwimmers();
+
+
+	//GETTERS & SETTERS
+	void SetLevelWidth (float value)               { if (value > 0) levelWidth  = value;           }
+	void SetLevelHeight(float value)               { if (value > 0) levelHeight = value;           }
+	void SetLevelBounds(float width, float height) { SetLevelWidth(width); SetLevelHeight(height); }
+	float GetLevelWidth () { return levelWidth;  }
+	float GetLevelHeight() { return levelHeight; }
+
 };
 

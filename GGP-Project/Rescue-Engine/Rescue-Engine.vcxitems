@@ -18,6 +18,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Entity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)EntityManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GameObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InputManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LightManager.cpp" />

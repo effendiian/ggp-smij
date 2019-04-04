@@ -1,5 +1,7 @@
 #include "Boat.h"
 #include "ResourceManager.h"
+#include "ExtendedMath.h"
+#include "iostream"
 
 using namespace std;
 using namespace DirectX;
@@ -8,6 +10,7 @@ Boat::Boat(Mesh * mesh, Material * material) : Entity(mesh, material)
 {
 	crashed = false;
 	inputManager = InputManager::GetInstance();
+	SetLevelBounds(10.0f, 10.0f);
 }
 
 Boat::~Boat()
@@ -67,6 +70,23 @@ void Boat::Move(float deltaTime)
 // Checks for collisions and calls corresponding collide methods
 void Boat::CheckCollisions()
 {
+	float x = this->GetPosition().x;
+	float z = this->GetPosition().z;
+	//Checking Within Level Bounds
+	if (!ExtendedMath::InRange(x, levelWidth) ||
+		!ExtendedMath::InRange(z, levelHeight) )
+	{
+		//Game Over
+		GameOver();
+	}
+}
+
+// Runs the calls for when the player gets a gameover (hits a wall, etc)
+void Boat::GameOver()
+{
+	ClearSwimmers();
+	XMFLOAT3 resetPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	this->SetPosition(resetPosition);
 }
 
 // Create a swimmer at the end of the trail
@@ -87,4 +107,16 @@ void Boat::CreateSwimmer()
 	swimmer->SetPosition(leader->GetPosition());
 	swimmer->SetRotation(leader->GetRotation());
 	swimmers.push_back(swimmer);
+}
+
+//Clears the swimmers from the player
+void Boat::ClearSwimmers()
+{
+	for (size_t i = this->swimmers.size() - 1; i > 0; i--)
+	{
+		//this->swimmers[i]->RemoveFromRenderList();
+		//delete[] swimmers[i]; //Not deleting swimmers correctly?
+	}	
+
+	swimmers.clear();
 }
