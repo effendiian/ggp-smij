@@ -2,17 +2,15 @@
 
 using namespace DirectX;
 
-Collider::Collider()
-{
-}
+// Create an empty collider.
+Collider::Collider(){}
 
+// Create a collider from a position and size.
 Collider::Collider(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 size)
-{
-	this->position = position;
-	this->size = size;
-	this->offset = XMFLOAT3(0, 0, 0);
-}
+	: Collider(position, size, DirectX::XMFLOAT3(0, 0, 0))
+{}
 
+// Create a collider from a position, size, and offset.
 Collider::Collider(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
 {
 	XMVECTOR center = XMLoadFloat3(&position);
@@ -23,21 +21,28 @@ Collider::Collider(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 size, DirectX::
 	this->offset = offset;
 }
 
+// Release resources.
+Collider::~Collider() {}
 
-Collider::~Collider()
-{
-}
-
-DirectX::XMFLOAT3 Collider::GetPosition()
+// Return the position of the collider.
+DirectX::XMFLOAT3 Collider::GetPosition() const
 {
 	return position;
 }
 
-DirectX::XMFLOAT3 Collider::GetSize()
+// Return dimensions.
+DirectX::XMFLOAT3 Collider::GetSize() const
 {
 	return size;
 }
 
+// Return half size.
+DirectX::XMFLOAT3 Collider::GetHalfSize() const 
+{
+	return DirectX::XMFLOAT3(size.x / 2, size.y / 2, size.z / 2);
+}
+
+// Set the collider position.
 void Collider::SetPosition(DirectX::XMFLOAT3 newPosition)
 {
 	XMVECTOR newPos = XMLoadFloat3(&newPosition);
@@ -45,6 +50,7 @@ void Collider::SetPosition(DirectX::XMFLOAT3 newPosition)
 	XMStoreFloat3(&position, newPos + off);
 }
 
+// Check if a collision has occured.
 bool Collider::Collides(Collider other)
 {
 	//JavaScript reference from MDN:

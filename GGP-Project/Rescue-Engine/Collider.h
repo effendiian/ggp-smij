@@ -14,8 +14,9 @@ public:
 	Collider(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset); //optional center offset
 	~Collider();
 
-	DirectX::XMFLOAT3 GetPosition();
-	DirectX::XMFLOAT3 GetSize();
+	DirectX::XMFLOAT3 GetPosition() const;
+	DirectX::XMFLOAT3 GetSize() const;
+	DirectX::XMFLOAT3 GetHalfSize() const;
 	void SetPosition(DirectX::XMFLOAT3 newPosition);
 
 	bool Collides(Collider other); //AABB for now
