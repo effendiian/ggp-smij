@@ -101,8 +101,5 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Collider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h">
-      <Filter>Header Files\Helpers</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

@@ -65,15 +65,38 @@ void EntityManager::RemoveEntity(int index)
 	}
 }
 
-//Updates the entities in the Entity Manager.
-void EntityManager::Update()
+// Enable the entity.
+void EntityManager::EnableEntity(std::string entity_id) 
+{
+	Entity* entity = this->GetEntity(entity_id);
+	if (entity != nullptr) {
+		entity->Enable = true;
+	}
+}
+
+// Disable the entity.
+void EntityManager::DisableEntity(std::string entity_id)
+{
+	Entity* entity = this->GetEntity(entity_id);
+	if (entity != nullptr) {
+		entity->Enable = false;
+	}
+}
+
+//Updates all of the entities in the Entity Manager.
+void EntityManager::Update(float deltaTime)
+{
+	
+}
+
+//Updates specific entity in the Entity Manager.
+void EntityManager::Update(float deltaTime, std::string entityId)
 {
 	for (auto i = 0; i < entities_count; i++)
 	{
-		std::string name = entity_ids[i];
-
-		//Update objects here
-		//if(name == "boat")
-		//   entities[i].translate etc...
+		if (entityId == entity_ids[i] && entities[i]->Enable) 
+		{
+			entities[i]->Update(deltaTime);
+		}
 	}
 }

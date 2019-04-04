@@ -1,13 +1,16 @@
 #pragma once
 #include <DirectXMath.h>
 #include <vector>
+#include "Entity.h"
 #include "Swimmer.h"
 #include "InputManager.h"
+#include "SwimmerManager.h"
 
 class Boat :
 	public Entity
 {
 private:
+
 	//Movement
 	float speed = 2;
 	float turnSpeed = 100;
@@ -15,13 +18,10 @@ private:
 	float levelWidth;
 	float levelHeight;
 	bool crashed;
+	SwimmerManager* swimmerManager;
 	InputManager* inputManager;
-
-	//Swimmers
-	std::vector<Swimmer*> swimmers;
-	const char* swimmerMesh = "Assets\\Models\\sphere.obj";
-	const char* swimmerMat = "wood";
-
+	std::vector<Swimmer*> swimmerTrail;
+	
 public:
 	Boat(Mesh* mesh, Material* material);
 	~Boat();
@@ -30,6 +30,11 @@ public:
 	// Calls Input, Move, and CheckCollisions every frame
 	// --------------------------------------------------------
 	void Update(float deltaTime);
+
+	// --------------------------------------------------------
+	// reset position and status of boat.
+	// --------------------------------------------------------
+	void Reset();
 
 	// --------------------------------------------------------
 	// Interprets key input
@@ -50,17 +55,11 @@ public:
 	// Code called when the player hits the edge of the level
 	// --------------------------------------------------------
 	void GameOver();
-
-	// --------------------------------------------------------
-	// Create a swimmer at the end of the trail
-	// --------------------------------------------------------
-	void CreateSwimmer();
-
+	
 	// --------------------------------------------------------
 	// Clears all swimmers from the boat
 	// --------------------------------------------------------
 	void ClearSwimmers();
-
 
 	//GETTERS & SETTERS
 	void SetLevelWidth (float value)               { if (value > 0) levelWidth  = value;           }
@@ -69,5 +68,13 @@ public:
 	float GetLevelWidth () { return levelWidth;  }
 	float GetLevelHeight() { return levelHeight; }
 
-};
+	// Attach a swimmer at the end of the trail
+	// --------------------------------------------------------
+	Swimmer* AttachSwimmer(Swimmer*);
+	
+	// --------------------------------------------------------
+	// Clear the trail.
+	// --------------------------------------------------------
+	void DetachSwimmers();
 
+};

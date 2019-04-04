@@ -22,12 +22,15 @@ public: // PUBLIC --------------------------------------------------------
 	Entity* GetEntity(int);
 	void RemoveEntity(std::string);
 	void RemoveEntity(int);
+	void EnableEntity(std::string);
+	void DisableEntity(std::string);
 
 	// --------------------------------------
 
 	// Update Methods -----------------------
 
-	void Update();
+	void Update(float deltaTime);
+	void Update(float deltaTime, std::string);
 
 	// --------------------------------------
 
@@ -40,6 +43,9 @@ public: // PUBLIC --------------------------------------------------------
 	} 
 
 	// --------------------------------------
+
+	// Readonly propreties.
+	int const& EntityCount = entities_count;
 
 private: // PRIVATE ------------------------------------------------------
 

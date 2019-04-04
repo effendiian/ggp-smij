@@ -40,6 +40,21 @@ public:
 	// Destructor for when an instance is deleted
 	// --------------------------------------------------------
 	virtual ~GameObject();
+	
+	// --------------------------------------------------------
+	// Called on initialization.
+	// --------------------------------------------------------
+	virtual void Start();
+	
+	// --------------------------------------------------------
+	// Resets the object.
+	// --------------------------------------------------------
+	virtual void Reset();
+
+	// --------------------------------------------------------
+	// Called when object is destroyed.
+	// --------------------------------------------------------
+	virtual void OnDestroy();
 
 	// --------------------------------------------------------
 	// Called every frame
@@ -179,5 +194,8 @@ public:
 	// offset - offset of collider from position of game object
 	// --------------------------------------------------------
 	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
+
+	// Enabled and active flag.
+	bool Enable;
 };
 
