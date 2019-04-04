@@ -68,7 +68,8 @@ void Game::Init()
 	//Create the camera and initialize matrices
 	camera = new FirstPersonCamera();
 	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
-	camera->SetPosition(0, 0, -5);
+	camera->SetRotation(15, 0, 0);
+	camera->SetPosition(0, 5, -10);
 
 	//Load all needed assets
 	LoadAssets();
@@ -176,41 +177,25 @@ void Game::LoadAssets()
 void Game::CreateEntities()
 {
 	// Player (Boat)
-	// entityManager->AddEntity()
 
-	/* //Cube
-	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\cube.obj"), 
-		resourceManager->GetMaterial("scratched")));
-	entities[0]->SetPosition(2, 1, 0);
+	// Create the player.
+	Entity* player = new Boat(
+		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
+		resourceManager->GetMaterial("scratched")
+	);
 
-	//Helix
-	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\helix.obj"), 
-		resourceManager->GetMaterial("floor")));
-	entities[1]->SetPosition(-2, 1, 0);
-	entities[1]->SetScale(0.75f, 0.75f, 0.75f);
+	// Set the player's initial position.
+	player->SetPosition(0, 0, 0);
+	// player->SetPosition(2, 1, 0);
 
-	//Torus 1
-	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"), 
-		resourceManager->GetMaterial("wood")));
-	entities[2]->SetPosition(position, -1, 0);
-	entities[2]->SetScale(0.5f, 0.5f, 0.5f);
-	entities[2]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
-
-	//Torus 2
-	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\torus.obj"),
-		resourceManager->GetMaterial("wood")));
-	entities[3]->SetPosition(0, 1.70f, 0);
-	entities[3]->SetRotation(0, 0, 180);
-	entities[3]->SetScale(0.25f, 0.25f, 0.25f);
-
+	// Add the player to the entity manager.
+	entityManager->AddEntity(player, "player");
+	
 	//Sphere
-	entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
-		resourceManager->GetMaterial("scratched")));
-	entities[4]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
+	//entities.push_back(new Entity(resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
+	//	resourceManager->GetMaterial("scratched")));
+	// entities[4]->AddCollider(XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(0, 0, 0)); //0.5f cube collider
 
-	//Player
-	entities.push_back(new Boat(resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("wood"))); */
 }
 
 // --------------------------------------------------------
@@ -247,44 +232,12 @@ void Game::Update(float deltaTime, float totalTime)
 	//Update the camera
 	camera->Update(deltaTime);
 
-	//Move position around
-	position = sin(totalTime / 2) * 2.5f;
-	entities[2]->SetPosition(position, -1, 0);
-	entities[4]->SetPosition(0, -1, position);
+	// Updates specific entities.
+	entityManager->Update(deltaTime, "player");
 
-	//Rotate
-	rotation += rotSpeed * deltaTime;
-	entities[1]->SetRotation(0, rotation, 0);
-
-	//Scale
-	scale = (sin(totalTime / 2) + 1) / 2;
-	entities[0]->SetScale(scale, scale, scale);
-
-	//Placeholder entity updater
-	for (int i = 0; i < entities.size(); i++)
-	{
-		entities[i]->Update(deltaTime);
-	}
-
-	//Placeholder collision checker
-	for (int i = 0; i < entities.size(); i++)
-	{
-		for (int j = 0; j < entities.size(); j++)
-		{
-			if (i != j)
-			{
-				if (entities[i]->GetCollider() != nullptr && entities[j]->GetCollider())
-				{
-					if (entities[i]->GetCollider()->Collides(*entities[j]->GetCollider()))
-					{
-						//printf("collision!");
-					}
-				}
-
-			}
-		}
-	}
-
+	// Updates all the entities. (Currently handles collisions).
+	entityManager->Update(deltaTime);
+	
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager
 	//Update for next frame

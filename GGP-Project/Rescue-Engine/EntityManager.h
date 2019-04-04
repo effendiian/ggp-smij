@@ -27,7 +27,8 @@ public: // PUBLIC --------------------------------------------------------
 
 	// Update Methods -----------------------
 
-	void Update();
+	void Update(float deltaTime);
+	void Update(float deltaTime, std::string);
 
 	// --------------------------------------
 

@@ -65,15 +65,32 @@ void EntityManager::RemoveEntity(int index)
 	}
 }
 
-//Updates the entities in the Entity Manager.
-void EntityManager::Update()
+//Updates all of the entities in the Entity Manager.
+void EntityManager::Update(float deltaTime)
 {
 	for (auto i = 0; i < entities_count; i++)
 	{
-		std::string name = entity_ids[i];
+		for (auto j = 0; j < entities_count; j++) 
+		{
+			if (entities[i]->GetCollider() != nullptr && entities[j]->GetCollider())
+			{
+				if (entities[i]->GetCollider()->Collides(*entities[j]->GetCollider()))
+				{
+					printf("collision!");
+				}
+			}
+		}
+	}
+}
 
-		//Update objects here
-		//if(name == "boat")
-		//   entities[i].translate etc...
+//Updates specific entity in the Entity Manager.
+void EntityManager::Update(float deltaTime, std::string entityId)
+{
+	for (auto i = 0; i < entities_count; i++)
+	{
+		if (entityId == entity_ids[i]) 
+		{
+			entities[i]->Update(deltaTime);
+		}
 	}
 }
