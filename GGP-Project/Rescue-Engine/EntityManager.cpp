@@ -28,9 +28,12 @@ Entity* EntityManager::GetEntity(std::string id)
 {
 	for (auto i = 0; i < entities_count; i++)
 	{
-		if (entity_ids[i] == id)
+		if (entity_ids[i] == id) {
 			return GetEntity(i);
+		}
 	}
+
+	return nullptr;
 }
 
 //Gets an entity from the Entity Manager with an index.
