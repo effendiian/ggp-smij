@@ -3,7 +3,7 @@
 #include "Entity.h"
 
 //Enum for swimmer states
-enum class SwimmerState { Entering, Floating, Joining, Following, Docking };
+enum class SwimmerState { Entering, Floating, Joining, Following, Docking, Hitting };
 
 class Swimmer :
 	public Entity
@@ -13,7 +13,7 @@ private:
 	//Follow state vars
 	SwimmerState swmrState;
 	static const int MAX_FPS = 60;
-	GameObject* leader;
+	Entity* leader;
 	float lagSeconds = 0.7f;
 
 	//Buffer vars
@@ -44,21 +44,23 @@ public:
 	void Update(float deltaTime);
 
 	// --------------------------------------------------------
-	// Checks if swimmer is currently a follower.
+	// Check if the boat is in the following state
 	// --------------------------------------------------------
-	bool IsFollower();
+	bool IsFollowing();
 
 	// --------------------------------------------------------
 	// Set Swimmer to follow a game object.
 	// --------------------------------------------------------
-	void StartFollowing(GameObject* leader);
+	void JoinTrail(Entity* leader);
 
 	// --------------------------------------------------------
-	// Set Swimmer to stop following a game object.
+	// Set Swimmer's state for when the Boat hits something
 	// --------------------------------------------------------
-	void StopFollowing();
+	void StartHit();
 
-	// Read-only access of the leader.
-	GameObject* const& Leader = leader;
+	// --------------------------------------------------------
+	// Set Swimmer's state for when the Boat is docking the swimmers
+	// --------------------------------------------------------
+	void StartDock();
 };
 

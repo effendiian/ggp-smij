@@ -37,7 +37,6 @@ Entity::Entity(Mesh * mesh, Material * material, std::string name)
 Entity::~Entity()
 { 
 	Renderer::GetInstance()->RemoveEntityFromRenderer(this);
-	EntityManager::GetInstance()->RemoveEntity(this);
 }
 
 // Get the material this entity uses

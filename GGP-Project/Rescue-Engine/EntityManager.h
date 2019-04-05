@@ -3,6 +3,11 @@
 #include <Entity.h>
 #include <string>
 
+struct EntityRemoval {
+	Entity* e;
+	bool release;
+};
+
 class EntityManager
 {
 private:
@@ -13,6 +18,12 @@ private:
 	~EntityManager();
 
 	std::vector<Entity*> entities;       //A vector of entities
+	std::vector<EntityRemoval> remove_entities;       //A vector of entities
+
+	// --------------------------------------------------------
+	// Remove an entity by its object
+	// --------------------------------------------------------
+	void RemoveEntityFromList(Entity* entity, bool deleteEntity = true);
 
 public:
 

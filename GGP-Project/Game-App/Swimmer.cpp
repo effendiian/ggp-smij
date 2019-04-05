@@ -2,7 +2,7 @@
 
 using namespace DirectX;
 
-//Snake logic from:
+//Snake follow logic from:
 //https://github.com/rimij405/ggp-smij/blob/Unity-Prototype/Prototype/Boat-Snake-Prototype/Assets/Scripts/BoatFollower.cs
 
 Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name) 
@@ -15,8 +15,8 @@ Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name)
 
 	//Set default vals
 	swmrState = SwimmerState::Entering;
-	this->leader = leader;
-	positionBuffer[0] = positionBuffer[1] = (leader != nullptr) ? leader->GetPosition() : DirectX::XMFLOAT3(0, 0, 0);
+	this->leader = nullptr;
+	positionBuffer[0] = positionBuffer[1] = DirectX::XMFLOAT3(0, 0, 0);
 	timeBuffer[0] = timeBuffer[1] = timer = 0;
 
 	oldestIndex = 0;
@@ -35,7 +35,7 @@ void Swimmer::Update(float deltaTime)
 	switch (swmrState)
 	{
 		case SwimmerState::Entering:
-
+			swmrState = SwimmerState::Floating;
 			break;
 
 		case SwimmerState::Floating:
@@ -43,7 +43,7 @@ void Swimmer::Update(float deltaTime)
 			break;
 
 		case SwimmerState::Joining:
-
+			swmrState = SwimmerState::Following;
 			break;
 
 		case SwimmerState::Following:
@@ -54,9 +54,11 @@ void Swimmer::Update(float deltaTime)
 
 			break;
 
+		case SwimmerState::Hitting:
+
+			break;
 	}	
 }
-
 
 // Run this swimmer's floating behaviour
 void Swimmer::Float(float deltaTime)
@@ -78,7 +80,7 @@ void Swimmer::Follow(float deltaTime)
 	int newIndex = (newestIndex + 1) % bufferLength;
 	if (newIndex != oldestIndex)
 		newestIndex = newIndex;
-
+	
 	positionBuffer[newestIndex] = leader->GetPosition();
 	timeBuffer[newestIndex] = timer;
 
@@ -102,12 +104,27 @@ void Swimmer::Follow(float deltaTime)
 	SetPosition(lerp);
 }
 
-void Swimmer::StartFollowing(GameObject* newLeader) 
+// Check if the boat is in the following state
+bool Swimmer::IsFollowing()
 {
+	return this->enabled && (swmrState == SwimmerState::Following);
+}
+
+// Set Swimmer to follow a game object.
+void Swimmer::JoinTrail(Entity* newLeader)
+{
+	swmrState = SwimmerState::Joining;
 	this->leader = newLeader;
 }
 
-void Swimmer::StopFollowing()
+// Set Swimmer's state for when the Boat hits something
+void Swimmer::StartHit()
 {
-	this->StartFollowing(nullptr);
+	swmrState = SwimmerState::Hitting;
+}
+
+// Set Swimmer's state for when the Boat is docking the swimmers
+void Swimmer::StartDock()
+{
+	swmrState = SwimmerState::Docking;
 }

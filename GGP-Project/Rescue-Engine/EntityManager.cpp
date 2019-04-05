@@ -36,6 +36,25 @@ Entity* EntityManager::GetEntity(std::string id)
 	return nullptr;
 }
 
+// Remove an entity by its object
+void EntityManager::RemoveEntityFromList(Entity* entity, bool deleteEntity)
+{
+	Entity* org = entity;
+
+	//Get the iterator of the entity
+	//Swap it for the last one
+	std::swap(entity, entities[entities.size() - 1]);
+
+	//Pop the last one
+	entities.pop_back();
+
+	//Delete instance if user wants to
+	if (deleteEntity)
+		delete org;
+
+	return;
+}
+
 // Remove an entity by its name
 void EntityManager::RemoveEntity(std::string name, bool deleteEntity)
 {
@@ -44,17 +63,8 @@ void EntityManager::RemoveEntity(std::string name, bool deleteEntity)
 		if (entities[i]->GetName() == name)
 		{
 			Entity* e = entities[i];
-			
-			//Swap it for the last one
-			std::swap(entities[i], entities[entities.size() - 1]);
-
-			//Pop the last one
-			entities.pop_back();
-
-			//Delete instance if user wants to
-			if (deleteEntity)
-				delete e;
-
+			e->SetEnabled(false);
+			remove_entities.push_back(EntityRemoval{ e, deleteEntity });
 			return;
 		}
 	}
@@ -73,27 +83,25 @@ void EntityManager::RemoveEntity(Entity* entity, bool deleteEntity)
 		return;
 	}
 
-	Entity* e = *it;
-
-	//Swap it for the last one
-	std::swap(*it, entities[entities.size() - 1]);
-
-	//Pop the last one
-	entities.pop_back();
-
-	//Delete instance if user wants to
-	if (deleteEntity)
-		delete e;
-
+	entity->SetEnabled(false);
+	remove_entities.push_back(EntityRemoval{entity, deleteEntity});
 	return;
 }
 
 // Run Update() for all entities in the manager
 void EntityManager::Update(float deltaTime)
 {
-	for (auto const& e : entities)
+	//Update entities
+	for (size_t i = 0; i < entities.size(); i++)
 	{
-		if (e->GetEnabled())
-			e->Update(deltaTime);
+		if (entities[i]->GetEnabled())
+			entities[i]->Update(deltaTime);
 	}
+
+	//Remove entities
+	for (auto const& er : remove_entities)
+	{
+		RemoveEntityFromList(er.e, er.release);
+	}
+	remove_entities.clear();
 }

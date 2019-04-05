@@ -27,11 +27,15 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 
 		//Get list, material, and mesh
 		std::vector<Entity*> list = mapPair.second;
-		Material* mat = list[0]->GetMaterial();
-		Mesh* mesh = list[0]->GetMesh();
+
+		//Get the first valid entity
+		Entity* firstValid = list[0];
+
+		Material* mat = firstValid->GetMaterial();
+		Mesh* mesh = firstValid->GetMesh();
 
 		//Prepare the material's combo specific variables
-		mat->PrepareMaterialCombo(list[0], camera);
+		mat->PrepareMaterialCombo(firstValid, camera);
 
 		// Set buffers in the input assembler
 		UINT stride = sizeof(Vertex);
@@ -110,26 +114,26 @@ void Renderer::RemoveEntityFromRenderer(Entity* e)
 	}
 
 	//Get correct render list
-	std::vector<Entity*> list = renderMap[identifier];
+	std::vector<Entity*>* list = &renderMap[identifier];
 
 	//Get the iterator of the entity
-	std::vector<Entity*>::iterator listIt = std::find(list.begin(), list.end(), e);
+	std::vector<Entity*>::iterator listIt = std::find((*list).begin(), (*list).end(), e);
 
 	//Check if we are in the list
-	if (listIt == list.end())
+	if (listIt == (*list).end())
 	{
 		printf("Cannont remove entity because it is not in renderer");
 		return;
 	}
 
 	//Swap it for the last one
-	std::swap(*listIt, list[list.size() - 1]);
+	std::swap(*listIt, (*list).back());
 
 	//Pop the last one
-	list.pop_back();
+	(*list).pop_back();
 
 	//Check if the list is empty
-	if (list.size() == 0)
+	if ((*list).size() == 0)
 	{
 		//Erase
 		renderMap.erase(e->GetMatMeshIdentifier());
