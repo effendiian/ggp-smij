@@ -5,52 +5,55 @@
 
 class EntityManager
 {
+private:
+	// --------------------------------------------------------
+	// Singleton Constructor - Set up the singleton instance of the EntityManager
+	// --------------------------------------------------------
+	EntityManager() { }
+	~EntityManager();
 
-public: // PUBLIC --------------------------------------------------------
-	
-	// Main Instantiation Methods -----------
+	std::vector<Entity*> entities;       //A vector of entities
 
-	void Init();
-	void Release();
-
-	// --------------------------------------
-
-	// Entity Methods -----------------------
-
-	void AddEntity(Entity*, std::string);
-	Entity* GetEntity(std::string);
-	Entity* GetEntity(int);
-	void RemoveEntity(std::string);
-	void RemoveEntity(int);
-	void EnableEntity(std::string);
-	void DisableEntity(std::string);
-
-	// --------------------------------------
-
-	// Update Methods -----------------------
-
-	void Update(float deltaTime);
-	void Update(float deltaTime, std::string);
-
-	// --------------------------------------
+public:
 
 	// Returns an Entity Manager Instance ---
-
 	static EntityManager* GetInstance()
 	{
 		static EntityManager instance;
 		return &instance;
-	} 
+	}
+
+	//Delete this
+	EntityManager(EntityManager const&) = delete;
+	void operator=(EntityManager const&) = delete;
+
+	// Entity Methods -----------------------
+
+	// --------------------------------------------------------
+	// Add an entity to the entity manager
+	// (checks if it is already in it)
+	// --------------------------------------------------------
+	void AddEntity(Entity* entity);
+
+	// --------------------------------------------------------
+	// Get an entity by its name
+	// --------------------------------------------------------
+	Entity* GetEntity(std::string name);
+
+	// --------------------------------------------------------
+	// Remove an entity by its name
+	// --------------------------------------------------------
+	void RemoveEntity(std::string name, bool deleteEntity = true);
+
+	// --------------------------------------------------------
+	// Remove an entity by its object
+	// --------------------------------------------------------
+	void RemoveEntity(Entity* entity, bool deleteEntity = true);
 
 	// --------------------------------------
 
-	// Readonly propreties.
-	int const& EntityCount = entities_count;
-
-private: // PRIVATE ------------------------------------------------------
-
-	std::vector<std::string> entity_ids; //A vector of entity id's (strings)
-	std::vector<Entity*> entities;       //A vector of entities
-	int entities_count;                  //The amount of entities in the manager
-	
+	// --------------------------------------------------------
+	// Run Update() for all entities in the manager
+	// --------------------------------------------------------
+	void Update(float deltaTime);
 };

@@ -72,7 +72,7 @@ void SwimmerManager::RandomizeSwimmer(Swimmer* swimmer)
 bool SwimmerManager::IsReadyToSpawn()
 {
 	return ( // Return true...
-		(this->Enable) // ...if this object is enabled,
+		(this->enabled) // ...if this object is enabled,
 		&& (this->SwimmerCount < this->MaxSwimmerCount) // ...if there is still space,
 		&& (currentTTS >= TTS) // ...and if the timer surpassed the delay amount.
 	); 
@@ -105,7 +105,7 @@ void SwimmerManager::IncreaseLevel()
 void SwimmerManager::Update(float deltaTime) 
 {
 	// Check if the manager is enabled.
-	if (this->Enable) {
+	if (this->enabled) {
 
 		// Update the time till spawn.
 		this->currentTTS += deltaTime;
@@ -152,7 +152,7 @@ Swimmer* SwimmerManager::SpawnSwimmer()
 		this->RandomizeSwimmer(swimmer);
 
 		// Add entity to the entity manager.
-		entityManager->AddEntity(swimmer, swimmer_id);
+		entityManager->AddEntity(swimmer);
 		this->swimmerCount++; // Increment count after successful addition.
 
 		// Return the swimmer.

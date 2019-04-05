@@ -20,12 +20,22 @@ private:
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up the entity.
-	// Entities are automatically added to the renderlist
+	// Entities are automatically added to the EntityManager and Renderer
 	//
 	// mesh	- The mesh that this entity displays
 	// material - The material this entity uses.
 	// --------------------------------------------------------
 	Entity(Mesh* mesh, Material* material);
+
+	// --------------------------------------------------------
+	// Constructor - Set up the entity.
+	// Entities are automatically added to the EntityManager and Renderer
+	//
+	// mesh	- The mesh that this entity displays
+	// material - The material this entity uses.
+	// name - The name of the entity
+	// --------------------------------------------------------
+	Entity(Mesh* mesh, Material* material, std::string name);
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
@@ -41,16 +51,6 @@ public:
 	// Get the mesh this entity uses
 	// --------------------------------------------------------
 	Mesh* GetMesh();
-
-	// --------------------------------------------------------
-	// Add this entity to the render list
-	// --------------------------------------------------------
-	void AddToRenderList();
-
-	// --------------------------------------------------------
-	// Remove this entity from the render list
-	// --------------------------------------------------------
-	void RemoveFromRenderList();
 
 	// --------------------------------------------------------
 	// Get the material/mesh identifier

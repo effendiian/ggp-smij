@@ -7,7 +7,6 @@ using namespace DirectX;
 GameObject::GameObject()
 {
 	//Set default transformation values
-	Enable = true;
 	world = XMFLOAT4X4();
 	position = XMFLOAT3(0, 0, 0);
 	SetRotation(0, 0, 0);
@@ -16,9 +15,18 @@ GameObject::GameObject()
 	RebuildWorld();
 	
 	collider = nullptr;
-	//collider = new Collider(position, XMFLOAT3(0.5f, 0.5f, 0.5f));
+	enabled = true;
+	name = "GameObject";
 }
 
+// Constructor - Set up the gameobject.
+GameObject::GameObject(std::string name)
+	: GameObject()
+{
+	this->name = name;
+}
+
+// Constructor - Set up the gameobject.
 GameObject::GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
 	: GameObject()
 {
@@ -28,19 +36,34 @@ GameObject::GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
 // Destructor for when an instance is deleted
 GameObject::~GameObject()
 { 
-	this->OnDestroy();
 	if(collider != nullptr) delete collider;
 }
 
-void GameObject::Start()
-{ }
+// Get the enabled state of the gameobject
+bool GameObject::GetEnabled()
+{
+	return enabled;
+}
 
-void GameObject::Reset() 
-{ }
+// Enable or disable the gameobject
+void GameObject::SetEnabled(bool enabled)
+{
+	this->enabled = enabled;
+}
 
-void GameObject::OnDestroy() 
-{ }
+// Set the name of this gameobject
+void GameObject::SetName(std::string name)
+{
+	this->name = name;
+}
 
+// Get the name of this gameobject
+std::string GameObject::GetName()
+{
+	return name;
+}
+
+// Update this entity
 void GameObject::Update(float deltaTime)
 { }
 

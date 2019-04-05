@@ -1,6 +1,5 @@
 #include "Boat.h"
 #include "ExtendedMath.h"
-#include "iostream"
 #include "SwimmerManager.h"
 #include "ResourceManager.h"
 #include "EntityManager.h"
@@ -8,7 +7,7 @@
 using namespace std;
 using namespace DirectX;
 
-Boat::Boat(Mesh * mesh, Material * material) : Entity(mesh, material)
+Boat::Boat(Mesh * mesh, Material * material) : Entity(mesh, material, "player")
 {
 	crashed = false;
 	swimmerTrail = std::vector<Swimmer*>();
@@ -23,27 +22,24 @@ Boat::~Boat()
 // Calls Input, Move, and CheckCollisions every frame
 void Boat::Update(float deltaTime)
 {
-	if (this->Enable) 
+	if (crashed)
 	{
-		Input(deltaTime);
+		//Check for reset input
+		if (inputManager->GetKey(VK_SPACE) && crashed)
+		{
+			this->Reset();
+		}
+		return;
 	}
 
-	if (!crashed) 
-	{
-		Move(deltaTime);
-		CheckCollisions();
-	}
+	Input(deltaTime);
+	Move(deltaTime);
+	CheckCollisions();
 }
 
 // Interprets key input
 void Boat::Input(float deltaTime)
 {
-	//Reset
-	if (inputManager->GetKey(VK_SPACE) && crashed) 
-	{
-		this->Reset();
-	}
-
 	//Left
 	if (inputManager->GetKey(VK_LEFT) && !crashed)
 	{
@@ -89,18 +85,16 @@ void Boat::Move(float deltaTime)
 // Checks for collisions and calls corresponding collide methods
 void Boat::CheckCollisions()
 {
-	if (this->Enable && !crashed) 
+	float x = this->GetPosition().x;
+	float z = this->GetPosition().z;
+	//Checking Within Level Bounds
+	if (!ExtendedMath::InRange(x, levelWidth) ||
+		!ExtendedMath::InRange(z, levelHeight))
 	{
-		float x = this->GetPosition().x;
-		float z = this->GetPosition().z;
-		//Checking Within Level Bounds
-		if (!ExtendedMath::InRange(x, levelWidth) ||
-			!ExtendedMath::InRange(z, levelHeight))
-		{
-			//Game Over
-			GameOver();
-			return;
-		}
+		//Game Over
+		GameOver();
+		return;
+	}
 
 		// Check collisions with other entities.
 		/*EntityManager* entityManager = EntityManager::GetInstance();
@@ -115,22 +109,20 @@ void Boat::CheckCollisions()
 				}
 			}
 		}*/
-
-		// Check collisions with swimmers.
-		for (auto i = 0; i < swimmerManager->SwimmerCount; i++) 
+		
+	// Check collisions with swimmers.
+	for (auto i = 0; i < swimmerManager->SwimmerCount; i++) 
+	{
+		Swimmer* tempRefSwimmer = swimmerManager->GetSwimmer(i + 1);
+		if (tempRefSwimmer != nullptr && tempRefSwimmer->GetEnabled() && !tempRefSwimmer->IsFollower()) 
 		{
-			Swimmer* tempRefSwimmer = swimmerManager->GetSwimmer(i + 1);
-			if (tempRefSwimmer != nullptr && tempRefSwimmer->Enable && !tempRefSwimmer->IsFollower()) 
+			if (this->GetCollider()->Collides(*tempRefSwimmer->GetCollider())) 
 			{
-				if (this->GetCollider()->Collides(*tempRefSwimmer->GetCollider())) 
-				{
-					printf("Collision with swimmer.\n");
-					this->AttachSwimmer(tempRefSwimmer);
-				}
+				printf("Collision with swimmer.\n");
+				this->AttachSwimmer(tempRefSwimmer);
 			}
-		}		
-	}
-	
+		}
+	}			
 }
 
 // Runs the calls for when the player gets a gameover (hits a wall, etc)
@@ -189,11 +181,10 @@ void Boat::DetachSwimmers()
 	{
 		if (swimmerTrail[i] != nullptr)
 		{
-			std::string swimmer_id = "swimmer" + std::to_string(i + 1);
 			Swimmer* retiringSwimmer = swimmerTrail[i];
 			retiringSwimmer->StopFollowing();
-			EntityManager::GetInstance()->RemoveEntity(swimmer_id);
-			retiringSwimmer->Enable = false;
+			EntityManager::GetInstance()->RemoveEntity(retiringSwimmer);
+			retiringSwimmer->SetEnabled(false);
 		}
 	}
 }

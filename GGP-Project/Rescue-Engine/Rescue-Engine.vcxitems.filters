@@ -57,6 +57,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h">
