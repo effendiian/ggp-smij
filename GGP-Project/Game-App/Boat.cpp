@@ -1,17 +1,19 @@
 #include "Boat.h"
 #include "ExtendedMath.h"
-#include "iostream"
 #include "SwimmerManager.h"
-#include "ResourceManager.h"
 #include "EntityManager.h"
+
+#if defined(DEBUG) || defined(_DEBUG)
+#include "ResourceManager.h"
+#endif
 
 using namespace std;
 using namespace DirectX;
 
-Boat::Boat(Mesh * mesh, Material * material) : Entity(mesh, material)
+Boat::Boat(Mesh * mesh, Material * material) : Entity(mesh, material, "player")
 {
 	crashed = false;
-	swimmerTrail = std::vector<Swimmer*>();
+	trail = std::vector<Swimmer*>();
 	swimmerManager = SwimmerManager::GetInstance();
 	inputManager = InputManager::GetInstance();
 	SetLevelBounds(13.0f, 13.0f);
@@ -23,27 +25,24 @@ Boat::~Boat()
 // Calls Input, Move, and CheckCollisions every frame
 void Boat::Update(float deltaTime)
 {
-	if (this->Enable) 
+	if (crashed)
 	{
-		Input(deltaTime);
+		//Check for reset input
+		if (inputManager->GetKey(VK_SPACE) && crashed)
+		{
+			this->Reset();
+		}
+		return;
 	}
 
-	if (!crashed) 
-	{
-		Move(deltaTime);
-		CheckCollisions();
-	}
+	Input(deltaTime);
+	Move(deltaTime);
+	CheckCollisions();
 }
 
 // Interprets key input
 void Boat::Input(float deltaTime)
 {
-	//Reset
-	if (inputManager->GetKey(VK_SPACE) && crashed) 
-	{
-		this->Reset();
-	}
-
 	//Left
 	if (inputManager->GetKey(VK_LEFT) && !crashed)
 	{
@@ -59,8 +58,22 @@ void Boat::Input(float deltaTime)
 #if defined(DEBUG) || defined(_DEBUG)
 	if (inputManager->GetMouseButtonDown(MouseButtons::L))
 	{
-		Swimmer* debugSwimmer = SwimmerManager::GetInstance()->SpawnSwimmer();
-		this->AttachSwimmer(debugSwimmer);
+		// Create the swimmer.
+		Swimmer* swimmer = new Swimmer(
+			ResourceManager::GetInstance()->GetMesh("Assets\\Models\\sphere.obj"),
+			ResourceManager::GetInstance()->GetMaterial("wood"),
+			"swimmer"
+		);
+		swimmer->AddCollider(DirectX::XMFLOAT3(0.9f, 0.9f, 0.9f), DirectX::XMFLOAT3(0, 0, 0));
+
+		// Get the leader.
+		Entity* leader = nullptr;
+		if (trail.size() < 1)
+			leader = this;
+		else leader = trail[trail.size() - 1];
+		swimmer->JoinTrail(leader);
+
+		trail.push_back(swimmer);
 	}
 #endif
 }
@@ -89,111 +102,94 @@ void Boat::Move(float deltaTime)
 // Checks for collisions and calls corresponding collide methods
 void Boat::CheckCollisions()
 {
-	if (this->Enable && !crashed) 
+	float x = this->GetPosition().x;
+	float z = this->GetPosition().z;
+	//Checking Within Level Bounds
+	if (!ExtendedMath::InRange(x, levelWidth) ||
+		!ExtendedMath::InRange(z, levelHeight))
 	{
-		float x = this->GetPosition().x;
-		float z = this->GetPosition().z;
-		//Checking Within Level Bounds
-		if (!ExtendedMath::InRange(x, levelWidth) ||
-			!ExtendedMath::InRange(z, levelHeight))
-		{
-			//Game Over
-			GameOver();
-			return;
-		}
-
-		// Check collisions with other entities.
-		/*EntityManager* entityManager = EntityManager::GetInstance();
-		for (auto i = 0; i < entityManager->EntityCount; i++) 
-		{
-			Entity* tempRef = entityManager->GetEntity(i);
-			if (tempRef != nullptr && tempRef != this && tempRef->Enable)
-			{
-				if (this->GetCollider()->Collides(*tempRef->GetCollider()))
-				{
-					printf("Collision with entity.\n");
-				}
-			}
-		}*/
-
-		// Check collisions with swimmers.
-		for (auto i = 0; i < swimmerManager->SwimmerCount; i++) 
-		{
-			Swimmer* tempRefSwimmer = swimmerManager->GetSwimmer(i + 1);
-			if (tempRefSwimmer != nullptr && tempRefSwimmer->Enable && !tempRefSwimmer->IsFollower()) 
-			{
-				if (this->GetCollider()->Collides(*tempRefSwimmer->GetCollider())) 
-				{
-					printf("Collision with swimmer.\n");
-					this->AttachSwimmer(tempRefSwimmer);
-				}
-			}
-		}		
+		//Game Over
+		printf("Collision with boundary.\n");
+		GameOver();
+		return;
 	}
 	
+	// Check collisions with swimmers in our trail
+	for (int i = 0; i < trail.size(); i++)
+	{
+		Swimmer* swmr = trail[i];
+		if (swmr != nullptr && swmr->IsFollowing() &&
+			GetCollider()->Collides(*swmr->GetCollider()))
+		{
+			//printf("Collision with swimmer.\n");
+			//TODO: Add implementation of swimmers joining the trail
+			//GameOver();
+			//return;
+		}
+	}
+
+	// Check collisions with swimmers floating in the scene
+	for (int i = swimmerManager->GetSwimmerCount() - 1; i >= 0; i--) 
+	{
+		Swimmer* swmr = swimmerManager->GetSwimmer(i);
+		if (swmr != nullptr && !swmr->IsFollowing() &&
+			GetCollider()->Collides(*swmr->GetCollider()))
+		{
+			printf("Collision with swimmer.\n");
+			AttachSwimmer(swmr, i);
+		}
+	}
 }
 
 // Runs the calls for when the player gets a gameover (hits a wall, etc)
 void Boat::GameOver()
 {
-	ClearSwimmers();
+	for (int i = 0; i < trail.size(); i++)
+	{
+		if (trail[i] != nullptr)
+		{
+			trail[i]->StartHit();
+		}
+	}
+
 	printf("Game Over! Press the 'Spacebar' to reset.\n");
 	this->crashed = true;
-	// XMFLOAT3 resetPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	// this->SetPosition(resetPosition);
+}
+
+// Clears all swimmers from the boat
+void Boat::ClearSwimmers()
+{
+	for (int i = 0; i < trail.size(); i++)
+	{
+		if (trail[i] != nullptr)
+			EntityManager::GetInstance()->RemoveEntity(trail[i]);
+	}
+	trail.clear();
 }
 
 // Attach a swimmer at the end of the trail
-Swimmer* Boat::AttachSwimmer(Swimmer* swimmer) 
+void Boat::AttachSwimmer(Swimmer* swimmer, int index) 
 {
-	if (swimmer != nullptr) {
-		// Get the swimmer manager reference.
-		SwimmerManager* swimmerManager = SwimmerManager::GetInstance();
-
-		// Get the leader.
-		GameObject* leader =
-			(swimmerTrail.size() < 1)
-			? (GameObject*)(this) : (GameObject*)(swimmerTrail[swimmerTrail.size() - 1]);
-
-		// Set the swimmer's position and rotation.
-		swimmer->SetPosition(leader->GetPosition());
-		swimmer->SetRotation(leader->GetRotation());
-
-		// Attach the swimmer.
-		swimmerTrail.push_back(swimmer);
-		swimmerManager->AttachSwimmer(swimmer, leader);
-	}
-
-	// Return the swimmer.
-	return swimmer;
+	// Get the leader.
+	Entity* leader = nullptr;
+	if (trail.size() < 1)
+		leader = this;
+	else leader = trail[trail.size() - 1];
+		
+	// Attach the swimmer.
+	trail.push_back(swimmer);
+	swimmerManager->AttachSwimmer(swimmer, leader, index);
 }
 
-//Clears the swimmers from the player
-void Boat::ClearSwimmers()
+// Detatch swimmers from boat and dock them
+void Boat::DockSwimmers()
 {
-	/* for (size_t i = this->swimmerTrail.size() - 1; i > 0; i--)
+	for (int i = 0; i < trail.size(); i++)
 	{
-		//this->swimmers[i]->RemoveFromRenderList();
-		//delete[] swimmers[i]; //Not deleting swimmers correctly?
-	}*/
-
-	this->DetachSwimmers();
-	swimmerTrail.clear();
-	swimmerTrail = std::vector<Swimmer*>();
-}
-
-// Detach all swimmers.
-void Boat::DetachSwimmers() 
-{
-	for (auto i = 0; i < swimmerTrail.size(); i++)
-	{
-		if (swimmerTrail[i] != nullptr)
+		if (trail[i] != nullptr)
 		{
-			std::string swimmer_id = "swimmer" + std::to_string(i + 1);
-			Swimmer* retiringSwimmer = swimmerTrail[i];
-			retiringSwimmer->StopFollowing();
-			EntityManager::GetInstance()->RemoveEntity(swimmer_id);
-			retiringSwimmer->Enable = false;
+			trail[i]->StartDock();
 		}
 	}
+	trail.clear();
 }

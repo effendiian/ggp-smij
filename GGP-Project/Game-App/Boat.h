@@ -20,7 +20,12 @@ private:
 	bool crashed;
 	SwimmerManager* swimmerManager;
 	InputManager* inputManager;
-	std::vector<Swimmer*> swimmerTrail;
+	std::vector<Swimmer*> trail;
+
+	// --------------------------------------------------------
+	// Attach a swimmer at the end of the trail
+	// --------------------------------------------------------
+	void AttachSwimmer(Swimmer* swimmer, int index);
 	
 public:
 	Boat(Mesh* mesh, Material* material);
@@ -67,14 +72,10 @@ public:
 	void SetLevelBounds(float width, float height) { SetLevelWidth(width); SetLevelHeight(height); }
 	float GetLevelWidth () { return levelWidth;  }
 	float GetLevelHeight() { return levelHeight; }
-
-	// Attach a swimmer at the end of the trail
-	// --------------------------------------------------------
-	Swimmer* AttachSwimmer(Swimmer*);
 	
 	// --------------------------------------------------------
-	// Clear the trail.
+	// Detatch swimmers from boat and dock them
 	// --------------------------------------------------------
-	void DetachSwimmers();
+	void DockSwimmers();
 
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include <DirectXMath.h>
 #include "Collider.h"
+#include <string>
 
 // --------------------------------------------------------
 // A GameObject definition.
@@ -13,20 +14,32 @@ private:
 	//Transformations
 	DirectX::XMFLOAT4X4 world;
 	DirectX::XMFLOAT4X4 worldInvTrans;
-	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 forwardAxis;
-	DirectX::XMFLOAT3 rotation;
+	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT4 rotationQuat;
+	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
 	bool worldDirty;
 
+	//Other data
 	Collider* collider;
+
+protected:
+	bool enabled;
+	std::string name;
 
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up the gameobject.
 	// --------------------------------------------------------
 	GameObject();
+
+	// --------------------------------------------------------
+	// Constructor - Set up the gameobject.
+	//
+	// name - the name of the gameobject
+	// --------------------------------------------------------
+	GameObject(std::string name);
 
 	// --------------------------------------------------------
 	// Collider Constructor - Set up the gameobject with a collider
@@ -40,24 +53,31 @@ public:
 	// Destructor for when an instance is deleted
 	// --------------------------------------------------------
 	virtual ~GameObject();
-	
-	// --------------------------------------------------------
-	// Called on initialization.
-	// --------------------------------------------------------
-	virtual void Start();
-	
-	// --------------------------------------------------------
-	// Resets the object.
-	// --------------------------------------------------------
-	virtual void Reset();
 
 	// --------------------------------------------------------
-	// Called when object is destroyed.
+	// Get the enabled state of the gameobject
+	// Disabled objects are not updated or drawn
 	// --------------------------------------------------------
-	virtual void OnDestroy();
+	bool GetEnabled();
 
 	// --------------------------------------------------------
-	// Called every frame
+	// Enable or disable the gameobject
+	// Disabled objects are not updated or drawn
+	// --------------------------------------------------------
+	void SetEnabled(bool enabled);
+
+	// --------------------------------------------------------
+	// Set the name of this gameobject
+	// --------------------------------------------------------
+	void SetName(std::string name);
+
+	// --------------------------------------------------------
+	// Get the name of this gameobject
+	// --------------------------------------------------------
+	std::string GetName();
+
+	// --------------------------------------------------------
+	// Update this entity
 	// --------------------------------------------------------
 	virtual void Update(float deltaTime);
 
@@ -194,8 +214,5 @@ public:
 	// offset - offset of collider from position of game object
 	// --------------------------------------------------------
 	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
-
-	// Enabled and active flag.
-	bool Enable;
 };
 

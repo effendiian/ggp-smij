@@ -1,102 +1,107 @@
 #include "EntityManager.h"
 
-//Initializes the Entity Manager.
-void EntityManager::Init()
-{
-	entities_count = 0;
-}
-
 //Releases the entities in the Entity Manager.
-void EntityManager::Release()
+EntityManager::~EntityManager()
 {
-	for (auto i = 0; i < entities_count; i++)
+	for (auto i = 0; i < entities.size(); i++)
 	{
-		delete[] entities[i];
+		if (entities[i]) { delete[] entities[i]; }
 	}
 }
 
 //Adds an entity to the Entity Manager with a unique ID.
-void EntityManager::AddEntity(Entity* e, std::string id)
+void EntityManager::AddEntity(Entity* e)
 {
+	//Check the iterator of the entity
+	if (std::find(entities.begin(), entities.end(), e) != entities.end())
+	{
+		printf("Cannot add entity %s because it is already in entity manager", e->GetName().c_str());
+		return;
+	}
+
+	//Add to the list
 	entities.push_back(e);
-	entity_ids.push_back(id);
-	entities_count++;
 }
 
-//Gets an entity from the Entity Manager with a unique ID.
+//Gets an entity from the Entity Manager with a certain name.
 Entity* EntityManager::GetEntity(std::string id)
 {
-	for (auto i = 0; i < entities_count; i++)
+	for (auto i = 0; i < entities.size(); i++)
 	{
-		if (entity_ids[i] == id) {
-			return GetEntity(i);
+		if (entities[i]->GetName() == id) {
+			return entities[i];
 		}
 	}
 
 	return nullptr;
 }
 
-//Gets an entity from the Entity Manager with an index.
-Entity* EntityManager::GetEntity(int index)
+// Remove an entity by its object
+void EntityManager::RemoveEntityFromList(Entity* entity, bool deleteEntity)
 {
-	return entities[index];
+	Entity* org = entity;
+
+	//Get the iterator of the entity
+	//Swap it for the last one
+	std::swap(entity, entities[entities.size() - 1]);
+
+	//Pop the last one
+	entities.pop_back();
+
+	//Delete instance if user wants to
+	if (deleteEntity)
+		delete org;
+
+	return;
 }
 
-//Removes an entity from the Entity Manager with a unique ID.
-void EntityManager::RemoveEntity(std::string id)
+// Remove an entity by its name
+void EntityManager::RemoveEntity(std::string name, bool deleteEntity)
 {
-	for (auto i = 0; i < entities_count; i++)
+	for (auto i = 0; i < entities.size(); i++)
 	{
-		if (entity_ids[i] == id)
+		if (entities[i]->GetName() == name)
 		{
-			RemoveEntity(i);
+			Entity* e = entities[i];
+			e->SetEnabled(false);
+			remove_entities.push_back(EntityRemoval{ e, deleteEntity });
+			return;
 		}
 	}
+
+	printf("Entity of name %s does not exist in EntityManager. Cannot remove", name.c_str());
 }
 
-//Removes an entity from the Entity Manager with an index.
-void EntityManager::RemoveEntity(int index)
+// Remove an entity by its object
+void EntityManager::RemoveEntity(Entity* entity, bool deleteEntity)
 {
-	if (index >= 0 && index < entities_count)
+	//Get the iterator of the entity
+	std::vector<Entity*>::iterator it = std::find(entities.begin(), entities.end(), entity);
+	if (it == entities.end())
 	{
-		entities.erase(entities.begin() + index);
-		entity_ids.erase(entity_ids.begin() + index);
-		entities_count--;
+		printf("Cannot remove entity %s because it is not in entity manager", entity->GetName().c_str());
+		return;
 	}
+
+	entity->SetEnabled(false);
+	remove_entities.push_back(EntityRemoval{entity, deleteEntity});
+	return;
 }
 
-// Enable the entity.
-void EntityManager::EnableEntity(std::string entity_id) 
-{
-	Entity* entity = this->GetEntity(entity_id);
-	if (entity != nullptr) {
-		entity->Enable = true;
-	}
-}
-
-// Disable the entity.
-void EntityManager::DisableEntity(std::string entity_id)
-{
-	Entity* entity = this->GetEntity(entity_id);
-	if (entity != nullptr) {
-		entity->Enable = false;
-	}
-}
-
-//Updates all of the entities in the Entity Manager.
+// Run Update() for all entities in the manager
 void EntityManager::Update(float deltaTime)
 {
-	
-}
-
-//Updates specific entity in the Entity Manager.
-void EntityManager::Update(float deltaTime, std::string entityId)
-{
-	for (auto i = 0; i < entities_count; i++)
+	//Update entities
+	for (size_t i = 0; i < entities.size(); i++)
 	{
-		if (entityId == entity_ids[i] && entities[i]->Enable) 
-		{
+		if (entities[i]->GetEnabled())
 			entities[i]->Update(deltaTime);
-		}
 	}
+
+	//Remove entities
+	for (auto const& er : remove_entities)
+	{
+		RemoveEntityFromList(er.e, er.release);
+	}
+	remove_entities.clear();
 }

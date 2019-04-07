@@ -63,7 +63,6 @@ void Game::Init()
 
 	//Initialize singleton data
 	inputManager->Init(hWnd);
-	entityManager->Init();
 
 	//Create the camera and initialize matrices
 	camera = new FirstPersonCamera();
@@ -89,14 +88,14 @@ void Game::Init()
 	//Directional lights
 	lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
 
-	//Point light
-	PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
-	pLight->SetPosition(0, -2, 3);
+	////Point light
+	//PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
+	//pLight->SetPosition(0, -2, 3);
 
-	//Spot light
-	SpotLight* sLight = lightManager->CreateSpotLight(5, 5, XMFLOAT3(0, 0, 1), 1);
-	sLight->SetPosition(2, 0, -1);
-	sLight->SetRotation(0, -90, 0);
+	////Spot light
+	//SpotLight* sLight = lightManager->CreateSpotLight(5, 5, XMFLOAT3(0, 0, 1), 1);
+	//sLight->SetPosition(2, 0, -1);
+	//sLight->SetRotation(0, -90, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -183,7 +182,6 @@ void Game::CreateEntities()
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
 	player->AddCollider(XMFLOAT3(1.1f, 1.1f, 1.1f), XMFLOAT3(0, 0, 0));
-	entityManager->AddEntity(player, "player"); // Add the player to the entity manager.
 }
 
 // --------------------------------------------------------
@@ -208,7 +206,7 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
-	//The only call to UpdateMousePosition() for the InputManager
+	//The only call to UpdateMousePos() for the InputManager
 	//Get the current mouse position
 	inputManager->UpdateMousePos();
 	// --------------------------------------------------------
@@ -220,14 +218,11 @@ void Game::Update(float deltaTime, float totalTime)
 	//Update the camera
 	camera->Update(deltaTime);
 
+	// Updates all the entities
+	entityManager->Update(deltaTime);
+
 	// Updates the swimmer generator/manager.
 	swimmerManager->Update(deltaTime);
-
-	// Updates specific entities.
-	entityManager->Update(deltaTime, "player");
-
-	// Updates all the entities. (Currently handles collisions).
-	entityManager->Update(deltaTime);
 	
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager

@@ -64,15 +64,15 @@ public:
 	// --------------------------------------------------------
 	// Add an entity to the render list
 	// --------------------------------------------------------
-	void AddEntityToRenderList(Entity* e);
+	void AddEntityToRenderer(Entity* e);
 
 	// --------------------------------------------------------
 	// Remove an entity from the render list
 	// --------------------------------------------------------
-	void RemoveEntityFromRenderList(Entity* e);
+	void RemoveEntityFromRenderer(Entity* e);
 
 	// --------------------------------------------------------
 	// Check if an entity is in the render list. O(n) complexity
 	// --------------------------------------------------------
-	bool IsEntityInRenderList(Entity* e);
+	bool IsEntityInRenderer(Entity* e);
 };

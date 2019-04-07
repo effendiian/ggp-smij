@@ -147,15 +147,20 @@ void LightManager::RemoveLight(Light* light, bool deleteLight)
 	if (it != lightList.end())
 	{
 		listDirty = true;
+		Light* light = *it;
+
+		//Swap it for the last one
+		std::swap(*it, lightList[lightList.size() - 1]);
+
+		//Pop the last one
+		lightList.pop_back();
 
 		//Delete instance if user wants to
 		if (deleteLight)
 		{
-			delete *it;
+			delete light;
 		}
 		else SetInLightManager(light, false);
-
-		lightList.erase(it);
 	}
 	else
 	{

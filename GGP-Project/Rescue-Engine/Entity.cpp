@@ -1,7 +1,8 @@
-#include "Entity.h"
 #include "Renderer.h"
+#include "EntityManager.h"
 #include <sstream> 
 #include <string> 
+#include "EntityManager.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -21,13 +22,21 @@ Entity::Entity(Mesh* mesh, Material* material)
 	std::string temp = ss.str();
 	identifier = temp;
 
-	Renderer::GetInstance()->AddEntityToRenderList(this);
+	Renderer::GetInstance()->AddEntityToRenderer(this);
+	EntityManager::GetInstance()->AddEntity(this);
+}
+
+// Constructor - Set up the entity.
+Entity::Entity(Mesh * mesh, Material * material, std::string name)
+	: Entity(mesh, material)
+{
+	this->name = name;
 }
 
 // Destructor for when an instance is deleted
 Entity::~Entity()
 { 
-	Renderer::GetInstance()->RemoveEntityFromRenderList(this);
+	Renderer::GetInstance()->RemoveEntityFromRenderer(this);
 }
 
 // Get the material this entity uses
@@ -40,18 +49,6 @@ Material* Entity::GetMaterial()
 Mesh* Entity::GetMesh()
 {
 	return mesh;
-}
-
-// Add this entity to the render list
-void Entity::AddToRenderList()
-{
-	Renderer::GetInstance()->AddEntityToRenderList(this);
-}
-
-// Remove this entity from the render list
-void Entity::RemoveFromRenderList()
-{
-	Renderer::GetInstance()->RemoveEntityFromRenderList(this);
 }
 
 // Get the material/mesh identifier

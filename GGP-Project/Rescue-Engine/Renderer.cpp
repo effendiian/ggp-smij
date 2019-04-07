@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "LightManager.h"
+#include <algorithm>
 
 using namespace DirectX;
 
@@ -19,18 +20,22 @@ Renderer::~Renderer()
 void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 {
 	//TODO: Apply attenuation
-	for (auto const& x : renderMap)
+	for (auto const& mapPair : renderMap)
 	{
-		if (x.second.size() < 1)
+		if (mapPair.second.size() < 1)
 			return;
 
 		//Get list, material, and mesh
-		std::vector<Entity*> list = x.second;
-		Material* mat = list[0]->GetMaterial();
-		Mesh* mesh = list[0]->GetMesh();
+		std::vector<Entity*> list = mapPair.second;
+
+		//Get the first valid entity
+		Entity* firstValid = list[0];
+
+		Material* mat = firstValid->GetMaterial();
+		Mesh* mesh = firstValid->GetMesh();
 
 		//Prepare the material's combo specific variables
-		mat->PrepareMaterialCombo(list[0], camera);
+		mat->PrepareMaterialCombo(firstValid, camera);
 
 		// Set buffers in the input assembler
 		UINT stride = sizeof(Vertex);
@@ -43,6 +48,10 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 		//Loop through each entity in the list
 		for (size_t i = 0; i < list.size(); i++)
 		{
+			//Don't draw disabled entities
+			if (!list[i]->GetEnabled())
+				continue;
+
 			//Prepare the material's object specific variables
 			mat->PrepareMaterialObject(list[i]);
 
@@ -60,69 +69,71 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 }
 
 // Add an entity to the render list
-void Renderer::AddEntityToRenderList(Entity* e)
+void Renderer::AddEntityToRenderer(Entity* e)
 {
-	bool isInList = IsEntityInRenderList(e);
-	if (IsEntityInRenderList(e))
-	{
-		printf("Cannot add entity because it is already in render list");
-		return;
-	}
+	//Get identifier
+	std::string identifier = e->GetMatMeshIdentifier();
 
-	//Look for existing mesh/material combos
-	if (renderMap.find(e->GetMatMeshIdentifier()) != renderMap.end())
+	//Check if we already have the mat/mesh combo in the map
+	if (renderMap.find(identifier) != renderMap.end())
 	{
-		renderMap[e->GetMatMeshIdentifier()].push_back(e);
+		//Get render list
+		std::vector<Entity*> list = renderMap[identifier];
+
+		//Check the iterator of the entity
+		if (std::find(list.begin(), list.end(), e) != list.end())
+		{
+			printf("Cannot add entity %s because it is already in renderer", e->GetName().c_str());
+			return;
+		}
+
+		//Add to the list
+		renderMap[identifier].push_back(e);
 	}
-	//Make a new entry
+	//else make a new entry
 	else
 	{
 		std::vector<Entity*> list;
 		list.push_back(e);
-		renderMap.emplace(e->GetMatMeshIdentifier(), list);
+		renderMap.emplace(identifier, list);
 	}
 }
 
 // Remove an entity from the render list
-void Renderer::RemoveEntityFromRenderList(Entity* e)
+void Renderer::RemoveEntityFromRenderer(Entity* e)
 {
-	//Early return if render list is empty and if the entity is in it
-	if (renderMap.find(e->GetMatMeshIdentifier()) == renderMap.end())
+	//Get iterator
+	std::string identifier = e->GetMatMeshIdentifier();
+	auto mapIt = renderMap.find(identifier);
+	
+	//Check if we are in the map
+	if (mapIt == renderMap.end())
+	{
+		printf("Cannont remove entity because it is not in renderer");
 		return;
+	}
 
 	//Get correct render list
-	std::vector<Entity*> list = renderMap[e->GetMatMeshIdentifier()];
+	std::vector<Entity*>* list = &renderMap[identifier];
 
-	//Get the index of the entity
-	size_t* index = nullptr;
-	size_t i;
-	for (i = 0; i < list.size(); i++)
-	{
-		if (e == list[i])
-		{
-			index = &i;
-			break;
-		}
-	}
+	//Get the iterator of the entity
+	std::vector<Entity*>::iterator listIt = std::find((*list).begin(), (*list).end(), e);
 
-	//Entity is not in the render list
-	if (index == nullptr)
+	//Check if we are in the list
+	if (listIt == (*list).end())
 	{
-		printf("Cannont remove entity because it is not in render list");
+		printf("Cannont remove entity because it is not in renderer");
 		return;
 	}
 
-	//If the entity is not the very last we swap it for the last one
-	if (*index != list.size() - 1)
-	{
-		std::swap(list[*index], list[list.size() - 1]);
-	}
+	//Swap it for the last one
+	std::swap(*listIt, (*list).back());
 
 	//Pop the last one
-	list.pop_back();
+	(*list).pop_back();
 
 	//Check if the list is empty
-	if (list.size() == 0)
+	if ((*list).size() == 0)
 	{
 		//Erase
 		renderMap.erase(e->GetMatMeshIdentifier());
@@ -131,27 +142,23 @@ void Renderer::RemoveEntityFromRenderList(Entity* e)
 
 // Check if an entity is in the render list. O(n) complexity
 //	(n is the amount of entities that share the material and mesh)
-bool Renderer::IsEntityInRenderList(Entity* e)
+bool Renderer::IsEntityInRenderer(Entity* e)
 {
 	//Early return if render list is empty and if the entity is in it
-	if (renderMap.find(e->GetMatMeshIdentifier()) == renderMap.end())
+	std::string identifier = e->GetMatMeshIdentifier();
+	if (renderMap.find(identifier) == renderMap.end())
 		return false;
 
 	//Get render list
-	std::vector<Entity*> list = renderMap[e->GetMatMeshIdentifier()];
+	std::vector<Entity*> list = renderMap[identifier];
 
 	//Early return if render list is empty
 	if (list.size() == 0)
 		return false;
 
-	//Get the index of the entity
-	for (size_t i = 0; i < list.size(); i++)
-	{
-		if (e == list[i])
-		{
-			return true;
-		}
-	}
+	//Check the iterator of the entity
+	if (std::find(list.begin(), list.end(), e) == list.end())
+		return false;
 
-	return false;
+	return true;
 }
