@@ -1,11 +1,12 @@
 #include "Swimmer.h"
+#include "ExtendedMath.h"
 
 using namespace DirectX;
 
 //Snake follow logic from:
 //https://github.com/rimij405/ggp-smij/blob/Unity-Prototype/Prototype/Boat-Snake-Prototype/Assets/Scripts/BoatFollower.cs
 
-Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name) 
+Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name)
 	: Entity(mesh, material, name)
 {
 	//Create buffers
@@ -43,7 +44,7 @@ void Swimmer::Update(float deltaTime)
 			break;
 
 		case SwimmerState::Joining:
-			swmrState = SwimmerState::Following;
+			Join(deltaTime);
 			break;
 
 		case SwimmerState::Following:
@@ -51,7 +52,7 @@ void Swimmer::Update(float deltaTime)
 			break;
 
 		case SwimmerState::Docking:
-
+			
 			break;
 
 		case SwimmerState::Hitting:
@@ -69,8 +70,8 @@ void Swimmer::Float(float deltaTime)
 	this->SetRotation(nextRotation);
 }
 
-// Run this swimmer's following behaviour
-void Swimmer::Follow(float deltaTime)
+// Update the swimmer's buffers for snake movement
+XMFLOAT3 Swimmer::GetTrailPos(float deltaTime)
 {
 	// Update internal timer.
 	timer += deltaTime;
@@ -80,7 +81,7 @@ void Swimmer::Follow(float deltaTime)
 	int newIndex = (newestIndex + 1) % bufferLength;
 	if (newIndex != oldestIndex)
 		newestIndex = newIndex;
-	
+
 	positionBuffer[newestIndex] = leader->GetPosition();
 	timeBuffer[newestIndex] = timer;
 
@@ -89,8 +90,6 @@ void Swimmer::Follow(float deltaTime)
 	int nextIndex;
 	while (timeBuffer[nextIndex = (oldestIndex + 1) % bufferLength] < targetTime)
 		oldestIndex = nextIndex;
-
-	// Interpolate between the two samples on either side of our target time.
 	float span = timeBuffer[nextIndex] - timeBuffer[oldestIndex];
 	float progress = 0;
 	if (span > 0)
@@ -101,7 +100,45 @@ void Swimmer::Follow(float deltaTime)
 	//Lerp to find the position
 	XMFLOAT3 lerp;
 	XMStoreFloat3(&lerp, XMVectorLerp(XMLoadFloat3(&(positionBuffer[oldestIndex])), XMLoadFloat3(&(positionBuffer[nextIndex])), progress));
-	SetPosition(lerp);
+	return lerp;
+}
+
+// Run this swimmer's joining behaviour
+void Swimmer::Join(float deltaTime)
+{
+	XMFLOAT3 trailPos = GetTrailPos(deltaTime);
+	float dist = ExtendedMath::DistanceFloat3(trailPos, GetPosition());
+	if (dist > 0.1f)
+	{
+		XMFLOAT3 lerp;
+		XMStoreFloat3(&lerp, XMVectorScale(XMVector3Normalize(
+			XMLoadFloat3(&trailPos) - XMLoadFloat3(&GetPosition())), 5 * deltaTime)
+		);
+		MoveAbsolute(lerp);
+	}
+	//XMFLOAT3 trailPos = GetTrailPos(deltaTime);
+	//float dist = ExtendedMath::DistanceFloat3(GetPosition(), trailPos);
+	//if (dist > 0.25f)
+	//{
+	//	XMFLOAT3 lerp;
+	//	XMStoreFloat3(&lerp, XMVectorLerp(
+	//			XMLoadFloat3(&GetPosition()), XMLoadFloat3(&trailPos), 3 * deltaTime)
+	//	);
+	//	SetPosition(lerp);
+	//}
+	else
+	{
+		swmrState = SwimmerState::Following;
+		printf("hit\n");
+	}
+}
+
+// Run this swimmer's following behaviour
+void Swimmer::Follow(float deltaTime)
+{
+	// Interpolate between the two samples on either side of our target time.
+	XMFLOAT3 newPos = GetTrailPos(deltaTime);
+	SetPosition(newPos);
 }
 
 // Check if the boat is in the following state
@@ -115,6 +152,7 @@ void Swimmer::JoinTrail(Entity* newLeader)
 {
 	swmrState = SwimmerState::Joining;
 	this->leader = newLeader;
+	positionBuffer[0] = positionBuffer[1] = leader->GetPosition();
 }
 
 // Set Swimmer's state for when the Boat hits something

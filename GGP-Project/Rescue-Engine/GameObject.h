@@ -14,10 +14,10 @@ private:
 	//Transformations
 	DirectX::XMFLOAT4X4 world;
 	DirectX::XMFLOAT4X4 worldInvTrans;
-	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 forwardAxis;
-	DirectX::XMFLOAT3 rotation;
+	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT4 rotationQuat;
+	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
 	bool worldDirty;
 

@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <DirectXMath.h>
 #include "iostream"
-using namespace std;
 
 class ExtendedMath
 {
@@ -30,5 +29,15 @@ public:
 			return v2;
 		return 0;
 	}
-
+	
+	//Calculate the distance between 2 Float3s
+	static float DistanceFloat3(DirectX::XMFLOAT3 v1, DirectX::XMFLOAT3 v2)
+	{
+		DirectX::XMFLOAT3 dist;
+		DirectX::XMStoreFloat3(&dist, DirectX::XMVector3Length(
+			DirectX::XMVectorSubtract(
+				DirectX::XMLoadFloat3(&v1), DirectX::XMLoadFloat3(&v2))
+		));
+		return dist.x;
+	}
 };

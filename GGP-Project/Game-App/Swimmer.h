@@ -30,6 +30,16 @@ private:
 	void Float(float deltaTime);
 
 	// --------------------------------------------------------
+	// Update the swimmer's buffers for snake movement
+	// --------------------------------------------------------
+	DirectX::XMFLOAT3 GetTrailPos(float deltaTime);
+
+	// --------------------------------------------------------
+	// Run this swimmer's joining behaviour
+	// --------------------------------------------------------
+	void Join(float deltaTime);
+
+	// --------------------------------------------------------
 	// Run this swimmer's following behaviour
 	// --------------------------------------------------------
 	void Follow(float deltaTime);
