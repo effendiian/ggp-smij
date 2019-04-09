@@ -24,6 +24,20 @@ private:
 	int newestIndex;
 	float timer;
 
+	//Buoyancy vars
+	float velocity;
+	float acceleration;
+
+	// --------------------------------------------------------
+	// Run this swimmer's entering behaviour
+	//---------------------------------------------------------
+	void Enter(float deltaTime);
+
+	// --------------------------------------------------------
+	// Apply buoyancy to the swimmer
+	//---------------------------------------------------------
+	void ApplyBuoyancy(float deltaTime);
+
 	// --------------------------------------------------------
 	// Run this swimmer's floating behaviour
 	//---------------------------------------------------------

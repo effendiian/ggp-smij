@@ -1,6 +1,13 @@
 #include "Swimmer.h"
 #include "ExtendedMath.h"
 
+//Buoyancy consts
+#define MASS 0.5f
+#define GRAVITY 9.81f
+#define FLUID_DENSITY 2.0f
+#define DRAG_COEFF 1.05f
+#define AIR_DENSITY 0.1225f
+
 using namespace DirectX;
 
 //Snake follow logic from:
@@ -19,6 +26,8 @@ Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name)
 	this->leader = nullptr;
 	positionBuffer[0] = positionBuffer[1] = DirectX::XMFLOAT3(0, 0, 0);
 	timeBuffer[0] = timeBuffer[1] = timer = 0;
+	velocity = 0;
+	acceleration = 0;
 
 	oldestIndex = 0;
 	newestIndex = 1;
@@ -33,6 +42,7 @@ Swimmer::~Swimmer()
 
 void Swimmer::Update(float deltaTime)
 {
+	ApplyBuoyancy(deltaTime);
 	switch (swmrState)
 	{
 		case SwimmerState::Entering:
@@ -59,6 +69,67 @@ void Swimmer::Update(float deltaTime)
 
 			break;
 	}	
+}
+
+// --------------------------------------------------------
+// Run this swimmer's entering behaviour
+//---------------------------------------------------------
+void Swimmer::Enter(float deltaTime)
+{
+
+}
+
+// --------------------------------------------------------
+// Apply buoyancy to the swimmer
+//---------------------------------------------------------
+void Swimmer::ApplyBuoyancy(float deltaTime)
+{
+	//printf("%9.6f\n", GetPosition().y);
+	Collider* col = GetCollider();
+	XMFLOAT3 position = GetPosition();
+	XMFLOAT3 halves = col->GetHalfSize();
+
+	//Thanks Khan once again
+	//https://www.khanacademy.org/science/physics/fluids/buoyant-force-and-archimedes-principle/a/buoyant-force-and-archimedes-principle-article
+	//Calculate displaced volume and buoyancy
+	float hTop = position.y + halves.y > 0 ? 0 : position.y + halves.y;
+	float hBot = position.y - halves.y > 0 ? 0 : position.y - halves.y;
+	float area = (2 * halves.x) * (2 * halves.z);
+	float watDisplaced = area * -(hBot - hTop);
+	float buoyancy = FLUID_DENSITY * GRAVITY * watDisplaced;
+
+	//https://www.grc.nasa.gov/WWW/K-12/airplane/falling.html
+	float drag = 0;
+	if(position.y > 0)
+	{
+		//Calculate air drag if we are above the water
+		drag = DRAG_COEFF * AIR_DENSITY * ((velocity * velocity * area) / 2);
+	}
+	else
+	{
+		//Calculate fluid drag if we are below the water
+		drag = DRAG_COEFF * FLUID_DENSITY * ((velocity * velocity * area) / 2);
+	}
+
+	//Apply bouyancy and gravity to acceleration
+	acceleration += buoyancy / MASS;
+	acceleration += -GRAVITY;
+
+	//Add acceleration to velocity
+	velocity += (acceleration * deltaTime);
+
+	//Add drag based on velocity's direction
+	if(velocity < 0)
+		velocity += (drag * deltaTime);
+	else velocity -= (drag * deltaTime);
+
+	//Add velocity to position
+	position.y += velocity * deltaTime;
+
+	//Reset
+	acceleration = 0;
+
+	SetPosition(position);
 }
 
 // Run this swimmer's floating behaviour
