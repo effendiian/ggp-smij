@@ -28,6 +28,7 @@ Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name)
 	timeBuffer[0] = timeBuffer[1] = timer = 0;
 	velocity = 0;
 	acceleration = 0;
+	sinAmnt = 0;
 
 	oldestIndex = 0;
 	newestIndex = 1;
@@ -43,6 +44,7 @@ Swimmer::~Swimmer()
 void Swimmer::Update(float deltaTime)
 {
 	ApplyBuoyancy(deltaTime);
+	//ApplySin(deltaTime);
 	switch (swmrState)
 	{
 		case SwimmerState::Entering:
@@ -77,6 +79,14 @@ void Swimmer::Update(float deltaTime)
 void Swimmer::Enter(float deltaTime)
 {
 
+}
+
+void Swimmer::ApplyCos(float deltaTime)
+{
+	XMFLOAT3 position = GetPosition();
+	sinAmnt += deltaTime;
+	float y = (-cos(3 * sinAmnt) / sinAmnt) * 2;
+	SetPosition(position.x, y, position.z);
 }
 
 // --------------------------------------------------------

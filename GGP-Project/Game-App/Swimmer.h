@@ -27,6 +27,7 @@ private:
 	//Buoyancy vars
 	float velocity;
 	float acceleration;
+	float sinAmnt;
 
 	// --------------------------------------------------------
 	// Run this swimmer's entering behaviour
@@ -37,6 +38,11 @@ private:
 	// Apply buoyancy to the swimmer
 	//---------------------------------------------------------
 	void ApplyBuoyancy(float deltaTime);
+
+	// --------------------------------------------------------
+	// Apply buoyancy to the swimmer
+	//---------------------------------------------------------
+	void ApplyCos(float deltaTime);
 
 	// --------------------------------------------------------
 	// Run this swimmer's floating behaviour
