@@ -28,6 +28,7 @@ private:
 	float velocity;
 	float acceleration;
 	float sinAmnt;
+	float gravityMult;
 
 	// --------------------------------------------------------
 	// Run this swimmer's entering behaviour
@@ -53,6 +54,11 @@ private:
 	// Update the swimmer's buffers for snake movement
 	// --------------------------------------------------------
 	DirectX::XMFLOAT3 GetTrailPos(float deltaTime);
+
+	// --------------------------------------------------------
+	// Causes this swimmer to seek the surface y's position
+	// --------------------------------------------------------
+	void SeekSurfaceY();
 
 	// --------------------------------------------------------
 	// Run this swimmer's joining behaviour

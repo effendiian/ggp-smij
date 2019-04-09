@@ -181,7 +181,7 @@ void Game::CreateEntities()
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
 		resourceManager->GetMaterial("floor")
 	);
-	water->SetScale(26, 0.1, 26);
+	water->SetScale(26, 0.1f, 26);
 
 	// Player (Boat) - Create the player.
 	Entity* player = new Boat(

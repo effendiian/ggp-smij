@@ -7,6 +7,7 @@
 #define FLUID_DENSITY 2.0f
 #define DRAG_COEFF 1.05f
 #define AIR_DENSITY 0.1225f
+#define SURFACE_Y 0
 
 using namespace DirectX;
 
@@ -26,9 +27,12 @@ Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name)
 	this->leader = nullptr;
 	positionBuffer[0] = positionBuffer[1] = DirectX::XMFLOAT3(0, 0, 0);
 	timeBuffer[0] = timeBuffer[1] = timer = 0;
+
+	//Buoyancy vals
 	velocity = 0;
 	acceleration = 0;
 	sinAmnt = 0;
+	gravityMult = 0;
 
 	oldestIndex = 0;
 	newestIndex = 1;
@@ -43,12 +47,11 @@ Swimmer::~Swimmer()
 
 void Swimmer::Update(float deltaTime)
 {
-	ApplyBuoyancy(deltaTime);
 	//ApplySin(deltaTime);
 	switch (swmrState)
 	{
 		case SwimmerState::Entering:
-			swmrState = SwimmerState::Floating;
+			Enter(deltaTime);
 			break;
 
 		case SwimmerState::Floating:
@@ -78,7 +81,9 @@ void Swimmer::Update(float deltaTime)
 //---------------------------------------------------------
 void Swimmer::Enter(float deltaTime)
 {
-
+	ApplyBuoyancy(deltaTime);
+	if (GetPosition().y > SURFACE_Y)
+		swmrState = SwimmerState::Floating;
 }
 
 void Swimmer::ApplyCos(float deltaTime)
@@ -102,15 +107,15 @@ void Swimmer::ApplyBuoyancy(float deltaTime)
 	//Thanks Khan once again
 	//https://www.khanacademy.org/science/physics/fluids/buoyant-force-and-archimedes-principle/a/buoyant-force-and-archimedes-principle-article
 	//Calculate displaced volume and buoyancy
-	float hTop = position.y + halves.y > 0 ? 0 : position.y + halves.y;
-	float hBot = position.y - halves.y > 0 ? 0 : position.y - halves.y;
+	float hTop = position.y + halves.y > SURFACE_Y ? SURFACE_Y : position.y + halves.y;
+	float hBot = position.y - halves.y > SURFACE_Y ? SURFACE_Y : position.y - halves.y;
 	float area = (2 * halves.x) * (2 * halves.z);
 	float watDisplaced = area * -(hBot - hTop);
 	float buoyancy = FLUID_DENSITY * GRAVITY * watDisplaced;
 
 	//https://www.grc.nasa.gov/WWW/K-12/airplane/falling.html
 	float drag = 0;
-	if(position.y > 0)
+	if(position.y > SURFACE_Y)
 	{
 		//Calculate air drag if we are above the water
 		drag = DRAG_COEFF * AIR_DENSITY * ((velocity * velocity * area) / 2);
@@ -145,10 +150,10 @@ void Swimmer::ApplyBuoyancy(float deltaTime)
 // Run this swimmer's floating behaviour
 void Swimmer::Float(float deltaTime)
 {
+	ApplyBuoyancy(deltaTime);
+
 	// Rotate when idle.
-	XMFLOAT3 nextRotation = this->GetRotation();
-	nextRotation.x += 5 * deltaTime;
-	this->SetRotation(nextRotation);
+	Rotate(0, 5 * deltaTime, 0);
 }
 
 // Update the swimmer's buffers for snake movement
@@ -184,9 +189,27 @@ XMFLOAT3 Swimmer::GetTrailPos(float deltaTime)
 	return lerp;
 }
 
+// --------------------------------------------------------
+// Causes this swimmer to seek the surface y's position
+// --------------------------------------------------------
+void Swimmer::SeekSurfaceY()
+{
+	XMFLOAT3 position = GetPosition();
+	if (position.y == 0)
+		return;
+	
+	float lerp = ExtendedMath::LerpThreshhold(position.y, SURFACE_Y, 0.2f);
+	position.y = lerp;
+	SetPosition(position);
+}
+
 // Run this swimmer's joining behaviour
 void Swimmer::Join(float deltaTime)
 {
+	//Seek surface
+	SeekSurfaceY();
+
+	//Seek trail
 	XMFLOAT3 trailPos = GetTrailPos(deltaTime);
 	float dist = ExtendedMath::DistanceFloat3(trailPos, GetPosition());
 	if (dist > 0.1f)
@@ -217,9 +240,11 @@ void Swimmer::Join(float deltaTime)
 // Run this swimmer's following behaviour
 void Swimmer::Follow(float deltaTime)
 {
+	//Seek surface
+	SeekSurfaceY();
+
 	// Interpolate between the two samples on either side of our target time.
-	XMFLOAT3 newPos = GetTrailPos(deltaTime);
-	SetPosition(newPos);
+	SetPosition(GetTrailPos(deltaTime));
 }
 
 // Check if the boat is in the following state
