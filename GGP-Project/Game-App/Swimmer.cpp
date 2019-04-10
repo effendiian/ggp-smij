@@ -1,5 +1,8 @@
+#define _USE_MATH_DEFINES
+
 #include "Swimmer.h"
 #include "ExtendedMath.h"
+#include <cmath>
 
 //Buoyancy consts
 #define MASS 0.5f
@@ -27,6 +30,7 @@ Swimmer::Swimmer(Mesh* mesh, Material* material, std::string name)
 	this->leader = nullptr;
 	positionBuffer[0] = positionBuffer[1] = DirectX::XMFLOAT3(0, 0, 0);
 	timeBuffer[0] = timeBuffer[1] = timer = 0;
+	hitTimer = 0;
 
 	//Buoyancy vals
 	velocity = 0;
@@ -45,9 +49,10 @@ Swimmer::~Swimmer()
 	delete[] timeBuffer;
 }
 
+//Update the swimmer every frame
 void Swimmer::Update(float deltaTime)
 {
-	//ApplySin(deltaTime);
+	//Run the current state's behavior
 	switch (swmrState)
 	{
 		case SwimmerState::Entering:
@@ -71,7 +76,15 @@ void Swimmer::Update(float deltaTime)
 			break;
 
 		case SwimmerState::Hitting:
+			Hit(deltaTime);
+			break;
 
+		case SwimmerState::Still:
+			if (leader->GetName() != "player" && ((Swimmer*)leader)->CheckHit())
+				swmrState = SwimmerState::Hitting;
+			break;
+
+		case SwimmerState::Nothing:
 			break;
 	}	
 }
@@ -247,6 +260,27 @@ void Swimmer::Follow(float deltaTime)
 	SetPosition(GetTrailPos(deltaTime));
 }
 
+// Run this swimmer's hitting behaviour
+void Swimmer::Hit(float deltaTime)
+{
+	hitTimer += deltaTime;
+
+	XMFLOAT3 position = GetPosition();
+	if (hitTimer < M_PI / 8)
+	{
+		//Do a little jump up
+		position.y = 2 * sin(8 * hitTimer);
+		SetPosition(position);
+	}
+	else
+	{
+		//Reset to 0 and effectively "kill" the swimmer
+		position.y = 0;
+		SetPosition(position);
+		swmrState = SwimmerState::Nothing;
+	}
+}
+
 // Check if the boat is in the following state
 bool Swimmer::IsFollowing()
 {
@@ -261,14 +295,14 @@ void Swimmer::JoinTrail(Entity* newLeader)
 	positionBuffer[0] = positionBuffer[1] = leader->GetPosition();
 }
 
-// Set Swimmer's state for when the Boat hits something
-void Swimmer::StartHit()
+// Check if the swimmer is in the hitting state for the correct amount of time
+bool Swimmer::CheckHit()
 {
-	swmrState = SwimmerState::Hitting;
+	return (swmrState == SwimmerState::Hitting) && (hitTimer > (M_PI / 8) / 4);
 }
 
-// Set Swimmer's state for when the Boat is docking the swimmers
-void Swimmer::StartDock()
+// Set Swimmer's state to a new state
+void Swimmer::SetSwimmerState(SwimmerState newState)
 {
-	swmrState = SwimmerState::Docking;
+	swmrState = newState;
 }

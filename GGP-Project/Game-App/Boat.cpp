@@ -144,16 +144,17 @@ void Boat::CheckCollisions()
 // Runs the calls for when the player gets a gameover (hits a wall, etc)
 void Boat::GameOver()
 {
-	for (int i = 0; i < trail.size(); i++)
+	for (int i = 1; i < trail.size(); i++)
 	{
-		if (trail[i] != nullptr)
+		if (trail[i]) 
 		{
-			trail[i]->StartHit();
+			trail[i]->SetSwimmerState(SwimmerState::Still);
 		}
 	}
 
 	printf("Game Over! Press the 'Spacebar' to reset.\n");
 	this->crashed = true;
+	if (trail.size() > 0) { trail[0]->SetSwimmerState(SwimmerState::Hitting); }
 }
 
 // Clears all swimmers from the boat
@@ -188,7 +189,7 @@ void Boat::DockSwimmers()
 	{
 		if (trail[i] != nullptr)
 		{
-			trail[i]->StartDock();
+			trail[i]->SetSwimmerState(SwimmerState::Docking);
 		}
 	}
 	trail.clear();
