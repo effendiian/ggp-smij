@@ -1,8 +1,6 @@
 #include "Renderer.h"
 #include "EntityManager.h"
 #include <sstream> 
-#include <string> 
-#include "EntityManager.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -20,7 +18,8 @@ Entity::Entity(Mesh* mesh, Material* material)
 	std::stringstream ss;
 	ss << addressMat << addressMesh;
 	std::string temp = ss.str();
-	identifier = temp;
+	identifier = ss.str();
+
 
 	Renderer::GetInstance()->AddEntityToRenderer(this);
 	EntityManager::GetInstance()->AddEntity(this);

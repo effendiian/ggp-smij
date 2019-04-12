@@ -181,16 +181,3 @@ void Boat::AttachSwimmer(Swimmer* swimmer, int index)
 	trail.push_back(swimmer);
 	swimmerManager->AttachSwimmer(swimmer, leader, index);
 }
-
-// Detatch swimmers from boat and dock them
-void Boat::DockSwimmers()
-{
-	for (int i = 0; i < trail.size(); i++)
-	{
-		if (trail[i] != nullptr)
-		{
-			trail[i]->SetSwimmerState(SwimmerState::Docking);
-		}
-	}
-	trail.clear();
-}

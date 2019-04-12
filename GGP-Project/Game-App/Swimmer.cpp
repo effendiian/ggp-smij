@@ -71,17 +71,13 @@ void Swimmer::Update(float deltaTime)
 			Follow(deltaTime);
 			break;
 
-		case SwimmerState::Docking:
-			
+		case SwimmerState::Still:
+			if (leader->GetName() != "player" && ((Swimmer*)leader)->CheckHit())
+				swmrState = SwimmerState::Hitting;
 			break;
 
 		case SwimmerState::Hitting:
 			Hit(deltaTime);
-			break;
-
-		case SwimmerState::Still:
-			if (leader->GetName() != "player" && ((Swimmer*)leader)->CheckHit())
-				swmrState = SwimmerState::Hitting;
 			break;
 
 		case SwimmerState::Nothing:

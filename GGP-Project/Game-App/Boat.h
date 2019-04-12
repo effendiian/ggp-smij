@@ -72,10 +72,4 @@ public:
 	void SetLevelBounds(float width, float height) { SetLevelWidth(width); SetLevelHeight(height); }
 	float GetLevelWidth () { return levelWidth;  }
 	float GetLevelHeight() { return levelHeight; }
-	
-	// --------------------------------------------------------
-	// Detatch swimmers from boat and dock them
-	// --------------------------------------------------------
-	void DockSwimmers();
-
 };

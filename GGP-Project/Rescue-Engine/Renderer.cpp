@@ -6,11 +6,7 @@ using namespace DirectX;
 
 // Initialize values in the renderer
 void Renderer::Init()
-{
-	// Initialize fields
-	vertexShader = 0;
-	pixelShader = 0;
-}
+{ }
 
 // Destructor for when the singleton instance is deleted
 Renderer::~Renderer()
@@ -33,6 +29,10 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 
 		Material* mat = firstValid->GetMaterial();
 		Mesh* mesh = firstValid->GetMesh();
+
+		// Turn shaders on
+		mat->GetVertexShader()->SetShader();
+		mat->GetPixelShader()->SetShader();
 
 		//Prepare the material's combo specific variables
 		mat->PrepareMaterialCombo(firstValid, camera);

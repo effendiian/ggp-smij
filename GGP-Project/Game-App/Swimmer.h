@@ -3,7 +3,7 @@
 #include "Entity.h"
 
 //Enum for swimmer states
-enum class SwimmerState { Entering, Floating, Joining, Following, Docking, Hitting, Still, Nothing };
+enum class SwimmerState { Entering, Floating, Joining, Following, Still, Hitting, Nothing };
 
 class Swimmer :
 	public Entity
@@ -96,7 +96,7 @@ public:
 	void JoinTrail(Entity* leader);
 
 	// --------------------------------------------------------
-// Check if the swimmer is in the hitting state for the correct amount of time	// --------------------------------------------------------
+	// Check if the swimmer is in the hitting state for the correct amount of time	// --------------------------------------------------------
 	bool CheckHit();
 
 	// --------------------------------------------------------
