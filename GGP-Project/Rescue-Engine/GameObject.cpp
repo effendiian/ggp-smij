@@ -27,11 +27,11 @@ GameObject::GameObject(std::string name)
 }
 
 // Constructor - Set up the gameobject.
-GameObject::GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
-	: GameObject()
-{
-	collider = new Collider(position, size, offset);
-}
+//GameObject::GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
+//	: GameObject()
+//{
+//	collider = new Collider(box, position, size, offset);
+//}
 
 // Destructor for when an instance is deleted
 GameObject::~GameObject()
@@ -65,7 +65,12 @@ std::string GameObject::GetName()
 
 // Update this entity
 void GameObject::Update(float deltaTime)
-{ }
+{
+	if (collider != nullptr && collider->IsDebug()) 
+	{
+		//add collider to render list
+	}
+}
 
 // Get the world matrix for this GameObject (rebuilding if necessary)
 XMFLOAT4X4 GameObject::GetWorldMatrix()

@@ -66,6 +66,9 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 				0);    // Offset to add to each index when looking up vertices
 		}
 	}
+
+	//for()
+
 }
 
 // Add an entity to the render list
@@ -109,7 +112,7 @@ void Renderer::RemoveEntityFromRenderer(Entity* e)
 	//Check if we are in the map
 	if (mapIt == renderMap.end())
 	{
-		printf("Cannont remove entity because it is not in renderer");
+		printf("Cannot remove entity because it is not in renderer");
 		return;
 	}
 
@@ -122,7 +125,7 @@ void Renderer::RemoveEntityFromRenderer(Entity* e)
 	//Check if we are in the list
 	if (listIt == (*list).end())
 	{
-		printf("Cannont remove entity because it is not in renderer");
+		printf("Cannot remove entity because it is not in renderer");
 		return;
 	}
 
@@ -161,4 +164,9 @@ bool Renderer::IsEntityInRenderer(Entity* e)
 		return false;
 
 	return true;
+}
+
+void Renderer::AddBoxToRenderer()
+{
+	//resourceManager->GetMesh("Assets\\Models\\cube.obj");
 }

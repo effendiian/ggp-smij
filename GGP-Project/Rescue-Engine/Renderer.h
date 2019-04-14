@@ -19,6 +19,9 @@ private:
 	//renderMap uses Mat/Mesh identifiers to point to the correct list
 	std::map<std::string, std::vector<Entity*>> renderMap;
 
+	//Collider list management
+	//std::vector
+
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
@@ -75,4 +78,6 @@ public:
 	// Check if an entity is in the render list. O(n) complexity
 	// --------------------------------------------------------
 	bool IsEntityInRenderer(Entity* e);
+
+	void AddBoxToRenderer();
 };

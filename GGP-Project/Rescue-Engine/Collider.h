@@ -1,5 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
+#include "Mesh.h"
 
 class Collider
 {
@@ -7,6 +8,8 @@ private:
 	DirectX::XMFLOAT3 position; //center
 	DirectX::XMFLOAT3 offset; //(0,0,0) if not given
 	DirectX::XMFLOAT3 size; //xyz = width, height, length
+	bool debug;
+	Mesh* box;
 
 public:
 	Collider();
@@ -21,5 +24,11 @@ public:
 	void SetSize(DirectX::XMFLOAT3 newSize);
 
 	bool Collides(Collider other); //AABB for now
+
+	bool IsDebug();
+
+	void SetDebug(bool setting);
+
+	Mesh* getMesh();
 };
 

@@ -1,4 +1,5 @@
 #include "Collider.h"
+#include "ResourceManager.h"
 
 using namespace DirectX;
 
@@ -19,6 +20,10 @@ Collider::Collider(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 size, DirectX::
 
 	this->size = size;
 	this->offset = offset;
+
+	debug = false;
+
+	box = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
 }
 
 // Release resources.
@@ -85,4 +90,19 @@ bool Collider::Collides(Collider other)
 	if (distance < 0.5f) return true;
 	else return false;*/
 	
+}
+
+bool Collider::IsDebug()
+{
+	return debug;
+}
+
+void Collider::SetDebug(bool setting)
+{
+	debug = setting;
+}
+
+Mesh * Collider::getMesh()
+{
+	return box;
 }
