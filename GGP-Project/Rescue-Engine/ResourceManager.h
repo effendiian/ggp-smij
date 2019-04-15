@@ -1,7 +1,7 @@
 #pragma once
 #include "WICTextureLoader.h"
 #include "DDSTextureLoader.h"
-#include <map>
+#include <unordered_map>
 #include "Mesh.h"
 #include "Material.h"
 
@@ -15,12 +15,12 @@ private:
 	~ResourceManager();
 
 	//Resource maps
-	std::map<std::string, ID3D11ShaderResourceView*> texture2DMap;
-	std::map<std::string, ID3D11ShaderResourceView*> cubemapMap;
-	std::map<std::string, Mesh*> meshMap;
-	std::map<std::string, Material*> materialMap;
-	std::map<std::string, SimplePixelShader*> pixelShaderMap;
-	std::map<std::string, SimpleVertexShader*> vertexShaderMap;
+	std::unordered_map<std::string, ID3D11ShaderResourceView*> texture2DMap;
+	std::unordered_map<std::string, ID3D11ShaderResourceView*> cubemapMap;
+	std::unordered_map<std::string, Mesh*> meshMap;
+	std::unordered_map<std::string, Material*> materialMap;
+	std::unordered_map<std::string, SimplePixelShader*> pixelShaderMap;
+	std::unordered_map<std::string, SimpleVertexShader*> vertexShaderMap;
 
 public:
 	// --------------------------------------------------------

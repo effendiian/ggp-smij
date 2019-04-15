@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include "SimpleShader.h"
 #include "Entity.h"
 #include "Camera.h"
@@ -17,11 +17,7 @@ class Renderer
 private:
 	//Render list management
 	//renderMap uses Mat/Mesh identifiers to point to the correct list
-	std::map<std::string, std::vector<Entity*>> renderMap;
-
-	// Wrappers for DirectX shaders to provide simplified functionality
-	SimpleVertexShader* vertexShader;
-	SimplePixelShader* pixelShader;
+	std::unordered_map<std::string, std::vector<Entity*>> renderMap;
 
 	// --------------------------------------------------------
 	// Singleton Constructor - Set up the singleton instance of the renderer
