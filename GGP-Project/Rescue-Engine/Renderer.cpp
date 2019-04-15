@@ -1,12 +1,23 @@
 #include "Renderer.h"
 #include "LightManager.h"
+#include "ResourceManager.h"
 #include <algorithm>
 
 using namespace DirectX;
 
 // Initialize values in the renderer
-void Renderer::Init()
-{ }
+void Renderer::Init(ID3D11Device* device)
+{
+	colDebugCube = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
+	colDebugVS = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
+	colDebugPS = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
+
+	//Wireframe rasterizer state
+	D3D11_RASTERIZER_DESC RD_wireframe = {};
+	RD_wireframe.FillMode = D3D11_FILL_WIREFRAME;
+	RD_wireframe.CullMode = D3D11_CULL_NONE;
+	device->CreateRasterizerState(&RD_wireframe, &RS_wireframe);
+}
 
 // Destructor for when the singleton instance is deleted
 Renderer::~Renderer()
@@ -15,6 +26,11 @@ Renderer::~Renderer()
 // Draw all entities in the render list
 void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 {
+
+#pragma region Render Opaque Objects
+	// ----------------------------------------------------------------------------------------------------------------
+	//Render opaque objects
+
 	//TODO: Apply attenuation
 	for (auto const& mapPair : renderMap)
 	{
@@ -66,6 +82,50 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 				0);    // Offset to add to each index when looking up vertices
 		}
 	}
+#pragma endregion
+
+#pragma region Render Debug Colliders
+	// ----------------------------------------------------------------------------------------------------------------
+	//Render debug collider outlines
+
+	//Se wireframe
+	context->RSSetState(RS_wireframe);
+
+	//Set shaders
+	colDebugVS->SetShader();
+	colDebugPS->SetShader();
+
+	//Set camera data
+	colDebugVS->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+	colDebugVS->SetMatrix4x4("view", camera->GetViewMatrix());
+	colDebugVS->CopyBufferData("perFrame");
+
+	//Loop
+	for (auto const& collider : debugColliders)
+	{
+		// Assign collider world to VS
+		colDebugVS->SetMatrix4x4("world", collider->GetWorldMatrix());
+		colDebugVS->CopyBufferData("perObject");
+
+		// Set buffers in the input assembler
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer* vertexBuffer = colDebugCube->GetVertexBuffer();
+		ID3D11Buffer* indexBuffer = colDebugCube->GetIndexBuffer();
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		// Draw object
+		context->DrawIndexed(
+			colDebugCube->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
+	}
+	//Clear debug collider list and reset raster state
+	debugColliders.clear();
+	context->RSSetState(0);
+#pragma endregion
+
 }
 
 // Add an entity to the render list
@@ -109,7 +169,7 @@ void Renderer::RemoveEntityFromRenderer(Entity* e)
 	//Check if we are in the map
 	if (mapIt == renderMap.end())
 	{
-		printf("Cannont remove entity because it is not in renderer");
+		printf("Cannot remove entity because it is not in renderer");
 		return;
 	}
 
@@ -122,7 +182,7 @@ void Renderer::RemoveEntityFromRenderer(Entity* e)
 	//Check if we are in the list
 	if (listIt == (*list).end())
 	{
-		printf("Cannont remove entity because it is not in renderer");
+		printf("Cannot remove entity because it is not in renderer");
 		return;
 	}
 
@@ -161,4 +221,10 @@ bool Renderer::IsEntityInRenderer(Entity* e)
 		return false;
 
 	return true;
+}
+
+// Tell the renderer to render a collider this frame
+void Renderer::RenderColliderThisFrame(Collider * c)
+{
+	debugColliders.push_back(c);
 }

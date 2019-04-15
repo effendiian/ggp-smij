@@ -54,10 +54,14 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	//Load all needed assets
+	resourceManager = ResourceManager::GetInstance();
+	LoadAssets();
+
 	//Initialize singletons
 	inputManager = InputManager::GetInstance();
 	renderer = Renderer::GetInstance();
-	resourceManager = ResourceManager::GetInstance();
+	renderer->Init(device);
 	entityManager = EntityManager::GetInstance();
 	swimmerManager = SwimmerManager::GetInstance();
 
@@ -70,8 +74,7 @@ void Game::Init()
 	camera->SetRotation(75, 0, 0);
 	camera->SetPosition(0, 25, -5);
 
-	//Load all needed assets
-	LoadAssets();
+	//Create game entities
 	CreateEntities();
 
 	//Initialize transformation modifiers
@@ -112,6 +115,8 @@ void Game::LoadAssets()
 	//Load shaders
 	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
 	resourceManager->LoadPixelShader("PixelShaderPBR.cso", device, context);
+	resourceManager->LoadVertexShader("VS_ColDebug.cso", device, context);
+	resourceManager->LoadPixelShader("PS_ColDebug.cso", device, context);
 
 	//Create meshes
 	resourceManager->LoadMesh("Assets\\Models\\torus.obj", device);
@@ -189,7 +194,10 @@ void Game::CreateEntities()
 		resourceManager->GetMaterial("scratched")
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
-	player->AddCollider(XMFLOAT3(1.1f, 1.1f, 1.1f), XMFLOAT3(0, 0, 0));
+	player->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));
+#if defined(DEBUG) || defined(_DEBUG)
+	player->GetCollider()->SetDebug(true);
+#endif
 }
 
 // --------------------------------------------------------

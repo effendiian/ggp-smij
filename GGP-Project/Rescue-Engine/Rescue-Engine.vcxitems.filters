@@ -16,6 +16,9 @@
     <Filter Include="Header Files\Helpers">
       <UniqueIdentifier>{68bc4b72-3acc-4837-be87-029f7532be5b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{790ea22f-9f7c-4198-b434-7d8cb533ad06}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp">
@@ -104,5 +107,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Collider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(MSBuildThisFileDirectory)PS_ColDebug.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)VS_ColDebug.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
