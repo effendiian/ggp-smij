@@ -8,10 +8,6 @@ using namespace DirectX;
 // Initialize values in the renderer
 void Renderer::Init(ID3D11Device* device)
 {
-	// Initialize fields
-	vertexShader = 0;
-	pixelShader = 0;
-
 	colDebugCube = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
 	colDebugVS = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
 	colDebugPS = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
