@@ -21,7 +21,9 @@ void Renderer::Init(ID3D11Device* device)
 
 // Destructor for when the singleton instance is deleted
 Renderer::~Renderer()
-{ }
+{ 
+	RS_wireframe->Release();
+}
 
 // Draw all entities in the render list
 void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
