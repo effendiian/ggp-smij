@@ -65,6 +65,7 @@ void Boat::Input(float deltaTime)
 			"swimmer"
 		);
 		swimmer->AddCollider(DirectX::XMFLOAT3(0.9f, 0.9f, 0.9f), DirectX::XMFLOAT3(0, 0, 0));
+		swimmer->GetCollider()->SetDebug(true);
 
 		// Get the leader.
 		Entity* leader = nullptr;

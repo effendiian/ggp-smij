@@ -19,27 +19,28 @@ private:
 	//renderMap uses Mat/Mesh identifiers to point to the correct list
 	std::map<std::string, std::vector<Entity*>> renderMap;
 
-	//Collider list management
-	//std::vector
-
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
 
+	//Collider debugging
+	std::vector<Collider*> debugColliders;
+	Mesh* colDebugCube;
+	SimpleVertexShader* colDebugVS;
+	SimplePixelShader* colDebugPS;
+
+	//Raster states
+	ID3D11RasterizerState* RS_wireframe;
+
 	// --------------------------------------------------------
 	// Singleton Constructor - Set up the singleton instance of the renderer
 	// --------------------------------------------------------
-	Renderer() { Init(); }
+	Renderer() {}
 
 	// --------------------------------------------------------
 	// Destructor for when the singleton instance is deleted
 	// --------------------------------------------------------
 	~Renderer();
-
-	// --------------------------------------------------------
-	// Initialize values in the renderer
-	// --------------------------------------------------------
-	void Init();
 
 public:
 	// --------------------------------------------------------
@@ -51,6 +52,11 @@ public:
 
 		return &instance;
 	}
+
+	// --------------------------------------------------------
+	// Initialize values in the renderer
+	// --------------------------------------------------------
+	void Init(ID3D11Device* device);
 
 	//Delete this
 	Renderer(Renderer const&) = delete;
@@ -79,5 +85,8 @@ public:
 	// --------------------------------------------------------
 	bool IsEntityInRenderer(Entity* e);
 
-	void AddBoxToRenderer();
+	// --------------------------------------------------------
+	// Tell the renderer to render a collider this frame
+	// --------------------------------------------------------
+	void RenderColliderThisFrame(Collider* c);
 };
