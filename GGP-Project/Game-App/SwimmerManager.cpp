@@ -39,7 +39,7 @@ DirectX::XMFLOAT3 SwimmerManager::GetNextPosition()
 	// Return next randomly generated position, centered on the swimmer manager's collider.
 	return DirectX::XMFLOAT3(
 		center.x + distX(rng), 
-		center.y, 
+		-5, 
 		center.z + distZ(rng)
 	);
 }

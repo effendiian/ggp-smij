@@ -89,7 +89,8 @@ void Game::Init()
 	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
 
 	//Directional lights
-	lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
+	DirectionalLight* dLight = lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
+	dLight->SetRotation(90, 0, 0);
 
 	////Point light
 	//PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
@@ -180,6 +181,13 @@ void Game::LoadAssets()
 
 void Game::CreateEntities()
 {
+	//Create water
+	Entity* water = new Entity(
+		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
+		resourceManager->GetMaterial("floor")
+	);
+	water->SetScale(26, 0.1f, 26);
+
 	// Player (Boat) - Create the player.
 	Entity* player = new Boat(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
@@ -190,22 +198,6 @@ void Game::CreateEntities()
 #if defined(DEBUG) || defined(_DEBUG)
 	player->GetCollider()->SetDebug(true);
 #endif
-
-	Entity* e1 = new Entity(
-		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("scratched")
-	);
-	e1->SetPosition(0, 0, 0);
-	e1->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));
-	e1->GetCollider()->SetDebug(true);
-
-	Entity* e2 = new Entity(
-		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("scratched")
-	);
-	e2->SetPosition(1.1f, 0, 0);
-	e2->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));
-	e2->GetCollider()->SetDebug(true);
 }
 
 // --------------------------------------------------------

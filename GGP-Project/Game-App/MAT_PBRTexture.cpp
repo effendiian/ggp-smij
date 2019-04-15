@@ -27,10 +27,6 @@ void MAT_PBRTexture::PrepareMaterialCombo(GameObject* entityObj, Camera* cam)
 {
 	LightManager* lightManager = LightManager::GetInstance();
 
-	// Turn shaders on
-	vertexShader->SetShader();
-	pixelShader->SetShader();
-
 	// Vertex shader data
 	vertexShader->SetMatrix4x4("projection", cam->GetProjectionMatrix());
 	vertexShader->SetMatrix4x4("view", cam->GetViewMatrix());

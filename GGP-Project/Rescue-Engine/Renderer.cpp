@@ -50,6 +50,10 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 		Material* mat = firstValid->GetMaterial();
 		Mesh* mesh = firstValid->GetMesh();
 
+		// Turn shaders on
+		mat->GetVertexShader()->SetShader();
+		mat->GetPixelShader()->SetShader();
+
 		//Prepare the material's combo specific variables
 		mat->PrepareMaterialCombo(firstValid, camera);
 

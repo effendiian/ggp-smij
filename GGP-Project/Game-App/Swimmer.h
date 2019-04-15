@@ -3,7 +3,7 @@
 #include "Entity.h"
 
 //Enum for swimmer states
-enum class SwimmerState { Entering, Floating, Joining, Following, Docking, Hitting };
+enum class SwimmerState { Entering, Floating, Joining, Following, Still, Hitting, Nothing };
 
 class Swimmer :
 	public Entity
@@ -15,14 +15,36 @@ private:
 	static const int MAX_FPS = 60;
 	Entity* leader;
 	float lagSeconds = 0.7f;
+	float hitTimer;
 
-	//Buffer vars
+	//Snake movement buffer vars
 	DirectX::XMFLOAT3* positionBuffer;
 	float* timeBuffer;
 	int bufferLength;
 	int oldestIndex;
 	int newestIndex;
 	float timer;
+
+	//Buoyancy vars
+	float velocity;
+	float acceleration;
+	float sinAmnt;
+	float gravityMult;
+
+	// --------------------------------------------------------
+	// Run this swimmer's entering behaviour
+	//---------------------------------------------------------
+	void Enter(float deltaTime);
+
+	// --------------------------------------------------------
+	// Apply buoyancy to the swimmer
+	//---------------------------------------------------------
+	void ApplyBuoyancy(float deltaTime);
+
+	// --------------------------------------------------------
+	// Apply buoyancy to the swimmer
+	//---------------------------------------------------------
+	void ApplyCos(float deltaTime);
 
 	// --------------------------------------------------------
 	// Run this swimmer's floating behaviour
@@ -35,6 +57,11 @@ private:
 	DirectX::XMFLOAT3 GetTrailPos(float deltaTime);
 
 	// --------------------------------------------------------
+	// Causes this swimmer to seek the surface y's position
+	// --------------------------------------------------------
+	void SeekSurfaceY();
+
+	// --------------------------------------------------------
 	// Run this swimmer's joining behaviour
 	// --------------------------------------------------------
 	void Join(float deltaTime);
@@ -43,6 +70,11 @@ private:
 	// Run this swimmer's following behaviour
 	// --------------------------------------------------------
 	void Follow(float deltaTime);
+
+	// --------------------------------------------------------
+	// Run this swimmer's hitting behaviour
+	// --------------------------------------------------------
+	void Hit(float deltaTime);
 
 public:
 	Swimmer(Mesh* mesh, Material* material, std::string name);
@@ -64,13 +96,12 @@ public:
 	void JoinTrail(Entity* leader);
 
 	// --------------------------------------------------------
-	// Set Swimmer's state for when the Boat hits something
-	// --------------------------------------------------------
-	void StartHit();
+	// Check if the swimmer is in the hitting state for the correct amount of time	// --------------------------------------------------------
+	bool CheckHit();
 
 	// --------------------------------------------------------
-	// Set Swimmer's state for when the Boat is docking the swimmers
+	// Set Swimmer's state to a new state
 	// --------------------------------------------------------
-	void StartDock();
+	void SetSwimmerState(SwimmerState newState);
 };
 
