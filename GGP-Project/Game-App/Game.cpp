@@ -80,6 +80,9 @@ void Game::Init()
 	rotSpeed = 20;
 	scale = 1;
 
+	//Water
+	translate = 0.0f;
+
 	//Initialize lights
 	//Set ambient light
 	LightManager* lightManager = LightManager::GetInstance();
@@ -112,6 +115,7 @@ void Game::LoadAssets()
 	//Load shaders
 	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
 	resourceManager->LoadPixelShader("PixelShaderPBR.cso", device, context);
+	resourceManager->LoadPixelShader("WaterPixelShader.cso", device, context);
 
 	//Create meshes
 	resourceManager->LoadMesh("Assets\\Models\\torus.obj", device);
@@ -135,6 +139,9 @@ void Game::LoadAssets()
 	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_roughness.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_metal.png", device, context);
 
+	resourceManager->LoadTexture2D("Assets/Textures/Water/blue.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_1.png", device, context);
+
 	//Create sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -148,6 +155,7 @@ void Game::LoadAssets()
 	//Create materials
 	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
 	SimplePixelShader* ps = resourceManager->GetPixelShader("PixelShaderPBR.cso");
+	SimplePixelShader* ws = resourceManager->GetPixelShader("WaterPixelShader.cso"); //pixel shader for water surface
 
 	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"), 
@@ -172,6 +180,15 @@ void Game::LoadAssets()
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
 		samplerState);
 	resourceManager->AddMaterial("wood", mat3);
+	
+	//Water surface material
+	Material* mat4 = new MAT_Water(vs, ws, 1024.0f, XMFLOAT2(2, 2),
+		resourceManager->GetTexture2D("Assets/Textures/Water/blue.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_1.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
+		samplerState, &translate);
+	resourceManager->AddMaterial("water", mat4);
 }
 
 void Game::CreateEntities()
@@ -179,7 +196,7 @@ void Game::CreateEntities()
 	//Create water
 	Entity* water = new Entity(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("floor")
+		resourceManager->GetMaterial("water")
 	);
 	water->SetScale(26, 0.1f, 26);
 
@@ -231,6 +248,10 @@ void Game::Update(float deltaTime, float totalTime)
 
 	// Updates the swimmer generator/manager.
 	swimmerManager->Update(deltaTime);
+
+	//Updates water's scrolling normal map
+	translate += 0.00001f;
+	if (translate > 1.0f) translate = 0.0f;
 	
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager
