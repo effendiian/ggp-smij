@@ -115,5 +115,11 @@
     <FxCompile Include="$(MSBuildThisFileDirectory)VS_ColDebug.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)FXAAShaderPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="$(MSBuildThisFileDirectory)FXAAShaderVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
