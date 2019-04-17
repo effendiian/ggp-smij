@@ -86,6 +86,12 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 	}
 #pragma endregion
 
+#pragma region Apply FXAA Shader
+
+
+
+#pragma endregion
+
 #pragma region Render Debug Colliders
 	// ----------------------------------------------------------------------------------------------------------------
 	//Render debug collider outlines
