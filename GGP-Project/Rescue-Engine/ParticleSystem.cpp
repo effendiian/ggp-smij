@@ -46,7 +46,7 @@ bool ParticleSystem::ClearParticleList()
 
 //Updates the particles in the particle list.
 void ParticleSystem::Update(float deltaTime)
-{ 
+{
 	std::cout << "There are " << particleList.size() << " particles in the particle system." << std::endl;
 	for (int i = 0; i < particleList.size(); i++)
 	{

@@ -34,6 +34,6 @@ private:
 	XMFLOAT3 position;                   //The position of the particle system
 	std::vector<Particle*> particleList; //The list of particles in the system
 	int aliveTime;                       //The time that the particles should stay alive
-	
+
 };
 

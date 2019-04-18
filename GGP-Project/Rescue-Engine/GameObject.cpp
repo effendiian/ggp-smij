@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "Renderer.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -24,13 +25,6 @@ GameObject::GameObject(std::string name)
 	: GameObject()
 {
 	this->name = name;
-}
-
-// Constructor - Set up the gameobject.
-GameObject::GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
-	: GameObject()
-{
-	collider = new Collider(position, size, offset);
 }
 
 // Destructor for when an instance is deleted
@@ -65,7 +59,11 @@ std::string GameObject::GetName()
 
 // Update this entity
 void GameObject::Update(float deltaTime)
-{ }
+{
+	//Add collider to render list
+	if (collider != nullptr && collider->IsDebug())
+		Renderer::GetInstance()->AddDebugColliderToThisFrame(collider);
+}
 
 // Get the world matrix for this GameObject (rebuilding if necessary)
 XMFLOAT4X4 GameObject::GetWorldMatrix()

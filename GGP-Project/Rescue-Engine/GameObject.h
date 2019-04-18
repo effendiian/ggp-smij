@@ -47,7 +47,7 @@ public:
 	// size - dimensions of bounding box
 	// offset - offset of collider from position of game object
 	// --------------------------------------------------------
-	GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
+	/*GameObject(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);*/
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted

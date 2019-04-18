@@ -95,7 +95,10 @@ void EntityManager::Update(float deltaTime)
 	for (size_t i = 0; i < entities.size(); i++)
 	{
 		if (entities[i]->GetEnabled())
+		{
+			entities[i]->GameObject::Update(deltaTime);
 			entities[i]->Update(deltaTime);
+		}
 	}
 
 	//Remove entities
