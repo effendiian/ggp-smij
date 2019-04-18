@@ -38,9 +38,6 @@
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FirstPersonCamera.cpp">
-      <Filter>Source Files\Cameras</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -59,13 +56,13 @@
     <ClCompile Include="MAT_Water.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="FocusCamera.cpp">
+      <Filter>Source Files\Cameras</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXCore.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FirstPersonCamera.h">
-      <Filter>Header Files\Cameras</Filter>
     </ClInclude>
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
@@ -84,6 +81,9 @@
     </ClInclude>
     <ClInclude Include="MAT_Water.h">
       <Filter>Header Files\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="FocusCamera.h">
+      <Filter>Header Files\Cameras</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

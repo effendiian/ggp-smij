@@ -66,12 +66,6 @@ void Game::Init()
 	//Initialize singleton data
 	inputManager->Init(hWnd);
 
-	//Create the camera and initialize matrices
-	camera = new FirstPersonCamera();
-	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
-	camera->SetRotation(75, 0, 0);
-	camera->SetPosition(0, 25, -5);
-
 	//Create game entities
 	gameState = GameState::Menu;
 	CreateEntities();
@@ -117,9 +111,7 @@ void Game::LoadAssets()
 	resourceManager->LoadPixelShader("PS_Sky.cso", device, context);
 
 	//Create meshes
-	resourceManager->LoadMesh("Assets\\Models\\torus.obj", device);
 	resourceManager->LoadMesh("Assets\\Models\\cube.obj", device);
-	resourceManager->LoadMesh("Assets\\Models\\helix.obj", device);
 	resourceManager->LoadMesh("Assets\\Models\\sphere.obj", device);
 
 	//Load textures
@@ -220,6 +212,11 @@ void Game::CreateEntities()
 #if defined(DEBUG) || defined(_DEBUG)
 	player->GetCollider()->SetDebug(true);
 #endif
+
+	//Create the camera and initialize matrices
+	camera = new FocusCamera(player, XMFLOAT3(0, 25, -5), 5);
+	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
+	camera->SetRotation(75, 0, 0);
 }
 
 // --------------------------------------------------------

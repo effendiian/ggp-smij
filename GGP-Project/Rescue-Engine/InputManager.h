@@ -30,6 +30,9 @@ private:
 	bool prev_MB_R_Down;
 	bool prev_MB_M_Down;
 
+	//Scrollwheel control
+	float wheelDelta;
+
 	//Window control
 	HWND hWnd;
 	bool winRequireFocus;
@@ -166,6 +169,11 @@ public:
 	// Get the current Y mouse position
 	// --------------------------------------------------------
 	long GetMouseY();
+
+	// --------------------------------------------------------
+	// Get the current scrollwheel delta
+	// --------------------------------------------------------
+	float GetScrollWheelDelta();
 
 	// --------------------------------------------------------
 	// Get the X coordinate of the window (left)

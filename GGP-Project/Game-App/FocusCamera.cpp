@@ -1,20 +1,109 @@
-#include "FirstPersonCamera.h"
+#define NOMINMAX
+
+#include "FocusCamera.h"
+#include <algorithm>
+#include "ExtendedMath.h"
 
 using namespace DirectX;
 
-// Constructor - Set up the first person camera
-FirstPersonCamera::FirstPersonCamera()
+// Constructor - Set up the focus camera
+FocusCamera::FocusCamera(GameObject* obj, DirectX::XMFLOAT3 anchor,
+	float zoomDist) : Camera()
 {
 	inputManager = InputManager::GetInstance();
+	focusObj = obj;
+	anchorPos = anchor;
+	maxZoom = zoomDist;
+	zoom = 0;
+	zoomTick = 0.1f;
+	SetPosition(anchor);
+
+#if defined(DEBUG) || defined(_DEBUG)
+	prevKeypress = false;
+	printf("Debug camera enabled. Press 'f' to toggle between focus and fps movement");
+#endif
 }
 
 // Destructor for when an instance is deleted
-FirstPersonCamera::~FirstPersonCamera()
+FocusCamera::~FocusCamera()
 { }
 
 // Update the camera (runs every frame)
-void FirstPersonCamera::Update(float deltaTime, float moveSpeed)
+void FocusCamera::Update(float deltaTime)
 {
+#if defined(DEBUG) || defined(_DEBUG)
+	//User is allows to press 'f' to toggle to the debug camera if in debug mode
+	bool keypress = inputManager->GetKey('F');
+	if (keypress && !prevKeypress)
+	{
+		fpsMovement = !fpsMovement;
+	}
+	prevKeypress = keypress;
+
+	//Debug camera selection
+	if (fpsMovement)
+	{
+		FPSMovement(deltaTime);
+		Camera::Update(deltaTime);
+		return;
+	}
+#endif
+
+	//Get scroll delta and apply it to zoom
+	float scrollDelta = inputManager->GetScrollWheelDelta();
+	zoom += scrollDelta * zoomTick;
+
+	//Keep zoom inbounds
+	zoom = std::max(0.0f, std::min(zoom, 1.0f));
+	
+	//Get target position
+	XMVECTOR targetPos = XMVectorLerp(XMLoadFloat3(&anchorPos),
+		XMLoadFloat3(&focusObj->GetPosition()), zoom);
+
+	//Lerp new position
+	XMVECTOR newPos;
+	newPos = XMVectorLerp(XMLoadFloat3(&GetPosition()), targetPos, 0.005f);
+
+	//Set new position
+	XMFLOAT3 position;
+	XMStoreFloat3(&position, newPos);
+	SetPosition(position);
+
+	//Rotate camera
+	XMFLOAT4 newRot = ExtendedMath::QuaternionLookAt(position, focusObj->GetPosition(),
+		GetForwardAxis(), GetUpAxis());
+	SetRotation(newRot);
+
+	Camera::Update(deltaTime);
+}
+
+// Set the focus object for this camera
+void FocusCamera::SetFocusObj(GameObject* obj)
+{
+	focusObj = obj;
+}
+
+// Set the anchor point
+void FocusCamera::SetAnchor(XMFLOAT3 anchor)
+{
+	anchorPos = anchor;
+}
+
+// Set the max zoom
+void FocusCamera::SetMaxZoom(float zoom)
+{
+	maxZoom = zoom;
+}
+
+
+// ----------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------
+#if defined(DEBUG) || defined(_DEBUG)
+// Allow fps movement for debugging
+void FocusCamera::FPSMovement(float deltaTime)
+{
+
+//Allow FPS movement in debug mode
 	XMFLOAT3 movement = XMFLOAT3();
 
 	//Relative Z movement
@@ -66,9 +155,10 @@ void FirstPersonCamera::Update(float deltaTime, float moveSpeed)
 
 	Camera::Update(deltaTime);
 }
+#endif
 
 // Calculate the camera's rotation when moving
-void FirstPersonCamera::CalculateCameraRotFromMouse()
+void FocusCamera::CalculateCameraRotFromMouse()
 {
 	float speed = 0.25f;
 
@@ -119,6 +209,6 @@ void FirstPersonCamera::CalculateCameraRotFromMouse()
 		xRot = -89.9f;
 
 	//Change the Yaw and the Pitch of the camera
-	SetRotation(xRot, yRot, GetRotation().z);
+	SetRotation(xRot, yRot, 0);
 	SetCursorPos(centerX, centerY); //Position the mouse in the center
 }

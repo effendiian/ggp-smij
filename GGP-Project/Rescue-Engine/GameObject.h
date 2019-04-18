@@ -14,15 +14,24 @@ private:
 	//Transformations
 	DirectX::XMFLOAT4X4 world;
 	DirectX::XMFLOAT4X4 worldInvTrans;
+
+
 	DirectX::XMFLOAT3 forwardAxis;
+	DirectX::XMFLOAT3 rightAxis;
+	DirectX::XMFLOAT3 upAxis;
+
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT4 rotationQuat;
-	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
 	bool worldDirty;
 
 	//Other data
 	Collider* collider;
+
+	// --------------------------------------------------------
+	// Calculate the local axis for the gameobject
+	// --------------------------------------------------------
+	void CalculateAxis();
 
 protected:
 	bool enabled;
@@ -140,9 +149,14 @@ public:
 	DirectX::XMFLOAT3 GetForwardAxis();
 
 	// --------------------------------------------------------
-	// Get the rotation for this GameObject (Angles)
+	// Get the rotated right axis of this gameobject
 	// --------------------------------------------------------
-	DirectX::XMFLOAT3 GetRotation();
+	DirectX::XMFLOAT3 GetRightAxis();
+
+	// --------------------------------------------------------
+	// Get the rotated up axis of this gameobject
+	// --------------------------------------------------------
+	DirectX::XMFLOAT3 GetUpAxis();
 
 	// --------------------------------------------------------
 	// Get the quaternion rotation for this GameObject (Quaternion)
@@ -155,6 +169,13 @@ public:
 	// newRotation - The new rotation to rotate to
 	// --------------------------------------------------------
 	void SetRotation(DirectX::XMFLOAT3 newRotation);
+
+	// --------------------------------------------------------
+	// Set the rotation for this GameObject (Quaternion)
+	//
+	// newQuatRotation - The new rotation to rotate to
+	// --------------------------------------------------------
+	void SetRotation(DirectX::XMFLOAT4 newQuatRotation);
 
 	// --------------------------------------------------------
 	// Set the rotation for this GameObject using angles

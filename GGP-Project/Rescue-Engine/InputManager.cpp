@@ -12,6 +12,7 @@ void InputManager::Init(HWND hWnd)
 	prev_MB_L_Down = false;
 	prev_MB_R_Down = false;
 	prev_MB_M_Down = false;
+	wheelDelta = 0;
 
 	GetCursorPos(&mousePos);
 	prevMousePos = mousePos;
@@ -37,6 +38,7 @@ void InputManager::UpdateStates()
 	prev_MB_L_Down = mb_L_Down;
 	prev_MB_R_Down = mb_R_Down;
 	prev_MB_M_Down = mb_M_Down;
+	wheelDelta = 0;
 }
 
 //Update the mouse position (only call ONCE PER FRAME!)
@@ -118,7 +120,8 @@ void InputManager::OnMouseMove(WPARAM buttonState, int x, int y)
 // --------------------------------------------------------
 void InputManager::OnMouseWheel(float wheelDelta, int x, int y)
 {
-	//TODO: Implement wheel states
+	//Store wheel delta
+	this->wheelDelta = wheelDelta;
 }
 
 //Returns true while the inputted key is held down
@@ -241,6 +244,12 @@ long InputManager::GetMouseX()
 long InputManager::GetMouseY()
 {
 	return mousePos.y;
+}
+
+// Get the current scrollwheel delta
+float InputManager::GetScrollWheelDelta()
+{
+	return wheelDelta;
 }
 
 // Get the X coordinate of the window (left)

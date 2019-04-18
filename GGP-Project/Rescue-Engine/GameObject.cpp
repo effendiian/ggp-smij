@@ -158,15 +158,22 @@ void GameObject::MoveRelative(XMFLOAT3 moveAmnt)
 	if (collider != nullptr) collider->SetPosition(position);
 }
 
+// Get the rotated forward axis of this gameobject
 XMFLOAT3 GameObject::GetForwardAxis()
 {
 	return forwardAxis;
 }
 
-// Get the rotation for this GameObject (Quaternion)
-XMFLOAT3 GameObject::GetRotation()
+// Get the rotated right axis of this gameobject
+XMFLOAT3 GameObject::GetRightAxis()
 {
-	return rotation;
+	return rightAxis;
+}
+
+// Get the rotated up axis of this gameobject
+XMFLOAT3 GameObject::GetUpAxis()
+{
+	return upAxis;
 }
 
 // Get the quaternion rotation for this entity (Quaternion)
@@ -179,16 +186,22 @@ DirectX::XMFLOAT4 GameObject::GetQuatRotation()
 void GameObject::SetRotation(XMFLOAT3 newRotation)
 {
 	worldDirty = true;
-	rotation = newRotation;
 
 	//Convert to quaternions and store
-	XMVECTOR angles = XMVectorScale(XMLoadFloat3(&rotation), XM_PI / 180.0f);
+	XMVECTOR angles = XMVectorScale(XMLoadFloat3(&newRotation), XM_PI / 180.0f);
 	XMVECTOR quat = XMQuaternionRotationRollPitchYawFromVector(angles);
 	XMStoreFloat4(&rotationQuat, quat);
 
-	//Rotate the forward axis
-	XMStoreFloat3(&forwardAxis, XMVector3Normalize(
-		XMVector3Rotate(XMVectorSet(0, 0, 1, 0), quat)));
+	CalculateAxis();
+}
+
+// Set the rotation for this GameObject (Quaternion)
+void GameObject::SetRotation(DirectX::XMFLOAT4 newQuatRotation)
+{
+	worldDirty = true;
+	rotationQuat = newQuatRotation;
+
+	CalculateAxis();
 }
 
 // Set the rotation for this GameObject using euler angles (Quaternion)
@@ -196,33 +209,53 @@ void GameObject::SetRotation(float x, float y, float z)
 {
 	worldDirty = true;
 
-	//Convert to degrees
-	rotation = XMFLOAT3(x, y, z);
-
 	//Convert to quaternions and store
-	XMVECTOR angles = XMVectorScale(XMLoadFloat3(&rotation), XM_PI / 180.0f);
+	XMVECTOR angles = XMVectorScale(XMVectorSet(x, y, z, 0), XM_PI / 180.0f);
 	XMVECTOR quat = XMQuaternionRotationRollPitchYawFromVector(angles);
 	XMStoreFloat4(&rotationQuat, quat);
 
-	//Rotate the forward axis
-	XMStoreFloat3(&forwardAxis, XMVector3Normalize(
-		XMVector3Rotate(XMVectorSet(0, 0, 1, 0), quat)));
+	CalculateAxis();
 }
 
 // Rotate this GameObject (Angles)
 void GameObject::Rotate(DirectX::XMFLOAT3 newRotation)
 {
-	XMFLOAT3 rot;
-	XMStoreFloat3(&rot, XMLoadFloat3(&rotation) + XMLoadFloat3(&newRotation));
+	XMVECTOR angles = XMVectorScale(XMLoadFloat3(&newRotation), XM_PI / 180.0f);
+	XMVECTOR quat = XMQuaternionRotationRollPitchYawFromVector(angles);
+
+	XMFLOAT4 rot;
+	XMStoreFloat4(&rot, XMLoadFloat4(&rotationQuat) * quat);
 	SetRotation(rot);
 }
 
 // Rotate this GameObject using angles
 void GameObject::Rotate(float x, float y, float z)
 {
-	XMFLOAT3 rot;
-	XMStoreFloat3(&rot, XMLoadFloat3(&rotation) + XMVectorSet(x, y,z, 0));
+	XMVECTOR angles = XMVectorScale(XMVectorSet(x, y, z, 0), XM_PI / 180.0f);
+	XMVECTOR quat = XMQuaternionRotationRollPitchYawFromVector(angles);
+
+	XMFLOAT4 rot;
+	XMStoreFloat4(&rot, XMLoadFloat4(&rotationQuat) * angles);
 	SetRotation(rot);
+}
+
+// Calculate the local axis for the gameobject
+void GameObject::CalculateAxis()
+{
+	//Rotate the forward axis
+	XMVECTOR forward = XMVector3Normalize(
+		XMVector3Rotate(XMVectorSet(0, 0, 1, 0), XMLoadFloat4(&rotationQuat)));
+	XMStoreFloat3(&forwardAxis, forward);
+
+	//Rotate the right axis
+	XMVECTOR right = XMVector3Normalize(
+		XMVector3Rotate(XMVectorSet(1, 0, 0, 0), XMLoadFloat4(&rotationQuat)));
+	XMStoreFloat3(&rightAxis, right);
+
+	//Rotate the up axis
+	XMVECTOR up = XMVector3Normalize(
+		XMVector3Rotate(XMVectorSet(0, 1, 0, 0), XMLoadFloat4(&rotationQuat)));
+	XMStoreFloat3(&upAxis, up);
 }
 
 // Get the scale for this GameObject

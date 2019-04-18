@@ -120,7 +120,7 @@
   <ItemGroup>
     <ClCompile Include="Boat.cpp" />
     <ClCompile Include="DXCore.cpp" />
-    <ClCompile Include="FirstPersonCamera.cpp" />
+    <ClCompile Include="FocusCamera.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MAT_PBRTexture.cpp" />
@@ -131,7 +131,7 @@
   <ItemGroup>
     <ClInclude Include="Boat.h" />
     <ClInclude Include="DXCore.h" />
-    <ClInclude Include="FirstPersonCamera.h" />
+    <ClInclude Include="FocusCamera.h" />
     <ClInclude Include="MAT_Water.h" />
     <ClInclude Include="SwimmerManager.h" />
     <ClInclude Include="Game.h" />

@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #include "InputManager.h"
 #include "EntityManager.h"
-#include "FirstPersonCamera.h"
+#include "FocusCamera.h"
 #include "ResourceManager.h"
 #include "SwimmerManager.h"
 #include "Boat.h"
@@ -25,7 +25,7 @@ public:
 	~Game();
 
 	//Camera
-	FirstPersonCamera* camera;
+	FocusCamera* camera;
 
 	// Overridden setup and game loop methods, which
 	// will be called automatically
