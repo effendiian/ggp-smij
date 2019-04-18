@@ -1,4 +1,6 @@
 
+// No input. Vertex shader is drawing a full-screen triangle. (3 vertices).
+
 // Defines the output data of the vertex shader.
 struct VertexToPixel
 {

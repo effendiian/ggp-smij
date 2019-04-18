@@ -3,6 +3,10 @@
 #include "ResourceManager.h"
 #include <algorithm>
 
+#define FXAA_ENABLED 1
+#define FXAA_PRESET 5
+#define FXAA_DEBUG 1
+
 using namespace DirectX;
 
 // Initialize values in the renderer
@@ -15,6 +19,28 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	colDebugCube = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
 	colDebugVS = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
 	colDebugPS = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
+
+	// Set up the FXAA settings.
+	fxaaSettings = new FXAA_DESC();
+	fxaaSettings->Init();
+	fxaaSettings->LoadPreset(FXAA_PRESET);
+
+#if (FXAA_ENABLED == 0)
+	fxaaSettings->FXAA = OFF;
+#else
+	fxaaSettings->FXAA = ON;
+#endif
+
+#if (FXAA_DEBUG == 1)
+	// Toggle these on and off as necessary.
+	fxaaSettings->DEBUG_DISCARD = ON;
+	fxaaSettings->DEBUG_PASSTHROUGH = ON;
+	fxaaSettings->DEBUG_HORZVERT = ON;
+	fxaaSettings->DEBUG_PAIR = ON;
+	fxaaSettings->DEBUG_OFFSET = ON;
+	fxaaSettings->DEBUG_NEGPOS = ON;
+	fxaaSettings->DEBUG_HIGHLIGHT = ON;
+#endif
 
 	// Create post-process resources.
 	D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -73,6 +99,7 @@ Renderer::~Renderer()
 	// Clean up post process.
 	fxaaRTV->Release();
 	fxaaSRV->Release();
+	delete fxaaSettings;
 }
 
 // Draw all entities in the render list
@@ -172,16 +199,43 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 	// Set target back to back buffer.
 	context->OMSetRenderTargets(1, &backBufferRTV, 0);
 
-	// Render a full-screen triangle using the post process shaders.
+	// Render a full-screen triangle using the post process vertex shader.
 	fxaaVS->SetShader();
 
+	// Send the pixel shader data.
 	fxaaPS->SetShader();
-	fxaaPS->SetShaderResourceView("pixels", fxaaSRV);
-	fxaaPS->SetSamplerState("basicSampler", sampler);
 
-	fxaaPS->SetFloat("texelWidth", 1.0f / width);
-	fxaaPS->SetFloat("texelHeight", 1.0f / height);
-	fxaaPS->SetInt("blurAmount", 5);
+	// Set $GLOBAL cbuffer data.
+	fxaaPS->SetShaderResourceView("g_RenderTextureView", fxaaSRV);
+	fxaaPS->SetSamplerState("g_Sampler", sampler);
+
+	// Set UniformData cbuffer data.
+	fxaaPS->SetFloat2("textureResolution", DirectX::XMFLOAT2(width, height));
+	fxaaPS->SetFloat("grayscalePercentage", 0.0f);
+	fxaaPS->CopyAllBufferData(); // Copy data to shader.
+
+	// Set FXAASettings cbuffer data.
+	fxaaPS->SetFloat("FXAA_EDGE_THRESHOLD", fxaaSettings->EDGE_THRESHOLD);
+	fxaaPS->SetFloat("FXAA_EDGE_THRESHOLD_MINIMUM", fxaaSettings->EDGE_THRESHOLD_MINIMUM);
+	fxaaPS->SetFloat("FXAA_SEARCH_THRESHOLD", fxaaSettings->SEARCH_THRESHOLD);
+	fxaaPS->SetFloat("FXAA_SUBPIX_CAP", fxaaSettings->SUBPIX_CAP);
+	fxaaPS->SetFloat("FXAA_SUBPIX_TRIM", fxaaSettings->SUBPIX_TRIM);
+
+	fxaaPS->SetInt("FXAA_ENABLED", fxaaSettings->FXAA);
+	fxaaPS->SetInt("FXAA_SEARCH_STEPS", fxaaSettings->SEARCH_STEPS);
+	fxaaPS->SetInt("FXAA_SEARCH_ACCELERATION", fxaaSettings->SEARCH_ACCELERATION);
+	fxaaPS->SetInt("FXAA_SUBPIX", fxaaSettings->SUBPIX);
+	fxaaPS->SetInt("FXAA_SUBPIX_FASTER", fxaaSettings->SUBPIX_FASTER);
+	fxaaPS->SetInt("FXAA_LUMINANCE_METHOD", fxaaSettings->LUMINANCE_METHOD);
+
+	fxaaPS->SetInt("FXAA_DEBUG_DISCARD", fxaaSettings->DEBUG_DISCARD);
+	fxaaPS->SetInt("FXAA_DEBUG_PASSTHROUGH", fxaaSettings->DEBUG_PASSTHROUGH);
+	fxaaPS->SetInt("FXAA_DEBUG_HORZVERT", fxaaSettings->DEBUG_HORZVERT);
+	fxaaPS->SetInt("FXAA_DEBUG_PAIR", fxaaSettings->DEBUG_PAIR);
+	fxaaPS->SetInt("FXAA_DEBUG_NEGPOS", fxaaSettings->DEBUG_NEGPOS);
+	fxaaPS->SetInt("FXAA_DEBUG_OFFSET", fxaaSettings->DEBUG_OFFSET);
+	fxaaPS->SetInt("FXAA_DEBUG_HIGHLIGHT", fxaaSettings->DEBUG_HIGHLIGHT);
+
 	fxaaPS->CopyAllBufferData(); // Copy data to shader.
 
 	// Deactivate vertex and index buffers.

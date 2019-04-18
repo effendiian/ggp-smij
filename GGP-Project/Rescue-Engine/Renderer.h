@@ -4,6 +4,7 @@
 #include "SimpleShader.h"
 #include "Entity.h"
 #include "Camera.h"
+#include "FXAA.h"
 
 // Basis from: https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
 
@@ -33,6 +34,9 @@ private:
 	ID3D11ShaderResourceView* fxaaSRV; // Allow us to sample from the same texture.
 	SimpleVertexShader* fxaaVS;
 	SimplePixelShader* fxaaPS;
+	FXAA_DESC* fxaaSettings;
+
+	// Clear color.
 	float clearColor[4];
 
 	// --------------------------------------------------------
