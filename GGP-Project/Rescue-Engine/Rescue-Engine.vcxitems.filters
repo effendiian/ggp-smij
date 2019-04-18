@@ -51,14 +51,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)EntityManager.cpp">
       <Filter>Source Files\Singletons</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ResourceManager.cpp">
-      <Filter>Source Files\Singletons</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResourceManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ParticleSystem.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h">
-      <Filter>Header Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -98,10 +95,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)EntityManager.h">
       <Filter>Header Files\Singletons</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)ResourceManager.h">
-      <Filter>Header Files\Singletons</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Collider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResourceManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ParticleSystem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Collider.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)Particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
