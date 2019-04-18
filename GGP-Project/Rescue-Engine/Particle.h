@@ -20,6 +20,8 @@ public:
 	{
 		this->SetParticlePosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 		direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
+		force = 10.0f;
+		slowdown = .9f;
 		gravity   = 1.0f;
 	}
 	// ---------------------------------------------------
@@ -35,6 +37,10 @@ public:
 	void     SetParticleDirection(XMFLOAT3 d) { direction = d;        }
 	float    GetParticleGravity()             { return gravity;       }
 	void     SetParticleGravity(float g)      { gravity = g;          }
+	float    GetParticleForce()               { return force;         }
+	void     SetParticleForce(float f)        { force = f;            }
+	float    GetParticleSlowdown()            { return slowdown;      }
+	void     SetParticleSlowdown(float s)     { slowdown = s;         }
 	int      GetParticleTimer()               { return timer;         }
 	void     SetParticleTimer(int t)          { timer = t;            }
 	// ---------------------------------------------------
@@ -52,7 +58,7 @@ public:
 		xmp += xmg;                                           //Add the gravity to the position vector
 		XMStoreFloat3(&POSDUMP, xmp);                         //Store the new position value
 		this->SetPosition(POSDUMP);                           //Set the position in the game manager
-		force *= slowdown * deltaTime;                        //Scale the force 
+		force *= slowdown;                        //Scale the force 
 	}
 	// ---------------------------------------------------
 

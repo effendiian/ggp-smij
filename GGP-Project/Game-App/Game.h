@@ -10,6 +10,8 @@
 #include "FirstPersonCamera.h"
 #include "ResourceManager.h"
 #include "SwimmerManager.h"
+#include "Particle.h"
+#include "ParticleSystem.h"
 #include "Boat.h"
 
 #define NUM_MESHES 4
@@ -52,6 +54,8 @@ private:
 
 	//Sampler state
 	ID3D11SamplerState* samplerState;
+
+	ParticleSystem* testParticleSystem;
 
 	//Transformation modifiers
 	float position;

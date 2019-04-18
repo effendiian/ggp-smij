@@ -2,7 +2,7 @@
 #include "ExtendedMath.h"
 
 //Creates a new particle system.
-ParticleSystem::ParticleSystem(ParticleSystemType type, Mesh* mesh, Material* material, int particles = 100, int time = 100, float gravity = 1.0f)
+ParticleSystem::ParticleSystem(ParticleSystemType type, XMFLOAT3 position, Mesh* mesh, Material* material, int particles = 100, int time = 100, float gravity = 1.0f)
 {
 	aliveTime = time;
 
@@ -16,9 +16,13 @@ ParticleSystem::ParticleSystem(ParticleSystemType type, Mesh* mesh, Material* ma
 				p->SetParticleTimer(aliveTime);
 				p->SetParticleDirection(ExtendedMath::RandomSplashVector());
 				p->SetParticleGravity(gravity);
+				p->SetParticleForce(0.01f);
+				p->SetParticleSlowdown(.9f);
+				p->SetPosition(position);
+				p->SetScale(XMFLOAT3(2.0f, 2.0f, 2.0f));
 			break;
 		}
-		
+
 		particleList.push_back(p);
 	}
 }
@@ -43,6 +47,7 @@ bool ParticleSystem::ClearParticleList()
 //Updates the particles in the particle list.
 void ParticleSystem::Update(float deltaTime)
 { 
+	std::cout << "There are " << particleList.size() << " particles in the particle system." << std::endl;
 	for (int i = 0; i < particleList.size(); i++)
 	{
 		Particle* p = particleList[i];

@@ -89,6 +89,8 @@ void Game::Init()
 	DirectionalLight* dLight = lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
 	dLight->SetRotation(90, 0, 0);
 
+	
+
 	////Point light
 	//PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
 	//pLight->SetPosition(0, -2, 3);
@@ -190,6 +192,18 @@ void Game::CreateEntities()
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
 	player->AddCollider(XMFLOAT3(1.1f, 1.1f, 1.1f), XMFLOAT3(0, 0, 0));
+
+	//Particle System -TEST-
+	testParticleSystem = new ParticleSystem(
+		ParticleSystem::ParticleSystemType::Splash,
+		XMFLOAT3(0.0f, 2.0f, 0.0f),
+		resourceManager->GetMesh("Assets\\Models\\sphere.obj"),
+		resourceManager->GetMaterial("floor"),
+		100, 
+		1000, 
+		.001f
+	);
+
 }
 
 // --------------------------------------------------------
@@ -231,6 +245,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 	// Updates the swimmer generator/manager.
 	swimmerManager->Update(deltaTime);
+
+	// Update the particle system
+	testParticleSystem->Update(deltaTime);
 	
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager

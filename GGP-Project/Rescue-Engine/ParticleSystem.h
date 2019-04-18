@@ -17,7 +17,7 @@ public:
 	// ---------------------------------------------------
 
 	// Creates a new particle system ---------------------
-	ParticleSystem(ParticleSystemType, Mesh*, Material*, int, int, float);
+	ParticleSystem(ParticleSystemType, XMFLOAT3, Mesh*, Material*, int, int, float);
 	// ---------------------------------------------------
 
 	// Deletes the particle system -----------------------
@@ -31,7 +31,9 @@ public:
 
 private:
 
+	XMFLOAT3 position;                   //The position of the particle system
 	std::vector<Particle*> particleList; //The list of particles in the system
-	int aliveTime;                     //The time that the particles should stay alive
+	int aliveTime;                       //The time that the particles should stay alive
+	
 };
 
