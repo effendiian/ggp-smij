@@ -75,6 +75,12 @@ public:
 	void SetWindowFocusRequirement(bool windowMustBeFocused);
 	
 	// --------------------------------------------------------
+	// Get the focus of the window
+	// If the focus requirement is false, then this will always return true
+	// --------------------------------------------------------
+	bool IsWindowFocused();
+
+	// --------------------------------------------------------
 	// NOT FOR USE OUTSIDE OF GAME.CPP
 	// Helper method for mouse clicking.
 	// --------------------------------------------------------
@@ -101,6 +107,11 @@ public:
 	// on the direction of the scroll
 	// --------------------------------------------------------
 	void OnMouseWheel(float wheelDelta, int x, int y);
+
+	// --------------------------------------------------------
+	//Update the focus state of the window
+	// --------------------------------------------------------
+	void InputManager::UpdateFocus();
 
 	// --------------------------------------------------------
 	// Update the input manager's key/button states (only call ONCE PER FRAME!)

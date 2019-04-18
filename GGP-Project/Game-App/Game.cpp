@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "LightManager.h"
 #include "Vertex.h"
 #include "MAT_PBRTexture.h"
 #include "MAT_Water.h"
@@ -41,12 +42,6 @@ Game::~Game()
 	//Delete sampler state
 	samplerState->Release();
 
-	//Delete entities - Refactored into EntityManager.
-	// for (int i = 0; i < entities.size(); i++)
-	// {
-	// 	if (entities[i]) { delete entities[i]; }
-	// }
-
 	//Delete the camera
 	if (camera) { delete camera; }
 }
@@ -78,6 +73,7 @@ void Game::Init()
 	camera->SetPosition(0, 25, -5);
 
 	//Create game entities
+	gameState = GameState::Menu;
 	CreateEntities();
 
 	//Initialize transformation modifiers
@@ -97,15 +93,6 @@ void Game::Init()
 	//Directional lights
 	DirectionalLight* dLight = lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
 	dLight->SetRotation(90, 0, 0);
-
-	////Point light
-	//PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
-	//pLight->SetPosition(0, -2, 3);
-
-	////Spot light
-	//SpotLight* sLight = lightManager->CreateSpotLight(5, 5, XMFLOAT3(0, 0, 1), 1);
-	//sLight->SetPosition(2, 0, -1);
-	//sLight->SetRotation(0, -90, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.
@@ -224,7 +211,7 @@ void Game::CreateEntities()
 	water->SetScale(26, 0.1f, 26);
 
 	// Player (Boat) - Create the player.
-	Entity* player = new Boat(
+	player = new Boat(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
 		resourceManager->GetMaterial("scratched")
 	);
@@ -257,10 +244,16 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
+	inputManager->UpdateFocus();
+	if (!inputManager->IsWindowFocused())
+		return;
+
 	//The only call to UpdateMousePos() for the InputManager
 	//Get the current mouse position
 	inputManager->UpdateMousePos();
 	// --------------------------------------------------------
+	//All game code goes below
+
 
 	// Quit if the escape key is pressed
 	if (inputManager->GetKey(VK_ESCAPE))
@@ -268,17 +261,47 @@ void Game::Update(float deltaTime, float totalTime)
 
 	//Update the camera
 	camera->Update(deltaTime);
+	
+	//Gamestate switch
+	switch (gameState)
+	{
+		case GameState::Menu:
+			gameState = GameState::Playing;
+			break;
 
-	// Updates all the entities
-	entityManager->Update(deltaTime);
+		case GameState::Playing:
+			entityManager->Update(deltaTime);
 
-	// Updates the swimmer generator/manager.
-	swimmerManager->Update(deltaTime);
+			// Updates the swimmer generator/manager.
+			swimmerManager->Update(deltaTime);
+
+			//Check for gameover
+			if (player->GetCrashed())
+				gameState = GameState::GameOver;
+			break;
+
+		case GameState::GameOver:
+			entityManager->Update(deltaTime);
+
+			//Check for reset input
+			if (inputManager->GetKey(VK_SPACE))
+			{
+				player->Reset();
+				swimmerManager->Reset();
+				gameState = GameState::Playing;
+			}
+			break;
+
+		default:
+			break;
+	}
 
 	//Updates water's scrolling normal map
-	translate += 0.0001f;
+	translate += 0.05f * deltaTime;
 	if (translate > 1.0f) translate = 0.0f;
 	
+
+	//All game code goes above
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager
 	//Update for next frame

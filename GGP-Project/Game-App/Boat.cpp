@@ -25,15 +25,9 @@ Boat::~Boat()
 // Calls Input, Move, and CheckCollisions every frame
 void Boat::Update(float deltaTime)
 {
+	//Gameover state
 	if (crashed)
-	{
-		//Check for reset input
-		if (inputManager->GetKey(VK_SPACE) && crashed)
-		{
-			this->Reset();
-		}
 		return;
-	}
 
 	Input(deltaTime);
 	Move(deltaTime);
@@ -89,9 +83,6 @@ void Boat::Reset()
 
 	// Set crashed to false.
 	this->crashed = false;
-
-	// Reset swimmer manager.
-	swimmerManager->Reset();
 }
 
 // Moves the boat forward
@@ -110,7 +101,6 @@ void Boat::CheckCollisions()
 		!ExtendedMath::InRange(z, levelHeight))
 	{
 		//Game Over
-		printf("Collision with boundary.\n");
 		GameOver();
 		return;
 	}
@@ -136,7 +126,6 @@ void Boat::CheckCollisions()
 		if (swmr != nullptr && !swmr->IsFollowing() &&
 			GetCollider()->Collides(*swmr->GetCollider()))
 		{
-			printf("Collision with swimmer.\n");
 			AttachSwimmer(swmr, i);
 		}
 	}
@@ -156,6 +145,12 @@ void Boat::GameOver()
 	printf("Game Over! Press the 'Spacebar' to reset.\n");
 	this->crashed = true;
 	if (trail.size() > 0) { trail[0]->SetSwimmerState(SwimmerState::Hitting); }
+}
+
+// Get whether the boat is crashed or not
+bool Boat::GetCrashed()
+{
+	return crashed;
 }
 
 // Clears all swimmers from the boat

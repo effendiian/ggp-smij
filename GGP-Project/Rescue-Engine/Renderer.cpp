@@ -320,7 +320,7 @@ void Renderer::ApplyPostProcess(ID3D11DeviceContext* context,
 	fxaaPS->SetSamplerState("g_Sampler", sampler);
 
 	// Set UniformData cbuffer data.
-	fxaaPS->SetFloat2("textureResolution", DirectX::XMFLOAT2(width, height));
+	fxaaPS->SetFloat2("textureResolution", DirectX::XMFLOAT2((float)width, (float)height));
 	fxaaPS->CopyAllBufferData(); // Copy data to shader.
 
 	// Set FXAASettings cbuffer data.

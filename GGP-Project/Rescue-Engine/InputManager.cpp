@@ -20,38 +20,23 @@ void InputManager::Init(HWND hWnd)
 InputManager::~InputManager()
 { }
 
-//Update the input manager (only call ONCE PER FRAME!)
-void InputManager::UpdateStates()
+//Update the focus state of the window
+void InputManager::UpdateFocus()
 {
 	if (GetFocus() == hWnd)
 	{
 		windowFocused = true;
 	}
 	else windowFocused = false;
-	
-	//Previouse mouse button states
+}
+
+//Update the input manager (only call ONCE PER FRAME!)
+void InputManager::UpdateStates()
+{
+	//Previous mouse button states
 	prev_MB_L_Down = mb_L_Down;
 	prev_MB_R_Down = mb_R_Down;
 	prev_MB_M_Down = mb_M_Down;
-
-	//Get new cursor position
-	prevMousePos = mousePos;
-	GetCursorPos(&mousePos);
-
-	/*
-	static float timer = 0;
-	timer += deltaTime;
-
-	if (timer > 1)
-	{
-		timer = 0;
-		std::cout << "F\t: " << windowFocused << std::endl;
-		std::cout << "MW\t: " << hWnd << std::endl;
-		std::cout << "GAW\t: " << GetActiveWindow() << std::endl;
-		std::cout << "GFW\t: " << GetForegroundWindow() << std::endl;
-		std::cout << "GF\t: " << GetFocus() << "\n" << std::endl;
-	}
-	*/
 }
 
 //Update the mouse position (only call ONCE PER FRAME!)
@@ -66,6 +51,15 @@ void InputManager::UpdateMousePos()
 void InputManager::SetWindowFocusRequirement(bool windowMustBeFocused)
 {
 	winRequireFocus = windowMustBeFocused;
+}
+
+// Get the focus of the window
+// If the focus requirement is false, then this will always return true
+bool InputManager::IsWindowFocused()
+{
+	if (winRequireFocus)
+		return windowFocused;
+	return true;
 }
 
 // --------------------------------------------------------

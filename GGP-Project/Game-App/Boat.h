@@ -60,6 +60,11 @@ public:
 	// Code called when the player hits the edge of the level
 	// --------------------------------------------------------
 	void GameOver();
+
+	// --------------------------------------------------------
+	// Get whether the boat is crashed or not
+	// --------------------------------------------------------
+	bool GetCrashed();
 	
 	// --------------------------------------------------------
 	// Clears all swimmers from the boat

@@ -3,7 +3,6 @@
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include "Renderer.h"
-#include "LightManager.h"
 #include "InputManager.h"
 #include "EntityManager.h"
 #include "FirstPersonCamera.h"
@@ -14,6 +13,8 @@
 #define NUM_MESHES 4
 #define NUM_TEXTURES 12
 #define NUM_MATS 3
+
+enum class GameState {Menu, Playing, GameOver};
 
 class Game 
 	: public DXCore
@@ -46,8 +47,9 @@ private:
 	EntityManager* entityManager;
 	SwimmerManager* swimmerManager;
 
-	//Entities
-	// std::vector<Entity*> entities; // Refactored into EntityManager.
+	//Gameplay
+	GameState gameState;
+	Boat* player;
 
 	//Sampler state
 	ID3D11SamplerState* samplerState;

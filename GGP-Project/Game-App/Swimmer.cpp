@@ -108,7 +108,6 @@ void Swimmer::ApplyCos(float deltaTime)
 //---------------------------------------------------------
 void Swimmer::ApplyBuoyancy(float deltaTime)
 {
-	//printf("%9.6f\n", GetPosition().y);
 	Collider* col = GetCollider();
 	XMFLOAT3 position = GetPosition();
 	XMFLOAT3 halves = col->GetHalfSize();
@@ -242,7 +241,6 @@ void Swimmer::Join(float deltaTime)
 	else
 	{
 		swmrState = SwimmerState::Following;
-		printf("hit\n");
 	}
 }
 

@@ -223,15 +223,15 @@ public:
 
 	// DEFAULT SETTINGS == FXAA_PRESET as 0.
 	const unsigned int DEFAULT_PRESET = FXAA_PRESET_FLAG::DEFAULT_FXAA_PRESET;
-	const float DEFAULT_EDGE_THRESHOLD = (1.0 / 4.0);
-	const float DEFAULT_EDGE_THRESHOLD_MIN = (1.0 / 12.0);
+	const float DEFAULT_EDGE_THRESHOLD = (1.0f / 4.0f);
+	const float DEFAULT_EDGE_THRESHOLD_MIN = (1.0f / 12.0f);
 	const unsigned int DEFAULT_SEARCH_STEPS = 2;
 	const unsigned int DEFAULT_SEARCH_ACCELERATION = 4;
-	const float DEFAULT_SEARCH_THRESHOLD = (1.0 / 4.0);
+	const float DEFAULT_SEARCH_THRESHOLD = (1.0f / 4.0f);
 	const unsigned int DEFAULT_SUBPIX = FXAA_BOOLEAN_FLAG::ON;
 	const unsigned int DEFAULT_SUBPIX_FASTER = FXAA_BOOLEAN_FLAG::ON;
-	const float DEFAULT_SUBPIX_CAP = (2.0 / 3.0);
-	const float DEFAULT_SUBPIX_TRIM = (1.0 / 4.0);
+	const float DEFAULT_SUBPIX_CAP = (2.0f / 3.0f);
+	const float DEFAULT_SUBPIX_TRIM = (1.0f / 4.0f);
 	const unsigned int DEFAULT_LUMINANCE_METHOD = FXAA_LUMINANCE_FLAG::REVISED;
 
 	// -------------
@@ -478,70 +478,70 @@ private:
 	// Constants.
 
 	// PRESET 0
-	const float PRESET0_EDGE_THRESHOLD = (1.0 / 4.0);
-	const float PRESET0_EDGE_THRESHOLD_MINIMUM = (1.0 / 12.0);
+	const float PRESET0_EDGE_THRESHOLD = (1.0f / 4.0f);
+	const float PRESET0_EDGE_THRESHOLD_MINIMUM = (1.0f / 12.0f);
 	const unsigned int PRESET0_SEARCH_STEPS = 2;
 	const unsigned int PRESET0_SEARCH_ACCELERATION = 4;
-	const float PRESET0_SEARCH_THRESHOLD = (1.0 / 4.0);
+	const float PRESET0_SEARCH_THRESHOLD = (1.0f / 4.0f);
 	const unsigned int PRESET0_SUBPIX = FXAA_BOOLEAN_FLAG::ON;
 	const unsigned int PRESET0_SUBPIX_FASTER = FXAA_BOOLEAN_FLAG::ON;
-	const float PRESET0_SUBPIX_CAP = (2.0 / 3.0);
-	const float PRESET0_SUBPIX_TRIM = (1.0 / 4.0);
+	const float PRESET0_SUBPIX_CAP = (2.0f / 3.0f);
+	const float PRESET0_SUBPIX_TRIM = (1.0f / 4.0f);
 
 	// PRESET 1
-	const float PRESET1_EDGE_THRESHOLD = (1.0 / 8.0);
-	const float PRESET1_EDGE_THRESHOLD_MINIMUM = (1.0 / 16.0);
+	const float PRESET1_EDGE_THRESHOLD = (1.0f / 8.0f);
+	const float PRESET1_EDGE_THRESHOLD_MINIMUM = (1.0f / 16.0f);
 	const unsigned int PRESET1_SEARCH_STEPS = 4;
 	const unsigned int PRESET1_SEARCH_ACCELERATION = 3;
-	const float PRESET1_SEARCH_THRESHOLD = (1.0 / 4.0);
+	const float PRESET1_SEARCH_THRESHOLD = (1.0f / 4.0f);
 	const unsigned int PRESET1_SUBPIX = FXAA_BOOLEAN_FLAG::ON;
 	const unsigned int PRESET1_SUBPIX_FASTER = FXAA_BOOLEAN_FLAG::OFF;
-	const float PRESET1_SUBPIX_CAP = (3.0 / 4.0);
-	const float PRESET1_SUBPIX_TRIM = (1.0 / 4.0);
+	const float PRESET1_SUBPIX_CAP = (3.0f / 4.0f);
+	const float PRESET1_SUBPIX_TRIM = (1.0f / 4.0f);
 
 	// PRESET 2
-	const float PRESET2_EDGE_THRESHOLD = (1.0 / 8.0);
-	const float PRESET2_EDGE_THRESHOLD_MINIMUM = (1.0 / 24.0);
+	const float PRESET2_EDGE_THRESHOLD = (1.0f / 8.0f);
+	const float PRESET2_EDGE_THRESHOLD_MINIMUM = (1.0f / 24.0f);
 	const unsigned int PRESET2_SEARCH_STEPS = 8;
 	const unsigned int PRESET2_SEARCH_ACCELERATION = 2;
-	const float PRESET2_SEARCH_THRESHOLD = (1.0 / 4.0);
+	const float PRESET2_SEARCH_THRESHOLD = (1.0f / 4.0f);
 	const unsigned int PRESET2_SUBPIX = FXAA_BOOLEAN_FLAG::ON;
 	const unsigned int PRESET2_SUBPIX_FASTER = FXAA_BOOLEAN_FLAG::OFF;
-	const float PRESET2_SUBPIX_CAP = (3.0 / 4.0);
-	const float PRESET2_SUBPIX_TRIM = (1.0 / 4.0);
+	const float PRESET2_SUBPIX_CAP = (3.0f / 4.0f);
+	const float PRESET2_SUBPIX_TRIM = (1.0f / 4.0f);
 
 	// PRESET 3
-	const float PRESET3_EDGE_THRESHOLD = (1.0 / 8.0);
-	const float PRESET3_EDGE_THRESHOLD_MINIMUM = (1.0 / 24.0);
+	const float PRESET3_EDGE_THRESHOLD = (1.0f / 8.0f);
+	const float PRESET3_EDGE_THRESHOLD_MINIMUM = (1.0f / 24.0f);
 	const unsigned int PRESET3_SEARCH_STEPS = 16;
 	const unsigned int PRESET3_SEARCH_ACCELERATION = 1;
 	const float PRESET3_SEARCH_THRESHOLD = (1.0 / 4.0);
 	const unsigned int PRESET3_SUBPIX = FXAA_BOOLEAN_FLAG::ON;
 	const unsigned int PRESET3_SUBPIX_FASTER = FXAA_BOOLEAN_FLAG::OFF;
-	const float PRESET3_SUBPIX_CAP = (3.0 / 4.0);
-	const float PRESET3_SUBPIX_TRIM = (1.0 / 4.0);
+	const float PRESET3_SUBPIX_CAP = (3.0f / 4.0f);
+	const float PRESET3_SUBPIX_TRIM = (1.0f / 4.0f);
 
 	// PRESET 4
-	const float PRESET4_EDGE_THRESHOLD = (1.0 / 8.0);
-	const float PRESET4_EDGE_THRESHOLD_MINIMUM = (1.0 / 24.0);
+	const float PRESET4_EDGE_THRESHOLD = (1.0f / 8.0f);
+	const float PRESET4_EDGE_THRESHOLD_MINIMUM = (1.0f / 24.0f);
 	const unsigned int PRESET4_SEARCH_STEPS = 24;
 	const unsigned int PRESET4_SEARCH_ACCELERATION = 1;
-	const float PRESET4_SEARCH_THRESHOLD = (1.0 / 4.0);
+	const float PRESET4_SEARCH_THRESHOLD = (1.0f / 4.0f);
 	const unsigned int PRESET4_SUBPIX = FXAA_BOOLEAN_FLAG::ON;
 	const unsigned int PRESET4_SUBPIX_FASTER = FXAA_BOOLEAN_FLAG::OFF;
-	const float PRESET4_SUBPIX_CAP = (3.0 / 4.0);
-	const float PRESET4_SUBPIX_TRIM = (1.0 / 4.0);
+	const float PRESET4_SUBPIX_CAP = (3.0f / 4.0f);
+	const float PRESET4_SUBPIX_TRIM = (1.0f / 4.0f);
 
 	// PRESET 5
-	const float PRESET5_EDGE_THRESHOLD = (1.0 / 8.0);
-	const float PRESET5_EDGE_THRESHOLD_MINIMUM = (1.0 / 24.0);
+	const float PRESET5_EDGE_THRESHOLD = (1.0f / 8.0f);
+	const float PRESET5_EDGE_THRESHOLD_MINIMUM = (1.0f / 24.0f);
 	const unsigned int PRESET5_SEARCH_STEPS = 32;
 	const unsigned int PRESET5_SEARCH_ACCELERATION = 1;
-	const float PRESET5_SEARCH_THRESHOLD = (1.0 / 4.0);
+	const float PRESET5_SEARCH_THRESHOLD = (1.0f / 4.0f);
 	const unsigned int PRESET5_SUBPIX = FXAA_BOOLEAN_FLAG::ON;
 	const unsigned int PRESET5_SUBPIX_FASTER = FXAA_BOOLEAN_FLAG::OFF;
-	const float PRESET5_SUBPIX_CAP = (3.0 / 4.0);
-	const float PRESET5_SUBPIX_TRIM = (1.0 / 4.0);
+	const float PRESET5_SUBPIX_CAP = (3.0f / 4.0f);
+	const float PRESET5_SUBPIX_TRIM = (1.0f / 4.0f);
 
 	// -------------
 	// Methods.
