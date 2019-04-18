@@ -318,7 +318,7 @@ float3 ApplyFXAA( float2 uv )
 	if (localContrast < max(FXAA_EDGE_THRESHOLD_MIN, maxLuma * FXAA_EDGE_THRESHOLD)) {
 
 		// Return a black pixel if we are discarding; otherwise, return an unaltered pixel.
-		if (FXAA_DEBUG_DISCARD == 1) { return float3(0); }
+		if (FXAA_DEBUG_DISCARD == 1) { return ToFloat3(0); }
 		return rgbO; // Unaltered pixel.
 	}
 
