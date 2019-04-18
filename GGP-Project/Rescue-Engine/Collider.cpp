@@ -1,28 +1,66 @@
 #include "Collider.h"
+#include "ResourceManager.h"
 
 using namespace DirectX;
 
 // Create an empty collider.
-Collider::Collider(){}
+Collider::Collider(XMFLOAT3 position)
+{
+	this->position = position;
+	this->size = XMFLOAT3();
+	this->offset = XMFLOAT3();
+	this->worldMatrix = XMFLOAT4X4();
+
+	debug = false;
+	worldDirty = true;
+}
 
 // Create a collider from a position and size.
-Collider::Collider(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 size)
-	: Collider(position, size, DirectX::XMFLOAT3(0, 0, 0))
-{}
+Collider::Collider(XMFLOAT3 position, XMFLOAT3 size)
+	: Collider(position, size, XMFLOAT3(0, 0, 0))
+{ }
 
 // Create a collider from a position, size, and offset.
-Collider::Collider(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
+Collider::Collider(XMFLOAT3 position, XMFLOAT3 size, XMFLOAT3 offset)
 {
-	XMVECTOR center = XMLoadFloat3(&position);
-	XMVECTOR off = XMLoadFloat3(&offset);
-	XMStoreFloat3(&this->position, center + off);
+	XMStoreFloat3(&this->position, XMLoadFloat3(&position) + XMLoadFloat3(&offset));
 
 	this->size = size;
 	this->offset = offset;
+	this->worldMatrix = XMFLOAT4X4();
+
+	debug = false;
+	worldDirty = true;
 }
 
 // Release resources.
 Collider::~Collider() {}
+
+// Construct this collider's world matrix
+void Collider::ConstructWorldMatrix()
+{
+	//Get translation matrix
+	XMMATRIX translation = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
+
+	//Get scale matrix
+	XMMATRIX scaling = XMMatrixScalingFromVector(XMLoadFloat3(&size));
+
+	//Calculate matrix and store
+	XMMATRIX newWorld = XMMatrixTranspose(scaling * translation);
+	XMStoreFloat4x4(&worldMatrix, newWorld);
+
+	worldDirty = false;
+}
+
+
+// Get this collider's world matrix
+DirectX::XMFLOAT4X4 Collider::GetWorldMatrix()
+{
+	if (worldDirty)
+		ConstructWorldMatrix();
+
+	return worldMatrix;
+}
 
 // Return the position of the collider.
 DirectX::XMFLOAT3 Collider::GetPosition() const
@@ -48,6 +86,7 @@ void Collider::SetPosition(DirectX::XMFLOAT3 newPosition)
 	XMVECTOR newPos = XMLoadFloat3(&newPosition);
 	XMVECTOR off = XMLoadFloat3(&offset);
 	XMStoreFloat3(&position, newPos + off);
+	worldDirty = true;
 }
 
 // Set the collider size.
@@ -55,6 +94,7 @@ void Collider::SetSize(DirectX::XMFLOAT3 newSize)
 {
 	XMVECTOR newDimensions = XMLoadFloat3(&newSize);
 	XMStoreFloat3(&size, newDimensions);
+	worldDirty = true;
 }
 
 // Check if a collision has occured.
@@ -65,10 +105,15 @@ bool Collider::Collides(Collider other)
 	//	(a.minY <= b.maxY && a.maxY >= b.minY) &&
 	//	(a.minZ <= b.maxZ && a.maxZ >= b.minZ);
 
+	//Get half sizes
+	XMFLOAT3 otherPosition = other.GetPosition();
+	XMFLOAT3 size = GetHalfSize();
+	XMFLOAT3 otherSize = other.GetHalfSize();
+
 	//AABB
-	return (position.x - (size.x / 2) <= other.GetPosition().x + (other.GetSize().x) && position.x + (size.x / 2) >= other.GetPosition().x - (other.GetSize().x) &&
-		position.y - (size.y / 2) <= other.GetPosition().y + (other.GetSize().y) && position.y + (size.y / 2) >= other.GetPosition().y - (other.GetSize().y) &&
-		position.z - (size.z / 2) <= other.GetPosition().z + (other.GetSize().z) && position.z + (size.z / 2) >= other.GetPosition().z - (other.GetSize().z)
+	return (position.x - size.x <= otherPosition.x + otherSize.x && position.x + size.x >= otherPosition.x - otherSize.x &&
+		position.y - size.y <= otherPosition.y + otherSize.y && position.y + size.y >= otherPosition.y - otherSize.y &&
+		position.z - size.z <= otherPosition.z + otherSize.z && position.z + size.z >= otherPosition.z - otherSize.z
 		);
 
 	//Circle Collision
@@ -85,4 +130,16 @@ bool Collider::Collides(Collider other)
 	if (distance < 0.5f) return true;
 	else return false;*/
 	
+}
+
+// Check if the collider is in debug mode (draw outline)
+bool Collider::IsDebug()
+{
+	return debug;
+}
+
+// Set debug mode for this collider (draw outline)
+void Collider::SetDebug(bool setting)
+{
+	debug = setting;
 }

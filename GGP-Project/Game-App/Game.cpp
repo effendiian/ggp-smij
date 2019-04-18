@@ -25,7 +25,7 @@ Game::Game(HINSTANCE hInstance)
 	CreateConsoleWindow(500, 120, 32, 120);
 	printf("Console window created successfully.  Feel free to printf() here.\n");
 #endif
-	
+
 }
 
 // --------------------------------------------------------
@@ -54,10 +54,14 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	//Load all needed assets
+	resourceManager = ResourceManager::GetInstance();
+	LoadAssets();
+
 	//Initialize singletons
 	inputManager = InputManager::GetInstance();
 	renderer = Renderer::GetInstance();
-	resourceManager = ResourceManager::GetInstance();
+	renderer->Init(device, width, height);
 	entityManager = EntityManager::GetInstance();
 	swimmerManager = SwimmerManager::GetInstance();
 
@@ -70,8 +74,7 @@ void Game::Init()
 	camera->SetRotation(75, 0, 0);
 	camera->SetPosition(0, 25, -5);
 
-	//Load all needed assets
-	LoadAssets();
+	//Create game entities
 	CreateEntities();
 
 	//Initialize transformation modifiers
@@ -102,7 +105,7 @@ void Game::Init()
 	//sLight->SetRotation(0, -90, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
-	// geometric primitives (points, lines or triangles) we want to draw.  
+	// geometric primitives (points, lines or triangles) we want to draw.
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
@@ -115,6 +118,10 @@ void Game::LoadAssets()
 	//Load shaders
 	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
 	resourceManager->LoadPixelShader("PixelShaderPBR.cso", device, context);
+	resourceManager->LoadVertexShader("VS_ColDebug.cso", device, context);
+	resourceManager->LoadPixelShader("PS_ColDebug.cso", device, context);
+	resourceManager->LoadVertexShader("FXAAShaderVS.cso", device, context);
+	resourceManager->LoadPixelShader("FXAAShaderPS.cso", device, context);
 	resourceManager->LoadPixelShader("WaterPixelShader.cso", device, context);
 
 	//Create meshes
@@ -158,7 +165,7 @@ void Game::LoadAssets()
 	SimplePixelShader* ws = resourceManager->GetPixelShader("WaterPixelShader.cso"); //pixel shader for water surface
 
 	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"), 
+		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_normals.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_roughness.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_metal.png"),
@@ -206,7 +213,10 @@ void Game::CreateEntities()
 		resourceManager->GetMaterial("scratched")
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
-	player->AddCollider(XMFLOAT3(1.1f, 1.1f, 1.1f), XMFLOAT3(0, 0, 0));
+	player->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));
+#if defined(DEBUG) || defined(_DEBUG)
+	player->GetCollider()->SetDebug(true);
+#endif
 }
 
 // --------------------------------------------------------
@@ -265,21 +275,12 @@ void Game::Update(float deltaTime, float totalTime)
 void Game::Draw(float deltaTime, float totalTime)
 {
 	// Background color (Cornflower Blue in this case) for clearing
-	//const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
+	// const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
 	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-	// Clear the render target and depth buffer (erases what's on the screen)
-	//  - Do this ONCE PER FRAME
-	//  - At the beginning of Draw (before drawing *anything*)
-	context->ClearRenderTargetView(backBufferRTV, color);
-	context->ClearDepthStencilView(
-		depthStencilView,
-		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-		1.0f,
-		0);
-
 	//Draw all entities in the renderer
-	renderer->Draw(context, camera);
+	renderer->SetClearColor(color); // Needed for clearing the post process buffer texture and the back buffer.
+	renderer->Draw(context, camera, backBufferRTV, depthStencilView, samplerState, width, height);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
@@ -310,7 +311,7 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y, int button)
 
 // --------------------------------------------------------
 // Helper method for mouse movement.  We only get this message
-// if the mouse is currently over the window, or if we're 
+// if the mouse is currently over the window, or if we're
 // currently capturing the mouse.
 // --------------------------------------------------------
 void Game::OnMouseMove(WPARAM buttonState, int x, int y)
@@ -319,8 +320,8 @@ void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 }
 
 // --------------------------------------------------------
-// Helper method for mouse wheel scrolling.  
-// WheelDelta may be positive or negative, depending 
+// Helper method for mouse wheel scrolling.
+// WheelDelta may be positive or negative, depending
 // on the direction of the scroll
 // --------------------------------------------------------
 void Game::OnMouseWheel(float wheelDelta, int x, int y)

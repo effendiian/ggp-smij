@@ -1,20 +1,119 @@
 #include "Renderer.h"
 #include "LightManager.h"
+#include "ResourceManager.h"
 #include <algorithm>
 
 using namespace DirectX;
 
 // Initialize values in the renderer
-void Renderer::Init()
-{ }
+void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
+{
+	// Assign default clear color. We should pull this in from Game at some point.
+	this->SetClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// Get collider shader information.
+	colDebugCube = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
+	colDebugVS = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
+	colDebugPS = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
+
+	// Create post-process resources.
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ID3D11Texture2D* ppTexture;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(ppTexture, &rtvDesc, &fxaaRTV);
+
+	// Create the Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(ppTexture, &srvDesc, &fxaaSRV);
+
+	// We don't need the texture reference itself no mo'
+	ppTexture->Release();
+
+	// Get fxaa shader information.
+	fxaaVS = ResourceManager::GetInstance()->GetVertexShader("FXAAShaderVS.cso");
+	fxaaPS = ResourceManager::GetInstance()->GetPixelShader("FXAAShaderPS.cso");
+
+	//Wireframe rasterizer state
+	D3D11_RASTERIZER_DESC RD_wireframe = {};
+	RD_wireframe.FillMode = D3D11_FILL_WIREFRAME;
+	RD_wireframe.CullMode = D3D11_CULL_NONE;
+	device->CreateRasterizerState(&RD_wireframe, &RS_wireframe);
+}
 
 // Destructor for when the singleton instance is deleted
 Renderer::~Renderer()
-{ }
+{
+	// Clean up rasterizer state.
+	RS_wireframe->Release();
+
+	// Clean up post process.
+	fxaaRTV->Release();
+	fxaaSRV->Release();
+}
 
 // Draw all entities in the render list
-void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
+void Renderer::Draw(ID3D11DeviceContext* context,
+					Camera* camera,
+					ID3D11RenderTargetView* backBufferRTV,
+					ID3D11DepthStencilView* depthStencilView,
+					ID3D11SamplerState* sampler,
+					UINT width, UINT height)
 {
+
+#pragma region Clear Back Buffer Texture
+
+	// Clear the render target and depth buffer (erases what's on the screen)
+	//  - Do this ONCE PER FRAME
+	//  - At the beginning of Draw (before drawing *anything*)
+	context->ClearRenderTargetView(backBufferRTV, this->clearColor);
+	context->ClearDepthStencilView(
+		depthStencilView,
+		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+		1.0f,
+		0);
+
+#pragma endregion
+
+#pragma region Pre-Render Post Process
+
+// POST PROCESS PRE-RENDER ///////////////
+
+	// Clear post process texture.
+	context->ClearRenderTargetView(fxaaRTV, this->clearColor);
+
+	// Set the post process RTV as the current render target.
+	context->OMSetRenderTargets(1, &fxaaRTV, depthStencilView);
+
+#pragma endregion
+
+#pragma region Render Opaque Objects
+	// ----------------------------------------------------------------------------------------------------------------
+	//Render opaque objects
+
 	//TODO: Apply attenuation
 	for (auto const& mapPair : renderMap)
 	{
@@ -66,6 +165,87 @@ void Renderer::Draw(ID3D11DeviceContext* context, Camera* camera)
 				0);    // Offset to add to each index when looking up vertices
 		}
 	}
+#pragma endregion
+
+#pragma region Apply Post Process to Render
+
+	// Set target back to back buffer.
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+
+	// Render a full-screen triangle using the post process shaders.
+	fxaaVS->SetShader();
+
+	fxaaPS->SetShader();
+	fxaaPS->SetShaderResourceView("pixels", fxaaSRV);
+	fxaaPS->SetSamplerState("basicSampler", sampler);
+
+	fxaaPS->SetFloat("texelWidth", 1.0f / width);
+	fxaaPS->SetFloat("texelHeight", 1.0f / height);
+	fxaaPS->SetInt("blurAmount", 5);
+	fxaaPS->CopyAllBufferData(); // Copy data to shader.
+
+	// Deactivate vertex and index buffers.
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	ID3D11Buffer* nothing = 0;
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+
+	// Draw a set number of vertices.
+	context->Draw(3, 0);
+
+	// Unbind all pixel shader SRVs.
+	ID3D11ShaderResourceView* nullSRVs[16] = {};
+	context->PSSetShaderResources(0, 16, nullSRVs);
+
+	// Reset depth stencil view.
+	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+
+#pragma endregion
+
+#pragma region Render Debug Colliders
+	// ----------------------------------------------------------------------------------------------------------------
+	//Render debug collider outlines
+
+	//Se wireframe
+	context->RSSetState(RS_wireframe);
+
+	//Set shaders
+	colDebugVS->SetShader();
+	colDebugPS->SetShader();
+
+	//Set camera data
+	colDebugVS->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+	colDebugVS->SetMatrix4x4("view", camera->GetViewMatrix());
+	colDebugVS->CopyBufferData("perFrame");
+
+	//Loop
+	for (auto const& collider : debugColliders)
+	{
+		// Assign collider world to VS
+		colDebugVS->SetMatrix4x4("world", collider->GetWorldMatrix());
+		colDebugVS->CopyBufferData("perObject");
+
+		// Set buffers in the input assembler
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer* vertexBuffer = colDebugCube->GetVertexBuffer();
+		ID3D11Buffer* indexBuffer = colDebugCube->GetIndexBuffer();
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		// Draw object
+		context->DrawIndexed(
+			colDebugCube->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
+	}
+	//Clear debug collider list and reset raster state
+	debugColliders.clear();
+	context->RSSetState(0);
+
+#pragma endregion
+
 }
 
 // Add an entity to the render list
@@ -105,11 +285,11 @@ void Renderer::RemoveEntityFromRenderer(Entity* e)
 	//Get iterator
 	std::string identifier = e->GetMatMeshIdentifier();
 	auto mapIt = renderMap.find(identifier);
-	
+
 	//Check if we are in the map
 	if (mapIt == renderMap.end())
 	{
-		printf("Cannont remove entity because it is not in renderer");
+		printf("Cannot remove entity because it is not in renderer");
 		return;
 	}
 
@@ -122,7 +302,7 @@ void Renderer::RemoveEntityFromRenderer(Entity* e)
 	//Check if we are in the list
 	if (listIt == (*list).end())
 	{
-		printf("Cannont remove entity because it is not in renderer");
+		printf("Cannot remove entity because it is not in renderer");
 		return;
 	}
 
@@ -161,4 +341,28 @@ bool Renderer::IsEntityInRenderer(Entity* e)
 		return false;
 
 	return true;
+}
+
+// Tell the renderer to render a collider this frame
+void Renderer::RenderColliderThisFrame(Collider * c)
+{
+	debugColliders.push_back(c);
+}
+
+// Set the clear color.
+void Renderer::SetClearColor(const float color[4])
+{
+	for (int i = 0; i < 4; i++)
+	{
+		clearColor[i] = color[i];
+	}
+}
+
+// Set the clear color.
+void Renderer::SetClearColor(float r, float g, float b, float a)
+{
+	clearColor[0] = r;
+	clearColor[1] = g;
+	clearColor[2] = b;
+	clearColor[3] = a;
 }
