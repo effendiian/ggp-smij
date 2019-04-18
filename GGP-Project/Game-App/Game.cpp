@@ -1,5 +1,8 @@
 #include "Game.h"
 #include "Vertex.h"
+#include "MAT_PBRTexture.h"
+#include "MAT_Water.h"
+#include "MAT_Skybox.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -123,6 +126,8 @@ void Game::LoadAssets()
 	resourceManager->LoadVertexShader("FXAAShaderVS.cso", device, context);
 	resourceManager->LoadPixelShader("FXAAShaderPS.cso", device, context);
 	resourceManager->LoadPixelShader("WaterPixelShader.cso", device, context);
+	resourceManager->LoadVertexShader("VS_Sky.cso", device, context);
+	resourceManager->LoadPixelShader("PS_Sky.cso", device, context);
 
 	//Create meshes
 	resourceManager->LoadMesh("Assets\\Models\\torus.obj", device);
@@ -149,6 +154,9 @@ void Game::LoadAssets()
 	resourceManager->LoadTexture2D("Assets/Textures/Water/blue.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_1.png", device, context);
 
+	//Load cubemap
+	resourceManager->LoadCubeMap("Assets/Textures/Sky/SunnyCubeMap.dds", device);
+
 	//Create sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -162,7 +170,6 @@ void Game::LoadAssets()
 	//Create materials
 	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
 	SimplePixelShader* ps = resourceManager->GetPixelShader("PixelShaderPBR.cso");
-	SimplePixelShader* ws = resourceManager->GetPixelShader("WaterPixelShader.cso"); //pixel shader for water surface
 
 	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"),
@@ -189,13 +196,22 @@ void Game::LoadAssets()
 	resourceManager->AddMaterial("wood", mat3);
 	
 	//Water surface material
-	Material* mat4 = new MAT_Water(vs, ws, 1024.0f, XMFLOAT2(2, 2),
+	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("WaterPixelShader.cso"),
+		1024.0f, XMFLOAT2(2, 2),
 		resourceManager->GetTexture2D("Assets/Textures/Water/blue.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_1.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
 		samplerState, &translate);
-	resourceManager->AddMaterial("water", mat4);
+	resourceManager->AddMaterial("water", mat_water);
+
+	//Skybox material
+	Material* mat_skybox = new MAT_Skybox(ResourceManager::GetInstance()->GetVertexShader("VS_Sky.cso"),
+		ResourceManager::GetInstance()->GetPixelShader("PS_Sky.cso"),
+		ResourceManager::GetInstance()->GetCubeMap("Assets/Textures/Sky/SunnyCubeMap.dds"),
+		samplerState
+	);
+	resourceManager->AddMaterial("skybox", mat_skybox);
 }
 
 void Game::CreateEntities()

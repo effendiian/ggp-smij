@@ -62,7 +62,7 @@ void GameObject::Update(float deltaTime)
 {
 	//Add collider to render list
 	if (collider != nullptr && collider->IsDebug())
-		Renderer::GetInstance()->RenderColliderThisFrame(collider);
+		Renderer::GetInstance()->AddDebugColliderToThisFrame(collider);
 }
 
 // Get the world matrix for this GameObject (rebuilding if necessary)

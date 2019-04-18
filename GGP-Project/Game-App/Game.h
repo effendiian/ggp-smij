@@ -3,8 +3,6 @@
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include "Renderer.h"
-#include "MAT_PBRTexture.h"
-#include "MAT_Water.h"
 #include "LightManager.h"
 #include "InputManager.h"
 #include "EntityManager.h"
