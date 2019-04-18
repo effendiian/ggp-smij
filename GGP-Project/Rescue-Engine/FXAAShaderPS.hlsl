@@ -322,9 +322,288 @@ float3 ApplyFXAA( float2 uv )
 		return rgbO; // Unaltered pixel.
 	}
 
-	// Default return value.
-	return rgbO;
+	//-------------------------
+	// 2. SUB-PIXEL ALIASING TEST
 
+	// Calculate the pixel contrast ratio.
+	// - Sub-pixel aliasing is detected by taking the ratio of the
+	// pixel contrast over the local contrast. This ratio nears 1.0
+	// in the presence of single pixel dots and otherwise falls off
+	// towards 0.0 as more pixels contribute to an edge. This ratio
+	// is transformed into the amount of lowpass filter to blend in
+	// at the end of the algorithm.
+
+	// Declare some variables.
+	float3 rgbL = 0.0;
+	float lumaL = 0.0;
+	float pixelContrast = 0.0;
+	float contrastRatio = 0.0;
+	float lowpassBlend = 0.0; // Default is zero. Will be changed depending on subpixel level.
+	float FXAA_SUBPIX_TRIM_SCALE = (1.0 / (1.0 - FXAA_SUBPIX_TRIM));
+
+	if (FXAA_SUBPIX > 0)
+	{
+		// Calculate sum of local samples for the lowpass.
+		rgbL = (rgbN + rgbW + rgbO + rgbE + rgbS);
+
+		if (FXAA_SUBPIX_FASTER > 0)
+		{
+			// Average the lowpass now since this skips the addition of the diagonal neighbors (NW, NE, SW, SE).
+			rgbL *= (1.0 / 5.0);
+		}
+
+		// Calculate the lowpass luma.
+		// - Lowpass luma is calculated as the average between the luma of neigboring pixels.
+		lumaL = (lumaN + lumaW + lumaS + lumaE) * 0.25;
+
+		// Calculate the pixel contrast.
+		// - Pixel contrast is the abs() difference between origin pixel luma and lowpass luma of neighbors.
+		pixelContrast = abs(lumaL - lumaO);
+
+		// Calculate the ratio between the pixelContrast and localContrast.
+		contrastRatio = pixelContrast / localContrast;
+
+		if (FXAA_SUBPIX == 1)
+		{
+			// Normal subpixel aliasing. Set based on FXAA algorithm for subpixel aliasing.
+			lowpassBlend = max(0.0, contrastRatio - FXAA_SUBPIX_TRIM) * FXAA_SUBPIX_TRIM_SCALE;
+			lowpassBlend = min(FXAA_SUBPIX_CAP, lowpassBlend);
+		}
+
+		if (FXAA_SUBPIX == 2)
+		{
+			// Full force subpixel aliasing. Set blend to ratio.
+			lowpassBlend = contrastRatio;
+		}
+	}
+
+	// Show selected pixels if debug mode is active.
+	if (FXAA_DEBUG_PASSTHROUGH > 0)
+	{
+		if (FXAA_SUBPIX > 0) { return float3(localContrast, lowpassBlend, 0.0); }
+		return float3(localContrast, 0.0, 0.0);
+	}
+
+	//-------------------------
+	// 3. VERTICAL & HORIZONTAL EDGE TEST
+
+	// Sample the additional diagonal neighbors.
+	float3 rgbNW = SampleOffset(g_RenderTextureView, uv, float2(-texel.x, -texel.y)).rgb; // NORTH-WEST
+	float3 rgbNE = SampleOffset(g_RenderTextureView, uv, float2(texel.x, -texel.y)).rgb; // NORTH-EAST
+	float3 rgbSW = SampleOffset(g_RenderTextureView, uv, float2(-texel.x, texel.y)).rgb; // SOUTH-WEST
+	float3 rgbSE = SampleOffset(g_RenderTextureView, uv, float2(texel.x, texel.y)).rgb; // SOUTH-EAST
+
+	// Average additional neighbors when sub-pix aliasing is on and it isn't in 'fast' mode.
+	if (FXAA_SUBPIX > 0)
+	{
+		if (FXAA_SUBPIX_FASTER == 0)
+		{
+			// Add missing neighbors and average them.
+			rgbL += (rgbNW + rgbNE + rgbSW + rgbSE);
+			rgbL *= (1.0 / 9.0);
+		}
+	}
+
+	// Calculate luma for additional neighbors.
+	float lumaNW = Luminance(rgbNW);
+	float lumaNE = Luminance(rgbNE);
+	float lumaSW = Luminance(rgbSW);
+	float lumaSE = Luminance(rgbSE);
+
+	// Calculate the vertical and horizontal edges. (Uses algorithm from FXAA white paper).
+	float edgeHori = FXAAEdge(true, lumaO, lumaN, lumaE, lumaS, lumaW, lumaNW, lumaNE, lumaSW, lumaSE);
+	float edgeVert = FXAAEdge(false, lumaO, lumaN, lumaE, lumaS, lumaW, lumaNW, lumaNE, lumaSW, lumaSE);
+
+	// Check if edge is horizontal.
+	bool isHorizontal = edgeHori >= edgeVert;
+
+	// Display horizontal/vertical edge detection results if respective debug mode is on.
+	if (FXAA_DEBUG_HORZVERT > 0)
+	{
+		float3 gold = float3(1.0, 0.75, 0.0);
+		float3 blue = float3(0.10, 0.10, 1.0);
+		return (isHorizontal) ? gold : blue;
+	}
+
+	//-------------------------
+	// 4. FIND HIGHEST CONTRAST PAIR 90deg TO EDGE
+
+	// Contain the appropriate sign for the top left.
+	float edgeSign = isHorizontal ? -texel.y : -texel.x; // Note, if isHorizontal == true, -texel.y is applied (not -texel.x).
+
+	// Calculate the gradients. The luma used changes based on the horizontal edge status.
+	float gradientNeg = isHorizontal ? abs(lumaN - lumaO) : abs(lumaW - lumaO);
+	float gradientPos = isHorizontal ? abs(lumaS - lumaO) : abs(lumaE - lumaO);
+
+	// Calculate the luma based on its direction.
+	// It is an average of the origin and the luma in the respective direction.
+	float lumaNeg = isHorizontal ? ((lumaN + lumaO) * 0.5) : ((lumaW + lumaO) * 0.5);
+	float lumaPos = isHorizontal ? ((lumaS + lumaO) * 0.5) : ((lumaE + lumaO) * 0.5);
+
+	// Select the highest gradient pair.
+	bool isNegative = (gradientNeg >= gradientPos);
+	float gradientHighest = isNegative ? gradientNeg : gradientPos; // Assign higher pair.
+	float lumaHighest = isNegative ? lumaNeg : lumaPos;
+
+	// If gradient pair in the negative direction is higher, flip the edge sign.
+	if (isNegative) { edgeSign *= -1.0; }
+
+	// Display detected pairs if debug mode is on.
+	if (FXAA_DEBUG_PAIR > 0)
+	{
+		return isHorizontal ? float3(0.0, gradientHighest, lumaHighest) : float3(0.0, lumaHighest, gradientHighest);
+	}
+
+	//-------------------------
+	// 5. END-OF-EDGE SEARCH
+
+
+	// Select starting point.
+	float2 pointN = ToFloat2(0.0);
+	pointN.x = uv.x + (isHorizontal ? 0.0 : edgeSign * 0.5);
+	pointN.y = uv.y + (isHorizontal ? edgeSign * 0.5 : 0.0);
+
+	// Assign search limiting values.
+	gradientHighest *= FXAA_SEARCH_THRESHOLD;
+
+	// Prepare variables for search.
+	float2 pointP = pointN; // Start at the same point.
+	float2 pointOffset = isHorizontal ? float2(texel.x, 0.0) : float2(0.0, texel.y);
+	float lumaNegEnd = lumaNeg;
+	float lumaPosEnd = lumaPos;
+	bool searchNeg = false;
+	bool searchPos = false;
+
+	// Apply values based on FXAA flags.
+	if (FXAA_SEARCH_ACCELERATION == 1) {
+
+		pointN += pointOffset * ToFloat2(-1.0);
+		pointP += pointOffset * ToFloat2(1.0);
+		// pointOffset *= ToFloat2(1.0);
+
+	}
+	else if (FXAA_SEARCH_ACCELERATION == 2) {
+
+		pointN += pointOffset * ToFloat2(-1.5);
+		pointP += pointOffset * ToFloat2(1.5);
+		pointOffset *= ToFloat2(2.0);
+
+	}
+	else if (FXAA_SEARCH_ACCELERATION == 3) {
+
+		pointN += pointOffset * ToFloat2(-2.0);
+		pointP += pointOffset * ToFloat2(2.0);
+		pointOffset *= ToFloat2(3.0);
+
+	}
+	else if (FXAA_SEARCH_ACCELERATION == 4) {
+
+		pointN += pointOffset * ToFloat2(-2.5);
+		pointP += pointOffset * ToFloat2(2.5);
+		pointOffset *= ToFloat2(4.0);
+
+	}
+
+	// Perform the end-of-edge search.
+	for (unsigned int i = 0; i < FXAA_SEARCH_STEPS; i++)
+	{
+		if (FXAA_SEARCH_ACCELERATION == 1) {
+			if (!searchNeg) { lumaNegEnd = Luminance(g_RenderTextureView.SampleLevel(g_Sampler, pointN, 0).rgb); }
+			if (!searchPos) { lumaPosEnd = Luminance(g_RenderTextureView.SampleLevel(g_Sampler, pointP, 0).rgb); }
+		}
+		else
+		{
+			if (!searchNeg) { lumaNegEnd = Luminance(g_RenderTextureView.SampleGrad(g_Sampler, pointN, pointOffset, pointOffset).rgb); }
+			if (!searchPos) { lumaPosEnd = Luminance(g_RenderTextureView.SampleGrad(g_Sampler, pointN, pointOffset, pointOffset).rgb); }
+		}
+
+		// Search for significant change in luma compared to current highest pair.
+		searchNeg = searchNeg || (abs(lumaNegEnd - lumaNeg) >= gradientNeg);
+		searchPos = searchPos || (abs(lumaPosEnd - lumaPos) >= gradientPos);
+
+
+		// Display debug information regarding edges.
+		if (FXAA_DEBUG_NEGPOS > 0) {
+
+			bool negGreater = (abs(lumaNegEnd - gradientNeg)) > (abs(lumaPosEnd - gradientPos));
+
+			if (searchNeg && negGreater) {
+				return float3(abs(lumaNegEnd - gradientNeg), 0.0, 0.0);
+			}
+			else if (searchPos && !negGreater) {
+				return float3(0.0, 0.0, abs(lumaPosEnd - gradientPos));
+			}
+			else {
+				return float3(abs(lumaNegEnd - gradientNeg), 0.0, abs(lumaPosEnd - gradientPos));
+			}
+
+		}
+
+		// Determine if search is over early.
+		if (searchNeg && searchPos) { break; }
+
+		// If still searching, increment offset.
+		if (!searchNeg) { pointN -= pointOffset; }
+		if (!searchPos) { pointP += pointOffset; }
+	}
+
+	//-------------------------
+	// 6. SUB-PIXEL SHIFT
+
+	// Determine if sub-pixel center falls on positive or negative side.
+	float distanceNeg = isHorizontal ? uv.x - pointN.x : uv.y - pointN.y;
+	float distancePos = isHorizontal ? pointP.x - uv.x : pointP.y - uv.y;
+	bool isCloserToNegative = distanceNeg < distancePos;
+
+	// Assign respective luma.
+	float lumaEnd = isCloserToNegative ? lumaNegEnd : lumaPosEnd;
+
+	// Check if pixel is in area that receives no filtering.
+	if (((lumaO - lumaNeg) < 0.0) == ((lumaEnd - lumaNeg) < 0.0)) {
+		edgeSign = 0.0;
+	}
+
+	// Compute sub-pixel offset and filter span.
+	float filterSpanLength = (distancePos + distanceNeg);
+	float filterDistance = isCloserToNegative ? distanceNeg : distancePos;
+	float subpixelOffset = (0.5 + (filterDistance * (-1.0 / filterSpanLength))) * edgeSign;
+
+	if (FXAA_DEBUG_OFFSET > 0)
+	{
+		if (subpixelOffset < 0.0) {
+			// neg-horizontal (red) : neg-vertical (gold)
+			float3 red = float3(1.0, 0.0, 0.0);
+			float3 gold = float3(1.0, 0.7, 0.0);
+			return isHorizontal ? red : gold;
+		}
+
+		if (subpixelOffset > 0.0) {
+			// pos-horizontal (blue) : pos-vertical (skyblue)
+			float3 blue = float3(0.0, 0.0, 1.0);
+			float3 skyblue = float3(0.1, 0.3, 1.0);
+			return isHorizontal ? blue : skyblue;
+		}
+	}
+
+	// Resample using the subpixel offset.
+	float2 uvOffset = float2(uv.x + (isHorizontal ? 0.0 : subpixelOffset), uv.y + (isHorizontal ? subpixelOffset : 0.0));
+	float3 rgbOffset = g_RenderTextureView.SampleLevel(g_Sampler, uvOffset, 0).rgb;
+
+	// return ToFloat3((lumaN + lumaS + lumaE + lumaW + lumaNW + lumaNE + lumaSW + lumaSE) * (1.0/9.0));
+
+	// Display highlight.
+	if (FXAA_DEBUG_HIGHLIGHT > 0)
+	{
+		float3 red = float3(1.0, 0.0, 0.0); // Horizontal.
+		float3 green = float3(0.0, 1.0, 0.0); // Vertical.
+		return isHorizontal ? red : green;
+	}
+
+	// If there is no subpixel aliasing check, we simply output the offset.
+	if (FXAA_SUBPIX == 0) { return rgbOffset; }
+
+	// If there is a subpixel aliasing check, we can output the mix.
+	return lerp(rgbOffset, rgbL, lowpassBlend);
 }
 
 // Entry point for the pixel shader.

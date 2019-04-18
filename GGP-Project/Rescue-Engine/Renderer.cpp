@@ -5,7 +5,7 @@
 
 #define FXAA_ENABLED 1
 #define FXAA_PRESET 5
-#define FXAA_DEBUG 1
+#define FXAA_DEBUG 0
 
 using namespace DirectX;
 
@@ -52,8 +52,8 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	fxaaSettings->DEBUG_PASSTHROUGH = ON;
 	fxaaSettings->DEBUG_HORZVERT = ON;
 	fxaaSettings->DEBUG_PAIR = ON;
-	fxaaSettings->DEBUG_OFFSET = ON;
 	fxaaSettings->DEBUG_NEGPOS = ON;
+	fxaaSettings->DEBUG_OFFSET = ON;
 	fxaaSettings->DEBUG_HIGHLIGHT = ON;
 	fxaaSettings->DEBUG_GRAYSCALE = 1.0;
 	fxaaSettings->DEBUG_GRAYSCALE_CHANNEL = 1;
