@@ -45,10 +45,10 @@ public:
 	}
 
 	//Returns a random decimal from min -> max.
-	static float Random(int min = 0, int max = 1)
+	static float Random(float min = 0.0f, float max = 1.0f)
 	{
 		srand(unsigned(time(NULL)));
-		return rand() / (max + 1) + min + (rand() % max - min);
+		return rand() / (max + 1) + min + (rand() % (int)max - min);
 	}
 
 	//Returns a random vector on a flat plane.

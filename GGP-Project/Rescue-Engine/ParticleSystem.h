@@ -32,6 +32,6 @@ public:
 private:
 
 	std::vector<Particle*> particleList; //The list of particles in the system
-	float aliveTime;                     //The time that the particles should stay alive
+	int aliveTime;                     //The time that the particles should stay alive
 };
 

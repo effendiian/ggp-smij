@@ -18,7 +18,7 @@ public:
 
 	void Reset()
 	{
-		this->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+		this->SetParticlePosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
 		direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		gravity   = 1.0f;
 	}
@@ -29,14 +29,14 @@ public:
 	// ---------------------------------------------------
 
 	// Getters and setters -------------------------------
-	XMFLOAT3 GetPosition()            { return this->GetPosition(); }
-	void     SetPosition(XMFLOAT3 p)  { this->SetPosition(p);       }
-	XMFLOAT3 GetDirection()           { return direction;           }
-	void     SetDirection(XMFLOAT3 d) { direction = d;              }
-	float    GetGravity()             { return gravity;             }
-	void     SetGravity(float g)      { gravity = g;                }
-	float    GetTimer()               { return timer;               }
-	void     SetTimer(float t)        { timer = t;                  }
+	XMFLOAT3 GetParticlePosition()            { return GetPosition(); }
+	void     SetParticlePosition(XMFLOAT3 p)  { this->SetPosition(p); }
+	XMFLOAT3 GetParticleDirection()           { return direction;     }
+	void     SetParticleDirection(XMFLOAT3 d) { direction = d;        }
+	float    GetParticleGravity()             { return gravity;       }
+	void     SetParticleGravity(float g)      { gravity = g;          }
+	int      GetParticleTimer()               { return timer;         }
+	void     SetParticleTimer(int t)          { timer = t;            }
 	// ---------------------------------------------------
 
 	//Updates the particle -------------------------------
@@ -63,6 +63,6 @@ private:
 	float force;        //The force of the particle
 	float slowdown;     //How fast the particle slows down
 	float aliveTime;    //How long the particle should stay alive
-	float timer;        //How long the particle has been alive
+	int timer;          //How long the particle has been alive
 
 };

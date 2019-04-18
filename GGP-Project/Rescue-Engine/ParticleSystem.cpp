@@ -13,9 +13,9 @@ ParticleSystem::ParticleSystem(ParticleSystemType type, Mesh* mesh, Material* ma
 		switch (type)
 		{
 			case(ParticleSystem::Splash):
-				p->SetTimer(aliveTime);
-				p->SetDirection(ExtendedMath::RandomSplashVector());
-				p->SetGravity(gravity);
+				p->SetParticleTimer(aliveTime);
+				p->SetParticleDirection(ExtendedMath::RandomSplashVector());
+				p->SetParticleGravity(gravity);
 			break;
 		}
 		
@@ -48,7 +48,7 @@ void ParticleSystem::Update(float deltaTime)
 		Particle* p = particleList[i];
 		p->Update(deltaTime);
 
-		if (p->GetTimer() > aliveTime)
+		if (p->GetParticleTimer() > aliveTime)
 		{
 			ClearParticleList();
 			break;
