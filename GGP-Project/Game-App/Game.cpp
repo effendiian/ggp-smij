@@ -260,7 +260,7 @@ void Game::Update(float deltaTime, float totalTime)
 	swimmerManager->Update(deltaTime);
 
 	//Updates water's scrolling normal map
-	translate += 0.00001f;
+	translate += 0.0001f;
 	if (translate > 1.0f) translate = 0.0f;
 	
 	// --------------------------------------------------------
