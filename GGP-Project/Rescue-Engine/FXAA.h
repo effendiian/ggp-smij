@@ -162,42 +162,42 @@ enum FXAA_LUMINANCE_FLAG {
 	// --------------------------------------------------------------
 	// RED - color.r
 	//
-	// Luma is equivalent to the raw red. (Rare).
+	// Luma used is equivalent to the raw red. (Rare).
 	// --------------------------------------------------------------
 	RED = 4,
 
 	// --------------------------------------------------------------
 	// RED_GAMMA - sqrt(color.r)
 	//
-	// Luma is approximate to the gamma-correct red. (Rare).
+	// Luma used is approximate to the gamma-correct red. (Rare).
 	// --------------------------------------------------------------
 	RED_GAMMA = 5,
 
 	// --------------------------------------------------------------
 	// GREEN - color.g
 	//
-	// Luma is equivalent to the raw green. (Common).
+	// Luma used is equivalent to the raw green. (Common).
 	// --------------------------------------------------------------
 	GREEN = 6,
 
 	// --------------------------------------------------------------
 	// GREEN_GAMMA - sqrt(color.g)
 	//
-	// Luma is approximate to the gamma-correct green. (Common).
+	// Luma used is approximate to the gamma-correct green. (Common).
 	// --------------------------------------------------------------
 	GREEN_GAMMA = 7,
 
 	// --------------------------------------------------------------
 	// BLUE - color.b
 	//
-	// Luma is equivalent to the raw blue. (Rare).
+	// Luma used is equivalent to the raw blue. (Rare).
 	// --------------------------------------------------------------
 	BLUE = 8,
 
 	// --------------------------------------------------------------
 	// BLUE_GAMMA - sqrt(color.b)
 	//
-	// Luma is approximate to the gamma-correct blue. (Rare).
+	// Luma used is approximate to the gamma-correct blue. (Rare).
 	// --------------------------------------------------------------
 	BLUE_GAMMA = 9
 };
@@ -224,7 +224,7 @@ public:
 	// DEFAULT SETTINGS == FXAA_PRESET as 0.
 	const unsigned int DEFAULT_PRESET = FXAA_PRESET_FLAG::DEFAULT_FXAA_PRESET;
 	const float DEFAULT_EDGE_THRESHOLD = (1.0 / 4.0);
-	const float DEFAULT_EDGE_THRESHOLD_MINIMUM = (1.0 / 12.0);
+	const float DEFAULT_EDGE_THRESHOLD_MIN = (1.0 / 12.0);
 	const unsigned int DEFAULT_SEARCH_STEPS = 2;
 	const unsigned int DEFAULT_SEARCH_ACCELERATION = 4;
 	const float DEFAULT_SEARCH_THRESHOLD = (1.0 / 4.0);
@@ -274,7 +274,7 @@ public:
 	float EDGE_THRESHOLD = DEFAULT_EDGE_THRESHOLD;
 
 	// --------------------------------------
-	// FXAA_EDGE_TRESHOLD_MINIMUM
+	// FXAA_EDGE_TRESHOLD_MIN
 	//
 	// Minimum threshold used to determine high contrast change.
 	// Preset 0 - (1.0/12.0)
@@ -284,7 +284,7 @@ public:
 	// Preset 4 - (1.0/24.0)
 	// Preset 5 - (1.0/24.0)
 	// --------------------------------------
-	float EDGE_THRESHOLD_MINIMUM = DEFAULT_EDGE_THRESHOLD_MINIMUM;
+	float EDGE_THRESHOLD_MIN = DEFAULT_EDGE_THRESHOLD_MIN;
 
 	// --------------------------------------
 	// FXAA_SEARCH_STEPS
@@ -444,6 +444,24 @@ public:
 	// 1 - on.
 	// --------------------------------------
 	unsigned int DEBUG_HIGHLIGHT = FXAA_BOOLEAN_FLAG::OFF;
+
+	// --------------------------------------
+	// FXAA_DEBUG_GRAYSCALE
+	//
+	// Percentage [0..1] of grayscale amount to apply to final output.
+	// --------------------------------------
+	float DEBUG_GRAYSCALE = 0.0;
+
+	// --------------------------------------
+	// FXAA_DEBUG_GRAYSCALE_CHANNEL
+	//
+	// Channel to base grayscale off of.
+	// 0 - r
+	// 1 - g (Used by default).
+	// 2 - b
+	// 3 - a
+	// --------------------------------------
+	unsigned int DEBUG_GRAYSCALE_CHANNEL = 1;
 
 	// -------------
 	// Methods.

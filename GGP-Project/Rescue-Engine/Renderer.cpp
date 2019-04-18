@@ -55,6 +55,8 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	fxaaSettings->DEBUG_OFFSET = ON;
 	fxaaSettings->DEBUG_NEGPOS = ON;
 	fxaaSettings->DEBUG_HIGHLIGHT = ON;
+	fxaaSettings->DEBUG_GRAYSCALE = 1.0;
+	fxaaSettings->DEBUG_GRAYSCALE_CHANNEL = 1;
 #endif
 
 	// Create post-process resources.
@@ -319,15 +321,15 @@ void Renderer::ApplyPostProcess(ID3D11DeviceContext* context,
 
 	// Set UniformData cbuffer data.
 	fxaaPS->SetFloat2("textureResolution", DirectX::XMFLOAT2(width, height));
-	fxaaPS->SetFloat("grayscalePercentage", 0.0f);
 	fxaaPS->CopyAllBufferData(); // Copy data to shader.
 
 	// Set FXAASettings cbuffer data.
 	fxaaPS->SetFloat("FXAA_EDGE_THRESHOLD", fxaaSettings->EDGE_THRESHOLD);
-	fxaaPS->SetFloat("FXAA_EDGE_THRESHOLD_MINIMUM", fxaaSettings->EDGE_THRESHOLD_MINIMUM);
+	fxaaPS->SetFloat("FXAA_EDGE_THRESHOLD_MIN", fxaaSettings->EDGE_THRESHOLD_MIN);
 	fxaaPS->SetFloat("FXAA_SEARCH_THRESHOLD", fxaaSettings->SEARCH_THRESHOLD);
 	fxaaPS->SetFloat("FXAA_SUBPIX_CAP", fxaaSettings->SUBPIX_CAP);
 	fxaaPS->SetFloat("FXAA_SUBPIX_TRIM", fxaaSettings->SUBPIX_TRIM);
+	fxaaPS->SetFloat("FXAA_DEBUG_GRAYSCALE", fxaaSettings->DEBUG_GRAYSCALE);
 
 	fxaaPS->SetInt("FXAA_ENABLED", fxaaSettings->FXAA);
 	fxaaPS->SetInt("FXAA_SEARCH_STEPS", fxaaSettings->SEARCH_STEPS);
@@ -343,6 +345,7 @@ void Renderer::ApplyPostProcess(ID3D11DeviceContext* context,
 	fxaaPS->SetInt("FXAA_DEBUG_NEGPOS", fxaaSettings->DEBUG_NEGPOS);
 	fxaaPS->SetInt("FXAA_DEBUG_OFFSET", fxaaSettings->DEBUG_OFFSET);
 	fxaaPS->SetInt("FXAA_DEBUG_HIGHLIGHT", fxaaSettings->DEBUG_HIGHLIGHT);
+	fxaaPS->SetInt("FXAA_DEBUG_GRAYSCALE_CHANNEL", fxaaSettings->DEBUG_GRAYSCALE_CHANNEL);
 
 	fxaaPS->CopyAllBufferData(); // Copy data to shader.
 
