@@ -19,15 +19,18 @@ private:
 	//Render list management
 	//renderMap uses Mat/Mesh identifiers to point to the correct list
 	std::unordered_map<std::string, std::vector<Entity*>> renderMap;
+	Mesh* cubeMesh;
 
 	//Collider debugging
 	std::vector<Collider*> debugColliders;
-	Mesh* colDebugCube;
 	SimpleVertexShader* colDebugVS;
 	SimplePixelShader* colDebugPS;
-
-	//Raster states
 	ID3D11RasterizerState* RS_wireframe;
+
+	//Skybox
+	Material* skyboxMat;
+	ID3D11RasterizerState* skyRasterState;
+	ID3D11DepthStencilState* skyDepthState;
 
 	// Post-Process: FXAA ------------------
 	ID3D11RenderTargetView* fxaaRTV; // Allow us to render to a texture.
@@ -48,6 +51,37 @@ private:
 	// Destructor for when the singleton instance is deleted
 	// --------------------------------------------------------
 	~Renderer();
+
+	// --------------------------------------------------------
+	// Prepare post-process render texture.
+	// --------------------------------------------------------
+	void PreparePostProcess(ID3D11DeviceContext* context, ID3D11RenderTargetView* ppRTV, ID3D11DepthStencilView* ppDSV);
+
+	// --------------------------------------------------------
+	// Draw opaque objects
+	// --------------------------------------------------------
+	void DrawOpaqueObjects(ID3D11DeviceContext* context, Camera* camera);
+
+	// --------------------------------------------------------
+	// Draw debug colider rectangles
+	// --------------------------------------------------------
+	void DrawDebugColliders(ID3D11DeviceContext* context, Camera* camera);
+
+	// --------------------------------------------------------
+	// Draw the skybox
+	// --------------------------------------------------------
+	void DrawSky(ID3D11DeviceContext* context, Camera* camera);
+
+	// --------------------------------------------------------
+	// Apply post processing.
+	// --------------------------------------------------------
+	void ApplyPostProcess(ID3D11DeviceContext* context,
+		ID3D11RenderTargetView* backBufferRTV,
+		ID3D11DepthStencilView* depthStencilView,
+		ID3D11RenderTargetView* ppRTV,
+		ID3D11ShaderResourceView* ppSRV,
+		ID3D11SamplerState* sampler,
+		UINT width, UINT height);
 
 public:
 	// --------------------------------------------------------
@@ -102,7 +136,7 @@ public:
 	// --------------------------------------------------------
 	// Tell the renderer to render a collider this frame
 	// --------------------------------------------------------
-	void RenderColliderThisFrame(Collider* c);
+	void AddDebugColliderToThisFrame(Collider* c);
 
 	// --------------------------------------------------------
 	// Set clear color.

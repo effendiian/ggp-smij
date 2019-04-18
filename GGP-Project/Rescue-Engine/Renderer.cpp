@@ -16,9 +16,24 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	this->SetClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Get collider shader information.
-	colDebugCube = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
+	cubeMesh = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
 	colDebugVS = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
 	colDebugPS = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
+
+	//Get skybox information
+	skyboxMat = ResourceManager::GetInstance()->GetMaterial("skybox");
+
+	D3D11_RASTERIZER_DESC skyRD = {};
+	skyRD.CullMode = D3D11_CULL_FRONT;
+	skyRD.FillMode = D3D11_FILL_SOLID;
+	skyRD.DepthClipEnable = true;
+	device->CreateRasterizerState(&skyRD, &skyRasterState);
+
+	D3D11_DEPTH_STENCIL_DESC skyDS = {};
+	skyDS.DepthEnable = true;
+	skyDS.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	skyDS.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	device->CreateDepthStencilState(&skyDS, &skyDepthState);
 
 	// Set up the FXAA settings.
 	fxaaSettings = new FXAA_DESC();
@@ -96,6 +111,10 @@ Renderer::~Renderer()
 	// Clean up rasterizer state.
 	RS_wireframe->Release();
 
+	//Clean up skybox
+	skyDepthState->Release();
+	skyRasterState->Release();
+
 	// Clean up post process.
 	fxaaRTV->Release();
 	fxaaSRV->Release();
@@ -125,22 +144,33 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 
 #pragma endregion
 
-#pragma region Pre-Render Post Process
+	PreparePostProcess(context, fxaaRTV, depthStencilView);
 
-// POST PROCESS PRE-RENDER ///////////////
+	DrawOpaqueObjects(context, camera);
 
-	// Clear post process texture.
-	context->ClearRenderTargetView(fxaaRTV, this->clearColor);
+	DrawSky(context, camera);
+
+	ApplyPostProcess(context, backBufferRTV, depthStencilView, fxaaRTV, fxaaSRV, sampler, width, height);
+
+	DrawDebugColliders(context, camera);
+
+}
+
+// Prepare for post processsing.
+void Renderer::PreparePostProcess(ID3D11DeviceContext* context, ID3D11RenderTargetView* ppRTV, ID3D11DepthStencilView* ppDSV)
+{
+	// POST PROCESS PRE-RENDER ///////////////
+
+		// Clear post process texture.
+	context->ClearRenderTargetView(ppRTV, this->clearColor);
 
 	// Set the post process RTV as the current render target.
-	context->OMSetRenderTargets(1, &fxaaRTV, depthStencilView);
+	context->OMSetRenderTargets(1, &ppRTV, ppDSV);
+}
 
-#pragma endregion
-
-#pragma region Render Opaque Objects
-	// ----------------------------------------------------------------------------------------------------------------
-	//Render opaque objects
-
+// Draw opaque objects
+void Renderer::DrawOpaqueObjects(ID3D11DeviceContext* context, Camera* camera)
+{
 	//TODO: Apply attenuation
 	for (auto const& mapPair : renderMap)
 	{
@@ -192,9 +222,87 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 				0);    // Offset to add to each index when looking up vertices
 		}
 	}
-#pragma endregion
+}
 
-#pragma region Apply Post Process to Render
+// Draw debug rectangles
+void Renderer::DrawDebugColliders(ID3D11DeviceContext* context, Camera* camera)
+{
+	//Set wireframe
+	context->RSSetState(RS_wireframe);
+
+	//Set shaders
+	colDebugVS->SetShader();
+	colDebugPS->SetShader();
+
+	//Set camera data
+	colDebugVS->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+	colDebugVS->SetMatrix4x4("view", camera->GetViewMatrix());
+	colDebugVS->CopyBufferData("perFrame");
+
+	//Loop
+	for (auto const& collider : debugColliders)
+	{
+		// Assign collider world to VS
+		colDebugVS->SetMatrix4x4("world", collider->GetWorldMatrix());
+		colDebugVS->CopyBufferData("perObject");
+
+		// Set buffers in the input assembler
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer* vertexBuffer = cubeMesh->GetVertexBuffer();
+		ID3D11Buffer* indexBuffer = cubeMesh->GetIndexBuffer();
+		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		// Draw object
+		context->DrawIndexed(
+			cubeMesh->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
+	}
+	//Clear debug collider list and reset raster state
+	debugColliders.clear();
+	context->RSSetState(0);
+}
+
+void Renderer::DrawSky(ID3D11DeviceContext* context, Camera* camera)
+{
+	//Return if we don't have a skybox
+	if (!skyboxMat)
+		return;
+
+	// Set up the shaders
+	skyboxMat->PrepareMaterialCombo(nullptr, camera);
+
+	// Set buffers in the input assembler
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	ID3D11Buffer* vertexBuffer = cubeMesh->GetVertexBuffer();
+	ID3D11Buffer* indexBuffer = cubeMesh->GetIndexBuffer();
+	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	// Set up any new render states
+	context->RSSetState(skyRasterState);
+	context->OMSetDepthStencilState(skyDepthState, 0);
+
+	// Draw
+	context->DrawIndexed(cubeMesh->GetIndexCount(), 0, 0);
+
+	// Reset states
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
+}
+
+// Apply the post process.
+void Renderer::ApplyPostProcess(ID3D11DeviceContext* context,
+	ID3D11RenderTargetView* backBufferRTV,
+	ID3D11DepthStencilView* depthStencilView,
+	ID3D11RenderTargetView* ppRTV,
+	ID3D11ShaderResourceView* ppSRV,
+	ID3D11SamplerState* sampler,
+	UINT width, UINT height)
+{
 
 	// Set target back to back buffer.
 	context->OMSetRenderTargets(1, &backBufferRTV, 0);
@@ -254,52 +362,6 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 
 	// Reset depth stencil view.
 	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
-
-#pragma endregion
-
-#pragma region Render Debug Colliders
-	// ----------------------------------------------------------------------------------------------------------------
-	//Render debug collider outlines
-
-	//Se wireframe
-	context->RSSetState(RS_wireframe);
-
-	//Set shaders
-	colDebugVS->SetShader();
-	colDebugPS->SetShader();
-
-	//Set camera data
-	colDebugVS->SetMatrix4x4("projection", camera->GetProjectionMatrix());
-	colDebugVS->SetMatrix4x4("view", camera->GetViewMatrix());
-	colDebugVS->CopyBufferData("perFrame");
-
-	//Loop
-	for (auto const& collider : debugColliders)
-	{
-		// Assign collider world to VS
-		colDebugVS->SetMatrix4x4("world", collider->GetWorldMatrix());
-		colDebugVS->CopyBufferData("perObject");
-
-		// Set buffers in the input assembler
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		ID3D11Buffer* vertexBuffer = colDebugCube->GetVertexBuffer();
-		ID3D11Buffer* indexBuffer = colDebugCube->GetIndexBuffer();
-		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-		// Draw object
-		context->DrawIndexed(
-			colDebugCube->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
-	}
-	//Clear debug collider list and reset raster state
-	debugColliders.clear();
-	context->RSSetState(0);
-
-#pragma endregion
-
 }
 
 // Add an entity to the render list
@@ -398,7 +460,7 @@ bool Renderer::IsEntityInRenderer(Entity* e)
 }
 
 // Tell the renderer to render a collider this frame
-void Renderer::RenderColliderThisFrame(Collider * c)
+void Renderer::AddDebugColliderToThisFrame(Collider * c)
 {
 	debugColliders.push_back(c);
 }

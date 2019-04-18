@@ -22,6 +22,12 @@
     <Filter Include="Source Files\Helpers">
       <UniqueIdentifier>{d9847528-de78-4da9-9020-6b3792388b93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Materials">
+      <UniqueIdentifier>{93fd2557-697e-4d64-861f-0489de148ea7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Materials">
+      <UniqueIdentifier>{251f653e-094c-4588-be95-ec2558ed1c79}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp">
@@ -66,8 +72,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h">
       <Filter>Header Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="A:\Library\My Repositories\ggp\ggp-smij\GGP-Project\Rescue-Engine\FXAA.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)FXAA.cpp">
       <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MAT_Skybox.cpp">
+      <Filter>Source Files\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,8 +122,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Collider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="A:\Library\My Repositories\ggp\ggp-smij\GGP-Project\Rescue-Engine\FXAA.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)FXAA.h">
       <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MAT_Skybox.h">
+      <Filter>Header Files\Materials</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
