@@ -1,14 +1,11 @@
-#define NOMINMAX
-
 #include "FocusCamera.h"
-#include <algorithm>
 #include "ExtendedMath.h"
 
 using namespace DirectX;
 
 // Constructor - Set up the focus camera
 FocusCamera::FocusCamera(GameObject* obj, DirectX::XMFLOAT3 anchor,
-	float zoomDist) : Camera()
+	XMFLOAT3 anchorRotation, float zoomDist) : Camera()
 {
 	inputManager = InputManager::GetInstance();
 	focusObj = obj;
@@ -16,7 +13,10 @@ FocusCamera::FocusCamera(GameObject* obj, DirectX::XMFLOAT3 anchor,
 	maxZoom = zoomDist;
 	zoom = 0;
 	zoomTick = 0.1f;
+
+	//Initial position and rot
 	SetPosition(anchor);
+	SetAnchorRot(anchorRotation);
 
 #if defined(DEBUG) || defined(_DEBUG)
 	prevKeypress = false;
@@ -54,25 +54,45 @@ void FocusCamera::Update(float deltaTime)
 	zoom += scrollDelta * zoomTick;
 
 	//Keep zoom inbounds
-	zoom = std::max(0.0f, std::min(zoom, 1.0f));
+	zoom = ExtendedMath::Clamp(zoom, 0.0f, 1.0f);
 	
 	//Get target position
-	XMVECTOR targetPos = XMVectorLerp(XMLoadFloat3(&anchorPos),
-		XMLoadFloat3(&focusObj->GetPosition()), zoom);
+	XMFLOAT3 targetPos;
+	XMStoreFloat3(&targetPos, XMVectorLerp(XMLoadFloat3(&anchorPos),
+		XMLoadFloat3(&focusObj->GetPosition()), zoom));
 
 	//Lerp new position
-	XMVECTOR newPos;
-	newPos = XMVectorLerp(XMLoadFloat3(&GetPosition()), targetPos, 0.005f);
+	XMVECTOR newPos = XMLoadFloat3(&ExtendedMath::Vec3Slerp(GetPosition(), targetPos, 0.05f));
+	//newPos = XMVectorLerp(XMLoadFloat3(&GetPosition()), targetPos, 0.005f);
+
+	//Check if we are too close
+	XMFLOAT3 position;
+	XMFLOAT3 distance;
+	XMStoreFloat3(&distance, XMVector3Length(XMVectorSubtract(XMLoadFloat3(&focusObj->GetPosition()), newPos)));
+	if (distance.x < maxZoom)
+	{
+		position = GetPosition();
+	}
+	else XMStoreFloat3(&position, newPos);
+
 
 	//Set new position
-	XMFLOAT3 position;
-	XMStoreFloat3(&position, newPos);
 	SetPosition(position);
 
 	//Rotate camera
-	XMFLOAT4 newRot = ExtendedMath::QuaternionLookAt(position, focusObj->GetPosition(),
-		GetForwardAxis(), GetUpAxis());
-	SetRotation(newRot);
+	XMFLOAT4X4 rotMat;
+	XMStoreFloat4x4(&rotMat, XMMatrixLookAtLH(XMLoadFloat3(&GetPosition()),
+		XMLoadFloat3(&focusObj->GetPosition()),
+		XMLoadFloat3(&GetUpAxis())));
+
+	XMFLOAT4 destRot = ExtendedMath::MatrixToQuaternion(rotMat);
+	XMFLOAT4 rot;
+	XMStoreFloat4(&rot, XMQuaternionSlerp(XMLoadFloat4(&anchorRot), XMLoadFloat4(&destRot), 0.5f));
+	SetRotation(rot);
+
+	//XMFLOAT4 newRot = ExtendedMath::QuaternionLookAt(position, focusObj->GetPosition(),
+	//	focusObj->GetForwardAxis(), focusObj->GetUpAxis());
+	//SetRotation(newRot);
 
 	Camera::Update(deltaTime);
 }
@@ -93,6 +113,13 @@ void FocusCamera::SetAnchor(XMFLOAT3 anchor)
 void FocusCamera::SetMaxZoom(float zoom)
 {
 	maxZoom = zoom;
+}
+
+// Set the anchor's rotation
+void FocusCamera::SetAnchorRot(DirectX::XMFLOAT3 anchorRotation)
+{
+	SetRotation(anchorRotation);
+	anchorRot = GetRotation();
 }
 
 
@@ -138,7 +165,7 @@ void FocusCamera::FPSMovement(float deltaTime)
 
 	// Rotate the movement vector
 	XMVECTOR move = XMVector3Rotate(XMLoadFloat3(&movement),
-		XMLoadFloat4(&GetQuatRotation()));
+		XMLoadFloat4(&GetRotation()));
 	//Add to position and store
 	XMStoreFloat3(&movement, XMVectorAdd(XMLoadFloat3(&GetPosition()), move));
 	SetPosition(movement);

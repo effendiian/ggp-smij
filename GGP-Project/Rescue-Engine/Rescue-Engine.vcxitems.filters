@@ -78,6 +78,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MAT_Skybox.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h">

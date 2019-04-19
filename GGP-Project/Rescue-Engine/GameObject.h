@@ -159,9 +159,9 @@ public:
 	DirectX::XMFLOAT3 GetUpAxis();
 
 	// --------------------------------------------------------
-	// Get the quaternion rotation for this GameObject (Quaternion)
+	// Get the rotation for this GameObject (Quaternion)
 	// --------------------------------------------------------
-	DirectX::XMFLOAT4 GetQuatRotation();
+	DirectX::XMFLOAT4 GetRotation();
 
 	// --------------------------------------------------------
 	// Set the rotation for this GameObject (Angles)
@@ -171,13 +171,6 @@ public:
 	void SetRotation(DirectX::XMFLOAT3 newRotation);
 
 	// --------------------------------------------------------
-	// Set the rotation for this GameObject (Quaternion)
-	//
-	// newQuatRotation - The new rotation to rotate to
-	// --------------------------------------------------------
-	void SetRotation(DirectX::XMFLOAT4 newQuatRotation);
-
-	// --------------------------------------------------------
 	// Set the rotation for this GameObject using angles
 	//
 	// x - x angle
@@ -185,6 +178,13 @@ public:
 	// z - z angle
 	// --------------------------------------------------------
 	void SetRotation(float x, float y, float z);
+
+	// --------------------------------------------------------
+	// Set the rotation for this GameObject (Quaternion)
+	//
+	// newQuatRotation - The new rotation to rotate to
+	// --------------------------------------------------------
+	void SetRotation(DirectX::XMFLOAT4 newQuatRotation);
 
 	// --------------------------------------------------------
 	// Rotate this GameObject (Angles)

@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FXAA.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp" />

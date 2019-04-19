@@ -13,6 +13,7 @@ private:
 	//Focus vars
 	GameObject* focusObj;
 	DirectX::XMFLOAT3 anchorPos;
+	DirectX::XMFLOAT4 anchorRot;
 	float zoom;
 	float maxZoom;
 	float zoomTick;
@@ -41,10 +42,11 @@ public:
 	//
 	// obj - the object to focus on
 	// anchor - the anchor position (minimum zoom)
+	// anchorRot - the rotation at the origin
 	// zoomDist - the max zoom distance to the focus object
 	// --------------------------------------------------------
 	FocusCamera(GameObject* obj, DirectX::XMFLOAT3 anchor, 
-		float zoomDist);
+		DirectX::XMFLOAT3 anchorRotation, float zoomDist);
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
@@ -76,5 +78,12 @@ public:
 	// maxZoom - the max zoom distance to the focus object
 	// --------------------------------------------------------
 	void SetMaxZoom(float zoom);
+
+	// --------------------------------------------------------
+	// Set the anchor's rotation
+	//
+	// anchorRot - the anchor's rotation
+	// --------------------------------------------------------
+	void SetAnchorRot(DirectX::XMFLOAT3 anchorRotation);
 };
 
