@@ -214,7 +214,7 @@ void Game::CreateEntities()
 #endif
 
 	//Create the camera and initialize matrices
-	camera = new FocusCamera(player, XMFLOAT3(0, 25, -5), XMFLOAT3(75, 0, 0), 2);
+	camera = new FocusCamera(player, XMFLOAT3(0, 16, -23), XMFLOAT3(40.75f, 0, 0), 4, 2);
 	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
 }
 

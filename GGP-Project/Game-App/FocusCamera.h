@@ -17,6 +17,8 @@ private:
 	float zoom;
 	float maxZoom;
 	float zoomTick;
+	float yMin;
+	bool moveIn;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	//Allow first person movement in debug mode
@@ -44,9 +46,11 @@ public:
 	// anchor - the anchor position (minimum zoom)
 	// anchorRot - the rotation at the origin
 	// zoomDist - the max zoom distance to the focus object
+	// yMinimum - the minimum y value
 	// --------------------------------------------------------
 	FocusCamera(GameObject* obj, DirectX::XMFLOAT3 anchor, 
-		DirectX::XMFLOAT3 anchorRotation, float zoomDist);
+		DirectX::XMFLOAT3 anchorRotation, float zoomDist,
+		float yMinimum);
 
 	// --------------------------------------------------------
 	// Destructor for when an instance is deleted
@@ -85,5 +89,12 @@ public:
 	// anchorRot - the anchor's rotation
 	// --------------------------------------------------------
 	void SetAnchorRot(DirectX::XMFLOAT3 anchorRotation);
+
+	// --------------------------------------------------------
+	// Set the y minimum for the camera
+	//
+	// yMinimum - the minimum y value
+	// --------------------------------------------------------
+	void SetYMin(float yMinimum);
 };
 

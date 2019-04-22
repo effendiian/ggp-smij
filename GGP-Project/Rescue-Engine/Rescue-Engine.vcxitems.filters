@@ -69,18 +69,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Collider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h">
-      <Filter>Header Files\Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)FXAA.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)MAT_Skybox.cpp">
       <Filter>Source Files\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ExtendedMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h">
