@@ -170,4 +170,9 @@ public:
 	// --------------------------------------------------------
 	void SetClearColor(const float color[4]);
 	void SetClearColor(float r, float g, float b, float a = 1.0);
+
+	// --------------------------------------------------------
+	// Create the post-processing texture
+	// --------------------------------------------------------
+	void CreatePostProcessingResources(ID3D11Device* device, UINT width, UINT height);
 };

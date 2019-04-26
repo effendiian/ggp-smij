@@ -79,42 +79,7 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	fxaaSettings->DEBUG_GRAYSCALE_CHANNEL = 1;
 #endif
 
-	// Create post-process resources.
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = width;
-	textureDesc.Height = height;
-	textureDesc.ArraySize = 1;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc.MipLevels = 1;
-	textureDesc.MiscFlags = 0;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-
-	ID3D11Texture2D* ppTexture;
-	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
-
-	// Create the Render Target View
-	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-	rtvDesc.Format = textureDesc.Format;
-	rtvDesc.Texture2D.MipSlice = 0;
-	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
-	device->CreateRenderTargetView(ppTexture, &rtvDesc, &fxaaRTV);
-
-	// Create the Shader Resource View
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = textureDesc.Format;
-	srvDesc.Texture2D.MipLevels = 1;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-
-	device->CreateShaderResourceView(ppTexture, &srvDesc, &fxaaSRV);
-
-	// We don't need the texture reference itself no mo'
-	ppTexture->Release();
+	CreatePostProcessingResources(device, width, height);
 
 	// Get fxaa shader information.
 	fxaaVS = ResourceManager::GetInstance()->GetVertexShader("FXAAShaderVS.cso");
@@ -617,4 +582,45 @@ void Renderer::SetClearColor(float r, float g, float b, float a)
 	clearColor[1] = g;
 	clearColor[2] = b;
 	clearColor[3] = a;
+}
+
+// Create the post-processing texture
+void Renderer::CreatePostProcessingResources(ID3D11Device* device, UINT width, UINT height)
+{
+	// Create post-process resources.
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ID3D11Texture2D* ppTexture;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(ppTexture, &rtvDesc, &fxaaRTV);
+
+	// Create the Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(ppTexture, &srvDesc, &fxaaSRV);
+
+	// We don't need the texture reference itself no mo'
+	ppTexture->Release();
 }

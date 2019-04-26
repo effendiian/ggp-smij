@@ -253,6 +253,7 @@ void Game::OnResize()
 		(float)width / height,	// Aspect ratio
 		0.1f,				  	// Near clip plane distance
 		100.0f);			  	// Far clip plane distance
+	renderer->CreatePostProcessingResources(device, width, height);
 }
 
 // --------------------------------------------------------
