@@ -7,6 +7,7 @@ using namespace DirectX;
 Collider::Collider(XMFLOAT3 position)
 {
 	this->position = position;
+	this->rotation = XMFLOAT4(0, 0, 0, 0);
 	this->size = XMFLOAT3();
 	this->offset = XMFLOAT3();
 	this->worldMatrix = XMFLOAT4X4();
@@ -25,6 +26,8 @@ Collider::Collider(XMFLOAT3 position, XMFLOAT3 size, XMFLOAT3 offset)
 {
 	XMStoreFloat3(&this->position, XMLoadFloat3(&position) + XMLoadFloat3(&offset));
 
+	this->rotation = XMFLOAT4(0, 0, 0, 0);
+
 	this->size = size;
 	this->offset = offset;
 	this->worldMatrix = XMFLOAT4X4();
@@ -42,11 +45,14 @@ void Collider::ConstructWorldMatrix()
 	//Get translation matrix
 	XMMATRIX translation = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
 
+	//Get rotation matrix
+	XMMATRIX rotating = XMMatrixRotationQuaternion(XMLoadFloat4(&rotation));
+
 	//Get scale matrix
 	XMMATRIX scaling = XMMatrixScalingFromVector(XMLoadFloat3(&size));
 
 	//Calculate matrix and store
-	XMMATRIX newWorld = XMMatrixTranspose(scaling * translation);
+	XMMATRIX newWorld = XMMatrixTranspose(scaling * rotating * translation);
 	XMStoreFloat4x4(&worldMatrix, newWorld);
 
 	worldDirty = false;
@@ -86,6 +92,12 @@ void Collider::SetPosition(DirectX::XMFLOAT3 newPosition)
 	XMVECTOR newPos = XMLoadFloat3(&newPosition);
 	XMVECTOR off = XMLoadFloat3(&offset);
 	XMStoreFloat3(&position, newPos + off);
+	worldDirty = true;
+}
+
+void Collider::SetRotation(DirectX::XMFLOAT4 newRotation)
+{
+	rotation = newRotation;
 	worldDirty = true;
 }
 

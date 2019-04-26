@@ -6,6 +6,7 @@ class Collider
 private:
 	//Transform vars
 	DirectX::XMFLOAT3 position; //center
+	DirectX::XMFLOAT4 rotation; //center
 	DirectX::XMFLOAT3 offset; //(0,0,0) if not given
 	DirectX::XMFLOAT3 size; //xyz = width, height, length
 
@@ -73,6 +74,11 @@ public:
 	// Set the position of the collider
 	// --------------------------------------------------------
 	void SetPosition(DirectX::XMFLOAT3 newPosition);
+
+	// --------------------------------------------------------
+	// Set the rotation of the collider (quaternion)
+	// --------------------------------------------------------
+	void SetRotation(DirectX::XMFLOAT4 newRotation);
 
 	// --------------------------------------------------------
 	// Set the size of the collider

@@ -193,6 +193,9 @@ void GameObject::SetRotation(XMFLOAT3 newRotation)
 	XMStoreFloat4(&rotationQuat, quat);
 
 	CalculateAxis();
+
+	//Apply to collider
+	if (collider != nullptr) collider->SetRotation(rotationQuat);
 }
 
 // Set the rotation for this GameObject using euler angles (Quaternion)
@@ -206,6 +209,9 @@ void GameObject::SetRotation(float x, float y, float z)
 	XMStoreFloat4(&rotationQuat, quat);
 
 	CalculateAxis();
+
+	//Apply to collider
+	//if (collider != nullptr) collider->SetRotation(rotationQuat);
 }
 
 // Set the rotation for this GameObject (Quaternion)
@@ -215,6 +221,9 @@ void GameObject::SetRotation(DirectX::XMFLOAT4 newQuatRotation)
 	rotationQuat = newQuatRotation;
 
 	CalculateAxis();
+
+	//Apply to collider
+	if (collider != nullptr) collider->SetRotation(rotationQuat);
 }
 
 // Rotate this GameObject (Angles)
