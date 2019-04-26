@@ -2,6 +2,8 @@
 #include "Lights.h"
 #include <vector>
 
+#define SHADOW_MAP_SIZE 1024
+
 class LightManager
 {
 private:
@@ -25,8 +27,10 @@ private:
 	bool listDirty;
 	LightStruct* lightStructArr;
 
-	//Shadow textures
-	D3D11_SHADER_RESOURCE_VIEW_DESC shadowrvDesc;
+	//Shadow descs
+	D3D11_TEXTURE2D_DESC shadowTexDesc;
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC shadowSRVDesc;
 
 	// --------------------------------------------------------
 	//Set the light manager's light list to dirty
@@ -164,8 +168,18 @@ public:
 	std::vector<Light*> GetShadowCastingLights();
 
 	// --------------------------------------------------------
+	// Get the shadow texture description for creating shadowTexs
+	// --------------------------------------------------------
+	D3D11_TEXTURE2D_DESC* GetShadowTexDesc();
+
+	// --------------------------------------------------------
+	// Get the shadow depth/stencil description for creating shadowDSs
+	// --------------------------------------------------------
+	D3D11_DEPTH_STENCIL_VIEW_DESC* GetShadowDSDesc();
+
+	// --------------------------------------------------------
 	// Get the shadow resource view description for creating shadowSRVs
 	// --------------------------------------------------------
-	D3D11_SHADER_RESOURCE_VIEW_DESC* GetShadowRVDesc();
+	D3D11_SHADER_RESOURCE_VIEW_DESC* GetShadowSRVDesc();
 };
 

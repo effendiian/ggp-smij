@@ -12,6 +12,7 @@ Light::Light(LightType type, bool castShadows)
 {
 	inLightManager = false;
 	SetCastsShadows(castShadows);
+	shadowDSV = nullptr;
 	shadowSRV = nullptr;
 
 	lightStruct = new LightStruct();
@@ -31,6 +32,7 @@ Light::Light(LightType type, bool castShadows, XMFLOAT3 color, float intensity)
 {
 	inLightManager = false;
 	SetCastsShadows(castShadows);
+	shadowDSV = nullptr;
 	shadowSRV = nullptr;
 
 	lightStruct = new LightStruct();
@@ -44,6 +46,9 @@ Light::~Light()
 {
 	if (lightStruct)
 		delete lightStruct;
+
+	if (shadowDSV != nullptr)
+		shadowDSV->Release();
 
 	if (shadowSRV != nullptr)
 		shadowSRV->Release();
@@ -118,14 +123,39 @@ void Light::SetCastsShadows(bool castShadows)
 	castsShadows = castShadows;
 }
 
+// Get the shadow depth/stencil for this light
+ID3D11DepthStencilView * Light::GetShadowDSV()
+{
+	return shadowDSV;
+}
+
+// Get the shadow SRV for this light
+ID3D11ShaderResourceView* Light::GetShadowSRV()
+{
+	return shadowSRV;
+}
+
 // Create the SRV for this light's shadow map
-void Light::CreateShadowSRV(ID3D11Device* device)
+void Light::InitShadowMap(ID3D11Device* device)
 {
 	if (shadowSRV != nullptr)
 		return;
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC shadowrvDesc = *(LightManager::GetInstance()->GetShadowRVDesc());
-	device->CreateShaderResourceView(shadowTexture, &shadowrvDesc, &shadowSRV);
+	//Create the shadow texture
+	D3D11_TEXTURE2D_DESC shadowTexDesc = *(LightManager::GetInstance()->GetShadowTexDesc());
+	ID3D11Texture2D* shadowTexture;
+	device->CreateTexture2D(&shadowTexDesc, 0, &shadowTexture);
+
+	// Create the depth/stencil
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = *(LightManager::GetInstance()->GetShadowDSDesc());
+	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
+
+	// Create the SRV for the shadow map
+	D3D11_SHADER_RESOURCE_VIEW_DESC shadowSRVDesc = *(LightManager::GetInstance()->GetShadowSRVDesc());
+	device->CreateShaderResourceView(shadowTexture, &shadowSRVDesc, &shadowSRV);
+
+	// Release the texture reference since we don't need it
+	shadowTexture->Release();
 }
 
 // Get this light's view matrix (for shadows)
@@ -142,12 +172,6 @@ DirectX::XMFLOAT4X4 Light::GetProjectionMatrix()
 	//TODO: Calculate matrices only when camera changes
 	CalculateProjMatrix();
 	return shadowProj;
-}
-
-// Get the shadowSRV for this light
-ID3D11ShaderResourceView* Light::GetShadowSRV()
-{
-	return shadowSRV;
 }
 
 #pragma endregion

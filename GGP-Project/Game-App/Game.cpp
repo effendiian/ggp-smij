@@ -219,9 +219,10 @@ void Game::CreateEntities()
 	//Create water
 	Entity* water = new Entity(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("water")
+		resourceManager->GetMaterial("wood")
 	);
 	water->SetScale(26, 0.1f, 26);
+	water->SetPosition(0, -2, 0);
 
 	// Player (Boat) - Create the player.
 	player = new Boat(

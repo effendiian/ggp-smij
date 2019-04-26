@@ -22,9 +22,9 @@ private:
 	Mesh* cubeMesh;
 
 	//Collider debugging
-	std::vector<Collider*> debugColliders;
-	SimpleVertexShader* colDebugVS;
-	SimplePixelShader* colDebugPS;
+	std::vector<DirectX::XMFLOAT4X4> debugCubes;
+	SimpleVertexShader* vs_debug;
+	SimplePixelShader* ps_debug;
 	ID3D11RasterizerState* RS_wireframe;
 
 	//Skybox
@@ -34,8 +34,6 @@ private:
 
 	//Shadows
 	int shadowMapSize;
-	ID3D11Texture2D* shadowTexture;
-	ID3D11DepthStencilView* shadowDSV;
 	ID3D11RasterizerState* shadowRasterizer;
 	SimpleVertexShader* shadowVS;
 	DirectX::XMFLOAT4X4 shadowViewMatrix;
@@ -157,7 +155,7 @@ public:
 	// --------------------------------------------------------
 	// Tell the renderer to render a collider this frame
 	// --------------------------------------------------------
-	void AddDebugColliderToThisFrame(Collider* c);
+	void AddDebugCubeToThisFrame(DirectX::XMFLOAT4X4 world);
 
 	// --------------------------------------------------------
 	// Set clear color.

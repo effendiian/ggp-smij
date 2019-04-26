@@ -59,11 +59,7 @@ std::string GameObject::GetName()
 
 // Update this entity
 void GameObject::Update(float deltaTime)
-{
-	//Add collider to render list
-	if (collider != nullptr && collider->IsDebug())
-		Renderer::GetInstance()->AddDebugColliderToThisFrame(collider);
-}
+{ }
 
 // Get the world matrix for this GameObject (rebuilding if necessary)
 XMFLOAT4X4 GameObject::GetWorldMatrix()
@@ -71,6 +67,10 @@ XMFLOAT4X4 GameObject::GetWorldMatrix()
 	//Rebuild the world if it is not current
 	if (worldDirty)
 		RebuildWorld();
+
+	//Add collider to render list
+	if (collider != nullptr && collider->IsDebug())
+		Renderer::GetInstance()->AddDebugCubeToThisFrame(collider->GetWorldMatrix());
 
 	return world;
 }

@@ -54,8 +54,8 @@ private:
 	// --------------------------------------------------------
 	friend void SetInLightManager(Light* light, bool val);
 	bool castsShadows;
+	ID3D11DepthStencilView* shadowDSV;
 	ID3D11ShaderResourceView* shadowSRV;
-	ID3D11Texture2D* shadowTexture;
 
 protected:
 	bool inLightManager;
@@ -146,14 +146,19 @@ public:
 	void SetCastsShadows(bool castShadows);
 
 	// --------------------------------------------------------
-	// Get the shadowSRV for this light
+	// Get the shadow depth/stencil view for this light
+	// --------------------------------------------------------
+	ID3D11DepthStencilView* GetShadowDSV();
+
+	// --------------------------------------------------------
+	// Get the shadow SRV for this light
 	// --------------------------------------------------------
 	ID3D11ShaderResourceView* GetShadowSRV();
 
 	// --------------------------------------------------------
 	// Create the SRV for this light's shadow map
 	// --------------------------------------------------------
-	void CreateShadowSRV(ID3D11Device* device);
+	void InitShadowMap(ID3D11Device* device);
 
 	// --------------------------------------------------------
 	// Get this light's view matrix (for shadows)

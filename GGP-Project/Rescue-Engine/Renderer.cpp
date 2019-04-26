@@ -18,8 +18,8 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	// --------------------------------------------------------
 	// Get collider shader information
 	cubeMesh = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
-	colDebugVS = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
-	colDebugPS = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
+	vs_debug = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
+	ps_debug = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
 
 
 	// --------------------------------------------------------
@@ -42,29 +42,6 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	// --------------------------------------------------------
 	//Get shadow information
 	shadowVS = ResourceManager::GetInstance()->GetVertexShader("VS_Shadow.cso");
-	shadowMapSize = 1024;
-
-	// Create the actual texture that will be the shadow map
-	D3D11_TEXTURE2D_DESC shadowDesc = {};
-	shadowDesc.Width = shadowMapSize;
-	shadowDesc.Height = shadowMapSize;
-	shadowDesc.ArraySize = 1;
-	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-	shadowDesc.CPUAccessFlags = 0;
-	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-	shadowDesc.MipLevels = 1;
-	shadowDesc.MiscFlags = 0;
-	shadowDesc.SampleDesc.Count = 1;
-	shadowDesc.SampleDesc.Quality = 0;
-	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
-	device->CreateTexture2D(&shadowDesc, 0, &shadowTexture);
-
-	// Create the depth/stencil
-	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
-	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	shadowDSDesc.Texture2D.MipSlice = 0;
-	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
 
 	// Create a rasterizer state
 	D3D11_RASTERIZER_DESC shadowRastDesc = {};
@@ -161,9 +138,7 @@ Renderer::~Renderer()
 	skyRasterState->Release();
 
 	//Clean up shadow map
-	shadowDSV->Release();
 	shadowRasterizer->Release();
-	shadowTexture->Release();
 
 	// Clean up post process.
 	fxaaRTV->Release();
@@ -198,16 +173,15 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 
 	DrawSky(context, camera);
 
+	ApplyPostProcess(context, backBufferRTV, depthStencilView, fxaaRTV, fxaaSRV, sampler, width, height);
+
+	DrawDebugColliders(context, camera);
+
 	// Need to unbind the shadow map from pixel shader stage
 	// so it can be rendered into properly next frame
 	// (Just unbinding all since we don't know which register its in)
 	ID3D11ShaderResourceView* nullSRVs[16] = {};
 	context->PSSetShaderResources(0, 16, nullSRVs);
-
-	ApplyPostProcess(context, backBufferRTV, depthStencilView, fxaaRTV, fxaaSRV, sampler, width, height);
-
-	DrawDebugColliders(context, camera);
-
 }
 
 // Prepare for post processsing.
@@ -216,7 +190,7 @@ void Renderer::PreparePostProcess(ID3D11DeviceContext* context,
 {
 	// POST PROCESS PRE-RENDER ///////////////
 
-		// Clear post process texture.
+	// Clear post process texture.
 	context->ClearRenderTargetView(ppRTV, this->clearColor);
 
 	// Set the post process RTV as the current render target.
@@ -248,8 +222,9 @@ void Renderer::RenderShadowMaps(ID3D11DeviceContext* context,
 	{
 		//Create shadow SRV if it does not exist
 		if (l->GetShadowSRV() == nullptr)
-			l->CreateShadowSRV(shadowTexture, device);
+			l->InitShadowMap(device);
 
+		ID3D11DepthStencilView* shadowDSV = l->GetShadowDSV();
 		ID3D11ShaderResourceView* shadowSRV = l->GetShadowSRV();
 
 		// Initial setup - No RTV necessary - Clear shadow map
@@ -368,20 +343,20 @@ void Renderer::DrawDebugColliders(ID3D11DeviceContext* context, Camera* camera)
 	context->RSSetState(RS_wireframe);
 
 	//Set shaders
-	colDebugVS->SetShader();
-	colDebugPS->SetShader();
+	vs_debug->SetShader();
+	ps_debug->SetShader();
 
 	//Set camera data
-	colDebugVS->SetMatrix4x4("projection", camera->GetProjectionMatrix());
-	colDebugVS->SetMatrix4x4("view", camera->GetViewMatrix());
-	colDebugVS->CopyBufferData("perFrame");
+	vs_debug->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+	vs_debug->SetMatrix4x4("view", camera->GetViewMatrix());
+	vs_debug->CopyBufferData("perFrame");
 
 	//Loop
-	for (auto const& collider : debugColliders)
+	for (auto const& world : debugCubes)
 	{
 		// Assign collider world to VS
-		colDebugVS->SetMatrix4x4("world", collider->GetWorldMatrix());
-		colDebugVS->CopyBufferData("perObject");
+		vs_debug->SetMatrix4x4("world", world);
+		vs_debug->CopyBufferData("perObject");
 
 		// Set buffers in the input assembler
 		UINT stride = sizeof(Vertex);
@@ -398,7 +373,7 @@ void Renderer::DrawDebugColliders(ID3D11DeviceContext* context, Camera* camera)
 			0);    // Offset to add to each index when looking up vertices
 	}
 	//Clear debug collider list and reset raster state
-	debugColliders.clear();
+	debugCubes.clear();
 	context->RSSetState(0);
 }
 
@@ -598,9 +573,9 @@ bool Renderer::IsEntityInRenderer(Entity* e)
 }
 
 // Tell the renderer to render a collider this frame
-void Renderer::AddDebugColliderToThisFrame(Collider * c)
+void Renderer::AddDebugCubeToThisFrame(XMFLOAT4X4 world)
 {
-	debugColliders.push_back(c);
+	debugCubes.push_back(world);
 }
 
 // Set the clear color.

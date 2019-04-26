@@ -21,12 +21,32 @@ void LightManager::Init()
 	ambientLight->Color = XMFLOAT3(0, 0, 0);
 	ambientLight->Intensity = 1;
 
+	// Create the desc for the actual texture that will be the shadow map
+	shadowTexDesc = {};
+	shadowTexDesc.Width = SHADOW_MAP_SIZE;
+	shadowTexDesc.Height = SHADOW_MAP_SIZE;
+	shadowTexDesc.ArraySize = 1;
+	shadowTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowTexDesc.CPUAccessFlags = 0;
+	shadowTexDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowTexDesc.MipLevels = 1;
+	shadowTexDesc.MiscFlags = 0;
+	shadowTexDesc.SampleDesc.Count = 1;
+	shadowTexDesc.SampleDesc.Quality = 0;
+	shadowTexDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	// Create the depth/stencil desc
+	shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+
 	// Create the desc for shadow map creation
-	shadowrvDesc = {};
-	shadowrvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	shadowrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shadowrvDesc.Texture2D.MipLevels = 1;
-	shadowrvDesc.Texture2D.MostDetailedMip = 0;
+	shadowSRVDesc = {};
+	shadowSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	shadowSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shadowSRVDesc.Texture2D.MipLevels = 1;
+	shadowSRVDesc.Texture2D.MostDetailedMip = 0;
 }
 
 // Create a new directional light and add it to the light manager
@@ -260,10 +280,22 @@ std::vector<Light*> LightManager::GetShadowCastingLights()
 	return shadowLightList;
 }
 
-// Get the shadow resource view description for creating shadowSRVs
-D3D11_SHADER_RESOURCE_VIEW_DESC* LightManager::GetShadowRVDesc()
+// Get the shadow texture description for creating shadowTexs
+D3D11_TEXTURE2D_DESC* LightManager::GetShadowTexDesc()
 {
-	return &shadowrvDesc;
+	return &shadowTexDesc;
+}
+
+// Get the shadow depth/stencil description for creating shadowDSs
+D3D11_DEPTH_STENCIL_VIEW_DESC* LightManager::GetShadowDSDesc()
+{
+	return &shadowDSDesc;
+}
+
+// Get the shadow resource view description for creating shadowSRVs
+D3D11_SHADER_RESOURCE_VIEW_DESC* LightManager::GetShadowSRVDesc()
+{
+	return &shadowSRVDesc;
 }
 
 // Rebuild the shadow light list
