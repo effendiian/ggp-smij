@@ -88,7 +88,7 @@ void Game::Init()
 	//Directional lights
 	DirectionalLight* dLight = lightManager->CreateDirectionalLight(true, XMFLOAT3(1, 1, 1), 1);
 	dLight->SetRotation(70, 0, 0);
-	dLight->SetPosition(0, 20, 0);
+	dLight->SetPosition(0, 10, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.
@@ -232,7 +232,7 @@ void Game::CreateEntities()
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
 	player->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));
 #if defined(DEBUG) || defined(_DEBUG)
-	player->GetCollider()->SetDebug(true);
+	player->SetDebug(true);
 #endif
 
 	//Create the camera and initialize matrices
@@ -313,6 +313,26 @@ void Game::Update(float deltaTime, float totalTime)
 		default:
 			break;
 	}
+
+	std::vector<Light*> lights = LightManager::GetInstance()->GetShadowCastingLights();
+	XMVECTOR pos = XMLoadFloat3(&lights[0]->GetPosition());
+	renderer->AddDebugCubeToThisFrame(lights[0]->GetPosition(), lights[0]->GetRotation());
+
+	XMFLOAT3 forward;
+	XMVECTOR forw = XMVectorAdd(pos, XMLoadFloat3(&lights[0]->GetForwardAxis()));
+	XMStoreFloat3(&forward, forw);
+	renderer->AddDebugCubeToThisFrame(forward, lights[0]->GetRotation(), 0.5f);
+
+	XMFLOAT3 upwards;
+	XMVECTOR up = XMVectorAdd(pos, XMLoadFloat3(&lights[0]->GetUpAxis()));
+	XMStoreFloat3(&upwards, up);
+	renderer->AddDebugCubeToThisFrame(upwards, lights[0]->GetRotation(), 0.5f);
+
+	XMFLOAT3 rightwards;
+	XMVECTOR right = XMVectorAdd(pos, XMLoadFloat3(&lights[0]->GetRightAxis()));
+	XMStoreFloat3(&rightwards, right);
+	renderer->AddDebugCubeToThisFrame(rightwards, lights[0]->GetRotation(), 0.5f);
+
 
 	//Updates water's scrolling normal map
 	translate += 0.05f * deltaTime;

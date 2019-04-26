@@ -11,7 +11,6 @@ Collider::Collider(XMFLOAT3 position)
 	this->offset = XMFLOAT3();
 	this->worldMatrix = XMFLOAT4X4();
 
-	debug = false;
 	worldDirty = true;
 }
 
@@ -29,7 +28,6 @@ Collider::Collider(XMFLOAT3 position, XMFLOAT3 size, XMFLOAT3 offset)
 	this->offset = offset;
 	this->worldMatrix = XMFLOAT4X4();
 
-	debug = false;
 	worldDirty = true;
 }
 
@@ -130,16 +128,4 @@ bool Collider::Collides(Collider other)
 	if (distance < 0.5f) return true;
 	else return false;*/
 	
-}
-
-// Check if the collider is in debug mode (draw outline)
-bool Collider::IsDebug()
-{
-	return debug;
-}
-
-// Set debug mode for this collider (draw outline)
-void Collider::SetDebug(bool setting)
-{
-	debug = setting;
 }

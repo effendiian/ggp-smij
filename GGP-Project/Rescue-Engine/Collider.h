@@ -9,8 +9,6 @@ private:
 	DirectX::XMFLOAT3 offset; //(0,0,0) if not given
 	DirectX::XMFLOAT3 size; //xyz = width, height, length
 
-	bool debug;
-
 	//World matrices
 	bool worldDirty;
 	DirectX::XMFLOAT4X4 worldMatrix;
@@ -83,16 +81,6 @@ public:
 	// Check if the collider collides with another (AABB)
 	// --------------------------------------------------------
 	bool Collides(Collider other); //AABB for now
-
-	// --------------------------------------------------------
-	// Check if the collider is in debug mode (draw outline)
-	// --------------------------------------------------------
-	bool IsDebug();
-
-	// --------------------------------------------------------
-	// Set debug mode for this collider (draw outline)
-	// --------------------------------------------------------
-	void SetDebug(bool setting);
 
 };
 

@@ -59,7 +59,7 @@ void Boat::Input(float deltaTime)
 			"swimmer"
 		);
 		swimmer->AddCollider(DirectX::XMFLOAT3(0.9f, 0.9f, 0.9f), DirectX::XMFLOAT3(0, 0, 0));
-		swimmer->GetCollider()->SetDebug(true);
+		swimmer->SetDebug(true);
 
 		// Get the leader.
 		Entity* leader = nullptr;
@@ -88,7 +88,7 @@ void Boat::Reset()
 // Moves the boat forward
 void Boat::Move(float deltaTime)
 {
-	this->MoveRelative(XMFLOAT3(speed * deltaTime, 0, 0));
+	this->MoveRelative(XMFLOAT3(0, 0, speed * deltaTime));
 }
 
 // Checks for collisions and calls corresponding collide methods

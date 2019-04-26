@@ -123,7 +123,7 @@ Swimmer* SwimmerManager::SpawnSwimmer()
 		// Add collider.
 		swimmer->AddCollider(DirectX::XMFLOAT3(0.9f, 0.9f, 0.9f), DirectX::XMFLOAT3(0, 0, 0));
 #if defined(DEBUG) || defined(_DEBUG)
-		swimmer->GetCollider()->SetDebug(true);
+		swimmer->SetDebug(true);
 #endif
 
 		// Instantiate the position and rotation.

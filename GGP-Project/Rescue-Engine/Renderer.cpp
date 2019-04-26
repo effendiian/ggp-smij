@@ -573,6 +573,29 @@ bool Renderer::IsEntityInRenderer(Entity* e)
 }
 
 // Tell the renderer to render a collider this frame
+void Renderer::AddDebugCubeToThisFrame(DirectX::XMFLOAT3 position, float size)
+{
+	XMMATRIX translation = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
+	XMMATRIX scaling = XMMatrixScalingFromVector(XMVectorSet(size, size, size, 0));
+	XMMATRIX world = XMMatrixTranspose(scaling * translation);
+	XMFLOAT4X4 cubeWorld;
+	XMStoreFloat4x4(&cubeWorld, world);
+	debugCubes.push_back(cubeWorld);
+}
+
+// Tell the renderer to render a collider this frame
+void Renderer::AddDebugCubeToThisFrame(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4 rotation, float size)
+{
+	XMMATRIX translation = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
+	XMMATRIX rot = XMMatrixRotationQuaternion(XMLoadFloat4(&rotation));
+	XMMATRIX scaling = XMMatrixScalingFromVector(XMVectorSet(size, size, size, 0));
+	XMMATRIX world = XMMatrixTranspose(scaling * rot * translation);
+	XMFLOAT4X4 cubeWorld;
+	XMStoreFloat4x4(&cubeWorld, world);
+	debugCubes.push_back(cubeWorld);
+}
+
+// Tell the renderer to render a collider this frame
 void Renderer::AddDebugCubeToThisFrame(XMFLOAT4X4 world)
 {
 	debugCubes.push_back(world);
