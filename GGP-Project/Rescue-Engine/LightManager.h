@@ -2,7 +2,7 @@
 #include "Lights.h"
 #include <vector>
 
-#define SHADOW_MAP_SIZE 1024
+#define SHADOW_MAP_SIZE 2048
 
 class LightManager
 {

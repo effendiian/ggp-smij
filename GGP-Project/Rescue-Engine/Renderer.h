@@ -33,11 +33,8 @@ private:
 	ID3D11DepthStencilState* skyDepthState;
 
 	//Shadows
-	int shadowMapSize;
 	ID3D11RasterizerState* shadowRasterizer;
 	SimpleVertexShader* shadowVS;
-	DirectX::XMFLOAT4X4 shadowViewMatrix;
-	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
 
 	// Post-Process: FXAA ------------------
 	ID3D11RenderTargetView* fxaaRTV; // Allow us to render to a texture.
@@ -71,6 +68,7 @@ private:
 	// --------------------------------------------------------
 	void RenderShadowMaps(ID3D11DeviceContext* context,
 		ID3D11Device* device,
+		Camera* camera,
 		ID3D11RenderTargetView* backBufferRTV,
 		ID3D11DepthStencilView* depthStencilView,
 		UINT width, UINT height);

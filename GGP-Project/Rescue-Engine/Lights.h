@@ -163,12 +163,12 @@ public:
 	// --------------------------------------------------------
 	// Get this light's view matrix (for shadows)
 	// --------------------------------------------------------
-	DirectX::XMFLOAT4X4 GetViewMatrix();
+	virtual DirectX::XMFLOAT4X4 GetViewMatrix() = 0;
 
 	// --------------------------------------------------------
 	// Get this light's projection matrix (for shadows)
 	// --------------------------------------------------------
-	DirectX::XMFLOAT4X4 GetProjectionMatrix();
+	virtual DirectX::XMFLOAT4X4 GetProjectionMatrix() = 0;
 
 };
 
@@ -213,6 +213,16 @@ public:
 	// Get the direction of this light
 	// --------------------------------------------------------
 	DirectX::XMFLOAT3 GetDirection();
+
+	// --------------------------------------------------------
+	// Get this light's view matrix (for shadows)
+	// --------------------------------------------------------
+	virtual DirectX::XMFLOAT4X4 GetViewMatrix();
+
+	// --------------------------------------------------------
+	// Get this light's projection matrix (for shadows)
+	// --------------------------------------------------------
+	virtual DirectX::XMFLOAT4X4 GetProjectionMatrix();
 };
 
 // --------------------------------------------------------
@@ -263,6 +273,15 @@ public:
 	// --------------------------------------------------------
 	float GetRadius();
 
+	// --------------------------------------------------------
+	// Get this light's view matrix (for shadows)
+	// --------------------------------------------------------
+	virtual DirectX::XMFLOAT4X4 GetViewMatrix();
+
+	// --------------------------------------------------------
+	// Get this light's projection matrix (for shadows)
+	// --------------------------------------------------------
+	virtual DirectX::XMFLOAT4X4 GetProjectionMatrix();
 };
 
 // --------------------------------------------------------
@@ -328,4 +347,14 @@ public:
 	// Get the direction of this light
 	// --------------------------------------------------------
 	DirectX::XMFLOAT3 SpotLight::GetDirection();
+
+	// --------------------------------------------------------
+	// Get this light's view matrix (for shadows)
+	// --------------------------------------------------------
+	virtual DirectX::XMFLOAT4X4 GetViewMatrix();
+
+	// --------------------------------------------------------
+	// Get this light's projection matrix (for shadows)
+	// --------------------------------------------------------
+	virtual DirectX::XMFLOAT4X4 GetProjectionMatrix();
 };

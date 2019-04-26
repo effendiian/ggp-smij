@@ -165,7 +165,7 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 		1.0f,
 		0);
 
-	RenderShadowMaps(context, device, backBufferRTV, depthStencilView, width, height);
+	RenderShadowMaps(context, device, camera, backBufferRTV, depthStencilView, width, height);
 
 	PreparePostProcess(context, fxaaRTV, depthStencilView);
 
@@ -200,19 +200,21 @@ void Renderer::PreparePostProcess(ID3D11DeviceContext* context,
 // Render shadow maps for all lights that cast shadows
 void Renderer::RenderShadowMaps(ID3D11DeviceContext* context,
 	ID3D11Device* device,
+	Camera* camera,
 	ID3D11RenderTargetView* backBufferRTV,
 	ID3D11DepthStencilView* depthStencilView,
 	UINT width, UINT height)
 {
 	std::vector<Light*> lights = LightManager::GetInstance()->GetShadowCastingLights();
 	context->RSSetState(shadowRasterizer);
+	context->PSSetShader(0, 0, 0); // Turns OFF the pixel shader
 
 	// SET A VIEWPORT!!!
 	D3D11_VIEWPORT vp = {};
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
-	vp.Width = (float)shadowMapSize;
-	vp.Height = (float)shadowMapSize;
+	vp.Width = (float)SHADOW_MAP_SIZE;
+	vp.Height = (float)SHADOW_MAP_SIZE;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 	context->RSSetViewports(1, &vp);
@@ -233,11 +235,9 @@ void Renderer::RenderShadowMaps(ID3D11DeviceContext* context,
 
 		// Set up the shaders
 		shadowVS->SetShader();
-		shadowVS->SetMatrix4x4("view", shadowViewMatrix);
-		shadowVS->SetMatrix4x4("projection", shadowProjectionMatrix);
+		shadowVS->SetMatrix4x4("view", l->GetViewMatrix());
+		shadowVS->SetMatrix4x4("projection", l->GetProjectionMatrix());
 		shadowVS->CopyBufferData("once");
-
-		context->PSSetShader(0, 0, 0); // Turns OFF the pixel shader
 
 		//Loop through entities (simplified. Look at DrawOpaqueObjects for better documentation)
 		for (auto const& mapPair : renderMap)

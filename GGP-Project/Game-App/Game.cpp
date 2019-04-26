@@ -87,8 +87,7 @@ void Game::Init()
 
 	//Directional lights
 	DirectionalLight* dLight = lightManager->CreateDirectionalLight(true, XMFLOAT3(1, 1, 1), 1);
-	dLight->SetRotation(70, 0, 0);
-	dLight->SetPosition(0, 10, 0);
+	dLight->SetRotation(60, -45, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.
@@ -219,10 +218,9 @@ void Game::CreateEntities()
 	//Create water
 	Entity* water = new Entity(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("wood")
+		resourceManager->GetMaterial("water")
 	);
 	water->SetScale(26, 0.1f, 26);
-	water->SetPosition(0, -2, 0);
 
 	// Player (Boat) - Create the player.
 	player = new Boat(
@@ -314,26 +312,6 @@ void Game::Update(float deltaTime, float totalTime)
 			break;
 	}
 
-	std::vector<Light*> lights = LightManager::GetInstance()->GetShadowCastingLights();
-	XMVECTOR pos = XMLoadFloat3(&lights[0]->GetPosition());
-	renderer->AddDebugCubeToThisFrame(lights[0]->GetPosition(), lights[0]->GetRotation());
-
-	XMFLOAT3 forward;
-	XMVECTOR forw = XMVectorAdd(pos, XMLoadFloat3(&lights[0]->GetForwardAxis()));
-	XMStoreFloat3(&forward, forw);
-	renderer->AddDebugCubeToThisFrame(forward, lights[0]->GetRotation(), 0.5f);
-
-	XMFLOAT3 upwards;
-	XMVECTOR up = XMVectorAdd(pos, XMLoadFloat3(&lights[0]->GetUpAxis()));
-	XMStoreFloat3(&upwards, up);
-	renderer->AddDebugCubeToThisFrame(upwards, lights[0]->GetRotation(), 0.5f);
-
-	XMFLOAT3 rightwards;
-	XMVECTOR right = XMVectorAdd(pos, XMLoadFloat3(&lights[0]->GetRightAxis()));
-	XMStoreFloat3(&rightwards, right);
-	renderer->AddDebugCubeToThisFrame(rightwards, lights[0]->GetRotation(), 0.5f);
-
-
 	//Updates water's scrolling normal map
 	translate += 0.05f * deltaTime;
 	if (translate > 1.0f) translate = 0.0f;
@@ -351,12 +329,8 @@ void Game::Update(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
-	// Background color (Cornflower Blue in this case) for clearing
-	// const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
-	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
 	//Draw all entities in the renderer
-	renderer->SetClearColor(color); // Needed for clearing the post process buffer texture and the back buffer.
+	renderer->SetClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Needed for clearing the post process buffer texture and the back buffer.
 	renderer->Draw(context, device, camera, backBufferRTV, depthStencilView, samplerState, width, height);
 
 	// Present the back buffer to the user

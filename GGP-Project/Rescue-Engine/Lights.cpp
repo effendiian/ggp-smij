@@ -158,22 +158,6 @@ void Light::InitShadowMap(ID3D11Device* device)
 	shadowTexture->Release();
 }
 
-// Get this light's view matrix (for shadows)
-DirectX::XMFLOAT4X4 Light::GetViewMatrix()
-{
-	//TODO: Calculate matrices only when camera changes
-	CalculateViewMatrix();
-	return shadowView;
-}
-
-// Get this light's projection matrix (for shadows)
-DirectX::XMFLOAT4X4 Light::GetProjectionMatrix()
-{
-	//TODO: Calculate matrices only when camera changes
-	CalculateProjMatrix();
-	return shadowProj;
-}
-
 #pragma endregion
 
 
@@ -185,12 +169,18 @@ DirectX::XMFLOAT4X4 Light::GetProjectionMatrix()
 // Constructor - Set up a directional light with default values.
 // White ambient and diffuse color.
 DirectionalLight::DirectionalLight(bool castShadows) : Light::Light(LightType::DirectionalLight, castShadows)
-{ }
+{ 
+	CalculateViewMatrix();
+	CalculateProjMatrix();
+}
 
 // Constructor - Set up a directional light
 DirectionalLight::DirectionalLight(bool castShadows, XMFLOAT3 color, float intensity) :
 	Light::Light(LightType::DirectionalLight, castShadows, color, intensity)
-{ }
+{ 
+	CalculateViewMatrix();
+	CalculateProjMatrix();
+}
 
 // Destructor for when an instance is deleted
 DirectionalLight::~DirectionalLight()
@@ -206,12 +196,9 @@ XMFLOAT3 DirectionalLight::GetDirection()
 void DirectionalLight::CalculateViewMatrix()
 {
 	XMMATRIX view = XMMatrixTranspose(XMMatrixLookToLH(
-		//XMLoadFloat3(&GetPosition()),
-		//XMLoadFloat3(&GetForwardAxis()),
-		//XMLoadFloat3(&GetUpAxis())));
-		XMVectorSet(0, 10, -10, 0),
-		XMVectorSet(0, -1, 1, 0),
-		XMVectorSet(0, 1, 0, 0)));
+		XMVectorSubtract(XMLoadFloat3(&GetPosition()), XMVectorScale(XMLoadFloat3(&GetForwardAxis()), 50)),
+		XMLoadFloat3(&GetForwardAxis()),
+		XMLoadFloat3(&GetUpAxis())));
 	XMStoreFloat4x4(&shadowView, view);
 }
 
@@ -219,15 +206,27 @@ void DirectionalLight::CalculateViewMatrix()
 void DirectionalLight::CalculateProjMatrix()
 {
 	XMMATRIX proj = XMMatrixTranspose(XMMatrixOrthographicLH(
-		//50,
-		//50,
-		//0.01f,
-		//100));
-		10,
-		10,
+		30,
+		30,
 		0.1f,
-		50));
+		100));
 	XMStoreFloat4x4(&shadowProj, proj);
+}
+
+// Get this light's view matrix (for shadows)
+DirectX::XMFLOAT4X4 DirectionalLight::GetViewMatrix()
+{
+	//TODO: Calculate matrices only when light changes
+	CalculateViewMatrix();
+	return shadowView;
+}
+
+// Get this light's projection matrix (for shadows)
+DirectX::XMFLOAT4X4 DirectionalLight::GetProjectionMatrix()
+{
+	//TODO: Calculate matrices only when light changes
+	CalculateProjMatrix();
+	return shadowProj;
 }
 #pragma endregion
 
@@ -273,23 +272,32 @@ float PointLight::GetRadius()
 void PointLight::CalculateViewMatrix()
 {
 	//TODO: Implement point light shadow maps
-	XMMATRIX view = XMMatrixTranspose(XMMatrixLookToLH(
-		XMLoadFloat3(&GetPosition()),
-		XMLoadFloat3(&GetForwardAxis()),
-		XMLoadFloat3(&GetUpAxis())));
-	XMStoreFloat4x4(&shadowView, view);
+	printf("Point light shadow maps are not supported (yet)");
 }
 
 // Calculate projection for shadow rendering
 void PointLight::CalculateProjMatrix()
 {
 	//TODO: Implement point light shadow maps
-	XMMATRIX proj = XMMatrixTranspose(XMMatrixOrthographicLH(
-		50,
-		50,
-		0.01f,
-		100));
-	XMStoreFloat4x4(&shadowProj, proj);
+	printf("Point light shadow maps are not supported (yet)");
+}
+
+// Get this light's view matrix (for shadows)
+DirectX::XMFLOAT4X4 PointLight::GetViewMatrix()
+{
+	//TODO: Calculate view for point lights
+	//TODO: Calculate matrices only when light changes
+	printf("Point light shadow maps are not supported (yet)");
+	return shadowView;
+}
+
+// Get this light's projection matrix (for shadows)
+DirectX::XMFLOAT4X4 PointLight::GetProjectionMatrix()
+{
+	//TODO: Calculate proj for point lights
+	//TODO: Calculate matrices only when light changes
+	printf("Point light shadow maps are not supported (yet)");
+	return shadowProj;
 }
 #pragma endregion
 
@@ -357,24 +365,33 @@ XMFLOAT3 SpotLight::GetDirection()
 // Calculate view for shadow rendering
 void SpotLight::CalculateViewMatrix()
 {
-	//TODO: Implement spot light shadow maps
-	XMMATRIX view = XMMatrixTranspose(XMMatrixLookToLH(
-		XMLoadFloat3(&GetPosition()),
-		XMLoadFloat3(&GetForwardAxis()),
-		XMLoadFloat3(&GetUpAxis())));
-	XMStoreFloat4x4(&shadowView, view);
+	//TODO: Implement Spot light shadow maps
+	printf("Spot light shadow maps are not supported (yet)");
 }
 
 // Calculate projection for shadow rendering
 void SpotLight::CalculateProjMatrix()
 {
-	//TODO: Implement spot light shadow maps
-	XMMATRIX proj = XMMatrixTranspose(XMMatrixOrthographicLH(
-		50,
-		50,
-		0.01f,
-		100));
-	XMStoreFloat4x4(&shadowProj, proj);
+	//TODO: Implement Spot light shadow maps
+	printf("Spot light shadow maps are not supported (yet)");
+}
+
+// Get this light's view matrix (for shadows)
+DirectX::XMFLOAT4X4 SpotLight::GetViewMatrix()
+{
+	//TODO: Calculate view for Spot lights
+	//TODO: Calculate matrices only when light changes
+	printf("Spot light shadow maps are not supported (yet)");
+	return shadowView;
+}
+
+// Get this light's projection matrix (for shadows)
+DirectX::XMFLOAT4X4 SpotLight::GetProjectionMatrix()
+{
+	//TODO: Calculate proj for point lights
+	//TODO: Calculate matrices only when light changes
+	printf("Spot light shadow maps are not supported (yet)");
+	return shadowProj;
 }
 #pragma endregion
 
