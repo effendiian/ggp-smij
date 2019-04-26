@@ -12,10 +12,6 @@ cbuffer perCombo : register(b0)
 	AmbientLight AmbLight;
 }
 
-cbuffer perObject : register(b1)
-{
-	float Translate;
-}
 
 // Defines the input to this pixel shader
 // - Should match the output of our corresponding vertex shader
@@ -26,6 +22,7 @@ struct VertexToPixel
 	float3 normal		: NORMAL;
 	float3 tangent		: TANGENT;
 	float3 worldPos		: POSITION; // The world position of this PIXEL
+	float4 posForShadow : SHADOW;
 };
 
 
@@ -36,6 +33,10 @@ Texture2D RoughnessTexture		: register(t2);
 Texture2D MetalTexture			: register(t3);
 SamplerState BasicSampler		: register(s0);
 
+// Shadow-related variables
+Texture2D ShadowMap						: register(t4);
+SamplerComparisonState ShadowSampler	: register(s1);
+
 
 // Entry point for this pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
@@ -44,10 +45,9 @@ float4 main(VertexToPixel input) : SV_TARGET
 	input.normal = normalize(input.normal);
 	input.tangent = normalize(input.tangent);
 
-	// Scrolls the normal map in two directions and samples the sum
-	float3 normalMap1 = NormalMapping(NormalTexture, BasicSampler, input.uv + Translate, input.normal, input.tangent);
-	float3 normalMap2 = NormalMapping(NormalTexture, BasicSampler, input.uv - Translate, input.normal, input.tangent);
-	input.normal = normalize(normalMap1 + normalMap2);
+	// Use normal mapping
+	float3 normalMap = NormalMapping(NormalTexture, BasicSampler, input.uv, input.normal, input.tangent);
+	input.normal = normalMap;
 
 	// Sample the roughness map
 	float roughness = RoughnessTexture.Sample(BasicSampler, input.uv).r;
@@ -62,6 +62,13 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Specular color - Assuming albedo texture is actually holding specular color if metal == 1
 	float3 specColor = lerp(F0_NON_METAL.rrr, surfaceColor.rgb, metal);
 
+	//Sample shadowmap
+	//Shadows are only on the singular directional light
+	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
+	shadowUV.y = 1.0f - shadowUV.y;
+	float shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
+
 	// Total color for this pixel
 	float3 totalColor = float3(0,0,0);
 
@@ -75,15 +82,21 @@ float4 main(VertexToPixel input) : SV_TARGET
 		switch (Lights[i].Type)
 		{
 		case LIGHT_TYPE_DIRECTIONAL:
-			totalColor += DirLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			float3 dL = DirLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			dL *= shadowAmount;
+			totalColor += dL;
 			break;
 
 		case LIGHT_TYPE_POINT:
-			totalColor += PointLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			float3 pL = PointLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			//pL *= shadowAmount;
+			totalColor += pL;
 			break;
 
 		case LIGHT_TYPE_SPOT:
-			totalColor += SpotLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			float3 sL = SpotLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			//sL *= shadowAmount;
+			totalColor += sL;
 			break;
 		}
 	}

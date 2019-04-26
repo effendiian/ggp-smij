@@ -15,11 +15,14 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	// Assign default clear color. We should pull this in from Game at some point.
 	this->SetClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// Get collider shader information.
+	// --------------------------------------------------------
+	// Get collider shader information
 	cubeMesh = ResourceManager::GetInstance()->GetMesh("Assets\\Models\\cube.obj");
 	colDebugVS = ResourceManager::GetInstance()->GetVertexShader("VS_ColDebug.cso");
 	colDebugPS = ResourceManager::GetInstance()->GetPixelShader("PS_ColDebug.cso");
 
+
+	// --------------------------------------------------------
 	//Get skybox information
 	skyboxMat = ResourceManager::GetInstance()->GetMaterial("skybox");
 
@@ -35,6 +38,46 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 	skyDS.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	device->CreateDepthStencilState(&skyDS, &skyDepthState);
 
+
+	// --------------------------------------------------------
+	//Get shadow information
+	shadowVS = ResourceManager::GetInstance()->GetVertexShader("VS_Shadow.cso");
+	shadowMapSize = 1024;
+
+	// Create the actual texture that will be the shadow map
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = shadowMapSize;
+	shadowDesc.Height = shadowMapSize;
+	shadowDesc.ArraySize = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDesc.CPUAccessFlags = 0;
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.MiscFlags = 0;
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.SampleDesc.Quality = 0;
+	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&shadowDesc, 0, &shadowTexture);
+
+	// Create the depth/stencil
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
+
+	// Create a rasterizer state
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = true;
+	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible value > 0 in depth buffer)
+	shadowRastDesc.DepthBiasClamp = 0.0f;
+	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
+	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
+
+
+	// --------------------------------------------------------
 	// Set up the FXAA settings.
 	fxaaSettings = new FXAA_DESC();
 	fxaaSettings->Init();
@@ -117,6 +160,11 @@ Renderer::~Renderer()
 	skyDepthState->Release();
 	skyRasterState->Release();
 
+	//Clean up shadow map
+	shadowDSV->Release();
+	shadowRasterizer->Release();
+	shadowTexture->Release();
+
 	// Clean up post process.
 	fxaaRTV->Release();
 	fxaaSRV->Release();
@@ -124,16 +172,14 @@ Renderer::~Renderer()
 }
 
 // Draw all entities in the render list
-void Renderer::Draw(ID3D11DeviceContext* context,
+void Renderer::Draw(ID3D11DeviceContext* context, 
+					ID3D11Device* device,
 					Camera* camera,
 					ID3D11RenderTargetView* backBufferRTV,
 					ID3D11DepthStencilView* depthStencilView,
 					ID3D11SamplerState* sampler,
 					UINT width, UINT height)
 {
-
-#pragma region Clear Back Buffer Texture
-
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
 	//  - At the beginning of Draw (before drawing *anything*)
@@ -144,13 +190,19 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 		1.0f,
 		0);
 
-#pragma endregion
+	RenderShadowMaps(context, device, backBufferRTV, depthStencilView, width, height);
 
 	PreparePostProcess(context, fxaaRTV, depthStencilView);
 
 	DrawOpaqueObjects(context, camera);
 
 	DrawSky(context, camera);
+
+	// Need to unbind the shadow map from pixel shader stage
+	// so it can be rendered into properly next frame
+	// (Just unbinding all since we don't know which register its in)
+	ID3D11ShaderResourceView* nullSRVs[16] = {};
+	context->PSSetShaderResources(0, 16, nullSRVs);
 
 	ApplyPostProcess(context, backBufferRTV, depthStencilView, fxaaRTV, fxaaSRV, sampler, width, height);
 
@@ -159,7 +211,8 @@ void Renderer::Draw(ID3D11DeviceContext* context,
 }
 
 // Prepare for post processsing.
-void Renderer::PreparePostProcess(ID3D11DeviceContext* context, ID3D11RenderTargetView* ppRTV, ID3D11DepthStencilView* ppDSV)
+void Renderer::PreparePostProcess(ID3D11DeviceContext* context,
+	ID3D11RenderTargetView* ppRTV, ID3D11DepthStencilView* ppDSV)
 {
 	// POST PROCESS PRE-RENDER ///////////////
 
@@ -168,6 +221,88 @@ void Renderer::PreparePostProcess(ID3D11DeviceContext* context, ID3D11RenderTarg
 
 	// Set the post process RTV as the current render target.
 	context->OMSetRenderTargets(1, &ppRTV, ppDSV);
+}
+
+// Render shadow maps for all lights that cast shadows
+void Renderer::RenderShadowMaps(ID3D11DeviceContext* context,
+	ID3D11Device* device,
+	ID3D11RenderTargetView* backBufferRTV,
+	ID3D11DepthStencilView* depthStencilView,
+	UINT width, UINT height)
+{
+	std::vector<Light*> lights = LightManager::GetInstance()->GetShadowCastingLights();
+	context->RSSetState(shadowRasterizer);
+
+	// SET A VIEWPORT!!!
+	D3D11_VIEWPORT vp = {};
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	vp.Width = (float)shadowMapSize;
+	vp.Height = (float)shadowMapSize;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	context->RSSetViewports(1, &vp);
+
+	//Loop through all lights that cast shadows and draw to their textures
+	for (auto l : lights)
+	{
+		//Create shadow SRV if it does not exist
+		if (l->GetShadowSRV() == nullptr)
+			l->CreateShadowSRV(shadowTexture, device);
+
+		ID3D11ShaderResourceView* shadowSRV = l->GetShadowSRV();
+
+		// Initial setup - No RTV necessary - Clear shadow map
+		context->OMSetRenderTargets(0, 0, shadowDSV);
+		context->ClearDepthStencilView(shadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+		// Set up the shaders
+		shadowVS->SetShader();
+		shadowVS->SetMatrix4x4("view", shadowViewMatrix);
+		shadowVS->SetMatrix4x4("projection", shadowProjectionMatrix);
+		shadowVS->CopyBufferData("once");
+
+		context->PSSetShader(0, 0, 0); // Turns OFF the pixel shader
+
+		//Loop through entities (simplified. Look at DrawOpaqueObjects for better documentation)
+		for (auto const& mapPair : renderMap)
+		{
+			if (mapPair.second.size() < 1)
+				return;
+
+			std::vector<Entity*> list = mapPair.second;
+
+			Mesh* mesh = list[0]->GetMesh();
+
+			// Set buffers in the input assembler
+			UINT stride = sizeof(Vertex);
+			UINT offset = 0;
+			ID3D11Buffer* vertexBuffer = mesh->GetVertexBuffer();
+			ID3D11Buffer* indexBuffer = mesh->GetIndexBuffer();
+			context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+			context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+			//Loop through each entity in the list
+			for (size_t i = 0; i < list.size(); i++)
+			{
+				// Grab the data from the first entity's mesh
+				Entity* e = list[i];
+
+				shadowVS->SetMatrix4x4("world", e->GetWorldMatrix());
+				shadowVS->CopyBufferData("perObject");
+
+				// Finally do the actual drawing
+				context->DrawIndexed(mesh->GetIndexCount(), 0, 0);
+			}
+		}
+	}
+
+	// Revert to original pipeline state
+	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+	vp.Width = (float)width;
+	vp.Height = (float)height;
+	context->RSSetViewports(1, &vp);
+	context->RSSetState(0);
 }
 
 // Draw opaque objects
@@ -185,15 +320,15 @@ void Renderer::DrawOpaqueObjects(ID3D11DeviceContext* context, Camera* camera)
 		//Get the first valid entity
 		Entity* firstValid = list[0];
 
-		Material* mat = firstValid->GetMaterial();
-		Mesh* mesh = firstValid->GetMesh();
+		Material* mat = list[0]->GetMaterial();
+		Mesh* mesh = list[0]->GetMesh();
 
 		// Turn shaders on
 		mat->GetVertexShader()->SetShader();
 		mat->GetPixelShader()->SetShader();
 
 		//Prepare the material's combo specific variables
-		mat->PrepareMaterialCombo(firstValid, camera);
+		mat->PrepareMaterialCombo(list[0], camera);
 
 		// Set buffers in the input assembler
 		UINT stride = sizeof(Vertex);

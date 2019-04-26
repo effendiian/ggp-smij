@@ -32,6 +32,15 @@ private:
 	ID3D11RasterizerState* skyRasterState;
 	ID3D11DepthStencilState* skyDepthState;
 
+	//Shadows
+	int shadowMapSize;
+	ID3D11Texture2D* shadowTexture;
+	ID3D11DepthStencilView* shadowDSV;
+	ID3D11RasterizerState* shadowRasterizer;
+	SimpleVertexShader* shadowVS;
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
+
 	// Post-Process: FXAA ------------------
 	ID3D11RenderTargetView* fxaaRTV; // Allow us to render to a texture.
 	ID3D11ShaderResourceView* fxaaSRV; // Allow us to sample from the same texture.
@@ -55,7 +64,18 @@ private:
 	// --------------------------------------------------------
 	// Prepare post-process render texture.
 	// --------------------------------------------------------
-	void PreparePostProcess(ID3D11DeviceContext* context, ID3D11RenderTargetView* ppRTV, ID3D11DepthStencilView* ppDSV);
+	void PreparePostProcess(ID3D11DeviceContext* context, 
+		ID3D11RenderTargetView* ppRTV, 
+		ID3D11DepthStencilView* ppDSV);
+
+	// --------------------------------------------------------
+	// Render shadow maps for all lights that cast shadows
+	// --------------------------------------------------------
+	void RenderShadowMaps(ID3D11DeviceContext* context,
+		ID3D11Device* device,
+		ID3D11RenderTargetView* backBufferRTV,
+		ID3D11DepthStencilView* depthStencilView,
+		UINT width, UINT height);
 
 	// --------------------------------------------------------
 	// Draw opaque objects
@@ -110,6 +130,7 @@ public:
 	// camera - The active camera object
 	// --------------------------------------------------------
 	void Draw(ID3D11DeviceContext* context,
+			  ID3D11Device* device,
 			  Camera* camera,
 			  ID3D11RenderTargetView* backBufferRTV,
 		      ID3D11DepthStencilView* depthStencilView,

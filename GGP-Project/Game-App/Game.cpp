@@ -39,8 +39,9 @@ Game::Game(HINSTANCE hInstance)
 // --------------------------------------------------------
 Game::~Game()
 {
-	//Delete sampler state
+	//Delete sampler states
 	samplerState->Release();
+	shadowSampler->Release();
 
 	//Delete the camera
 	if (camera) { delete camera; }
@@ -85,8 +86,9 @@ void Game::Init()
 	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
 
 	//Directional lights
-	DirectionalLight* dLight = lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
-	dLight->SetRotation(90, 0, 0);
+	DirectionalLight* dLight = lightManager->CreateDirectionalLight(true, XMFLOAT3(1, 1, 1), 1);
+	dLight->SetRotation(70, 0, 0);
+	dLight->SetPosition(0, 20, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.
@@ -101,14 +103,20 @@ void Game::LoadAssets()
 {
 	//Load shaders
 	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
-	resourceManager->LoadPixelShader("PixelShaderPBR.cso", device, context);
+	resourceManager->LoadPixelShader("PS_PBR.cso", device, context);
+
+	resourceManager->LoadPixelShader("PS_Water.cso", device, context);
+
 	resourceManager->LoadVertexShader("VS_ColDebug.cso", device, context);
 	resourceManager->LoadPixelShader("PS_ColDebug.cso", device, context);
+
 	resourceManager->LoadVertexShader("FXAAShaderVS.cso", device, context);
 	resourceManager->LoadPixelShader("FXAAShaderPS.cso", device, context);
-	resourceManager->LoadPixelShader("WaterPixelShader.cso", device, context);
+
 	resourceManager->LoadVertexShader("VS_Sky.cso", device, context);
 	resourceManager->LoadPixelShader("PS_Sky.cso", device, context);
+
+	resourceManager->LoadVertexShader("VS_Shadow.cso", device, context);
 
 	//Create meshes
 	resourceManager->LoadMesh("Assets\\Models\\cube.obj", device);
@@ -146,16 +154,29 @@ void Game::LoadAssets()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&samplerDesc, &samplerState);
 
+	// Create the special "comparison" sampler state for shadows
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f;
+	shadowSampDesc.BorderColor[1] = 1.0f;
+	shadowSampDesc.BorderColor[2] = 1.0f;
+	shadowSampDesc.BorderColor[3] = 1.0f;
+	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
+
 	//Create materials
 	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
-	SimplePixelShader* ps = resourceManager->GetPixelShader("PixelShaderPBR.cso");
+	SimplePixelShader* ps = resourceManager->GetPixelShader("PS_PBR.cso");
 
 	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_normals.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_roughness.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_metal.png"),
-		samplerState);
+		samplerState, shadowSampler);
 	resourceManager->AddMaterial("floor", mat1);
 
 	Material* mat2 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
@@ -163,7 +184,7 @@ void Game::LoadAssets()
 		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_normals.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_roughness.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_metal.png"),
-		samplerState);
+		samplerState, shadowSampler);
 	resourceManager->AddMaterial("scratched", mat2);
 
 	Material* mat3 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
@@ -171,17 +192,17 @@ void Game::LoadAssets()
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_normals.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
-		samplerState);
+		samplerState, shadowSampler);
 	resourceManager->AddMaterial("wood", mat3);
 	
 	//Water surface material
-	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("WaterPixelShader.cso"),
+	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_Water.cso"),
 		1024.0f, XMFLOAT2(2, 2),
 		resourceManager->GetTexture2D("Assets/Textures/Water/blue.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_1.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
-		samplerState, &translate);
+		samplerState, shadowSampler, &translate);
 	resourceManager->AddMaterial("water", mat_water);
 
 	//Skybox material
@@ -315,7 +336,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	//Draw all entities in the renderer
 	renderer->SetClearColor(color); // Needed for clearing the post process buffer texture and the back buffer.
-	renderer->Draw(context, camera, backBufferRTV, depthStencilView, samplerState, width, height);
+	renderer->Draw(context, device, camera, backBufferRTV, depthStencilView, samplerState, width, height);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
