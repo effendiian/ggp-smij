@@ -3,6 +3,7 @@
 #include "Swimmer.h"
 #include "ExtendedMath.h"
 #include <cmath>
+#include "EntityManager.h"
 
 //Buoyancy consts
 #define MASS 0.5f
@@ -82,6 +83,13 @@ void Swimmer::Update(float deltaTime)
 
 		case SwimmerState::Nothing:
 			break;
+
+		case SwimmerState::Leaving:
+			Leave(deltaTime);
+			break;
+
+		default:
+			break;
 	}	
 }
 
@@ -90,36 +98,32 @@ void Swimmer::Update(float deltaTime)
 //---------------------------------------------------------
 void Swimmer::Enter(float deltaTime)
 {
-	ApplyBuoyancy(deltaTime);
+	ApplyWaterPhysics(deltaTime, true);
 	if (GetPosition().y > SURFACE_Y)
 		swmrState = SwimmerState::Floating;
-}
-
-void Swimmer::ApplyCos(float deltaTime)
-{
-	XMFLOAT3 position = GetPosition();
-	sinAmnt += deltaTime;
-	float y = (-cos(3 * sinAmnt) / sinAmnt) * 2;
-	SetPosition(position.x, y, position.z);
 }
 
 // --------------------------------------------------------
 // Apply buoyancy to the swimmer
 //---------------------------------------------------------
-void Swimmer::ApplyBuoyancy(float deltaTime)
+void Swimmer::ApplyWaterPhysics(float deltaTime, bool applyBuoyancy)
 {
 	Collider* col = GetCollider();
 	XMFLOAT3 position = GetPosition();
 	XMFLOAT3 halves = col->GetHalfSize();
-
-	//Thanks Khan once again
-	//https://www.khanacademy.org/science/physics/fluids/buoyant-force-and-archimedes-principle/a/buoyant-force-and-archimedes-principle-article
-	//Calculate displaced volume and buoyancy
-	float hTop = position.y + halves.y > SURFACE_Y ? SURFACE_Y : position.y + halves.y;
-	float hBot = position.y - halves.y > SURFACE_Y ? SURFACE_Y : position.y - halves.y;
+	
+	float buoyancy = 0;
 	float area = (2 * halves.x) * (2 * halves.z);
-	float watDisplaced = area * -(hBot - hTop);
-	float buoyancy = FLUID_DENSITY * GRAVITY * watDisplaced;
+	if (applyBuoyancy)
+	{
+		//Thanks Khan once again
+		//https://www.khanacademy.org/science/physics/fluids/buoyant-force-and-archimedes-principle/a/buoyant-force-and-archimedes-principle-article
+		//Calculate displaced volume and buoyancy
+		float hTop = position.y + halves.y > SURFACE_Y ? SURFACE_Y : position.y + halves.y;
+		float hBot = position.y - halves.y > SURFACE_Y ? SURFACE_Y : position.y - halves.y;
+		float watDisplaced = area * -(hBot - hTop);
+		buoyancy = FLUID_DENSITY * GRAVITY * watDisplaced;
+	}
 
 	//https://www.grc.nasa.gov/WWW/K-12/airplane/falling.html
 	float drag = 0;
@@ -158,10 +162,18 @@ void Swimmer::ApplyBuoyancy(float deltaTime)
 // Run this swimmer's floating behaviour
 void Swimmer::Float(float deltaTime)
 {
-	ApplyBuoyancy(deltaTime);
+	ApplyWaterPhysics(deltaTime, true);
 
 	// Rotate when idle.
 	Rotate(0, 5 * deltaTime, 0);
+}
+
+// Run this swimmer's leaving behaviour
+void Swimmer::Leave(float deltaTime)
+{
+	ApplyWaterPhysics(deltaTime, false);
+	if (GetPosition().y < -5)
+		EntityManager::GetInstance()->RemoveEntity(this);
 }
 
 // Update the swimmer's buffers for snake movement

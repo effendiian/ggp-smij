@@ -3,7 +3,7 @@
 #include "Entity.h"
 
 //Enum for swimmer states
-enum class SwimmerState { Entering, Floating, Joining, Following, Still, Hitting, Nothing };
+enum class SwimmerState { Entering, Floating, Joining, Following, Still, Hitting, Nothing, Leaving };
 
 class Swimmer :
 	public Entity
@@ -39,12 +39,7 @@ private:
 	// --------------------------------------------------------
 	// Apply buoyancy to the swimmer
 	//---------------------------------------------------------
-	void ApplyBuoyancy(float deltaTime);
-
-	// --------------------------------------------------------
-	// Apply buoyancy to the swimmer
-	//---------------------------------------------------------
-	void ApplyCos(float deltaTime);
+	void ApplyWaterPhysics(float deltaTime, bool applyBuoyancy);
 
 	// --------------------------------------------------------
 	// Run this swimmer's floating behaviour
@@ -76,6 +71,11 @@ private:
 	// --------------------------------------------------------
 	void Hit(float deltaTime);
 
+	// --------------------------------------------------------
+	// Run this swimmer's leaving behaviour
+	// --------------------------------------------------------
+	void Leave(float deltaTime);
+
 public:
 	Swimmer(Mesh* mesh, Material* material, std::string name);
 	~Swimmer();
@@ -96,7 +96,8 @@ public:
 	void JoinTrail(Entity* leader);
 
 	// --------------------------------------------------------
-	// Check if the swimmer is in the hitting state for the correct amount of time	// --------------------------------------------------------
+	// Check if the swimmer is in the hitting state for the correct amount of time	
+	// --------------------------------------------------------
 	bool CheckHit();
 
 	// --------------------------------------------------------

@@ -71,8 +71,8 @@ void SwimmerManager::Reset()
 	EntityManager* entityManager = EntityManager::GetInstance();
 	for (int i = 0; i < swimmers.size(); i++)
 	{
-		if(swimmers[i] != nullptr)
-			entityManager->RemoveEntity(swimmers[i]);
+		if (swimmers[i] != nullptr)
+			swimmers[i]->SetSwimmerState(SwimmerState::Leaving);
 	}
 	swimmers.clear();
 	swimmerCount = 0;

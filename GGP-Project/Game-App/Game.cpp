@@ -287,10 +287,10 @@ void Game::Update(float deltaTime, float totalTime)
 			break;
 
 		case GameState::Playing:
-			entityManager->Update(deltaTime);
-
 			// Updates the swimmer generator/manager.
 			swimmerManager->Update(deltaTime);
+
+			entityManager->Update(deltaTime);
 
 			//Check for gameover
 			if (player->GetCrashed())

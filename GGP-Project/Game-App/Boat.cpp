@@ -159,7 +159,7 @@ void Boat::ClearSwimmers()
 	for (int i = 0; i < trail.size(); i++)
 	{
 		if (trail[i] != nullptr)
-			EntityManager::GetInstance()->RemoveEntity(trail[i]);
+			trail[i]->SetSwimmerState(SwimmerState::Leaving);
 	}
 	trail.clear();
 }
