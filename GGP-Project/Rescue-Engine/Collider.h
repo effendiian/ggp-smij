@@ -6,7 +6,7 @@ class Collider
 private:
 	//Transform vars
 	DirectX::XMFLOAT3 position; //center
-	DirectX::XMFLOAT4 rotation; //center
+	DirectX::XMFLOAT4 rotation;
 	DirectX::XMFLOAT3 offset; //(0,0,0) if not given
 	DirectX::XMFLOAT3 size; //xyz = width, height, length
 
@@ -70,6 +70,10 @@ public:
 	// --------------------------------------------------------
 	DirectX::XMFLOAT3 GetHalfSize() const;
 
+	DirectX::XMVECTOR GetNormal(DirectX::XMFLOAT4 axis);
+
+	DirectX::XMVECTOR GetCenterGlobal();
+
 	// --------------------------------------------------------
 	// Set the position of the collider
 	// --------------------------------------------------------
@@ -89,6 +93,8 @@ public:
 	// Check if the collider collides with another (AABB)
 	// --------------------------------------------------------
 	bool Collides(Collider other); //AABB for now
+
+	bool SAT(Collider other);
 
 	// --------------------------------------------------------
 	// Check if the collider is in debug mode (draw outline)
