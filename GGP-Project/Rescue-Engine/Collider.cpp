@@ -137,18 +137,18 @@ bool Collider::Collides(Collider other)
 	//	(a.minY <= b.maxY && a.maxY >= b.minY) &&
 	//	(a.minZ <= b.maxZ && a.maxZ >= b.minZ);
 
-	//Get half sizes
-	XMFLOAT3 otherPosition = other.GetPosition();
-	XMFLOAT3 size = GetHalfSize();
-	XMFLOAT3 otherSize = other.GetHalfSize();
-
 	//AABB
-	return (position.x - size.x <= otherPosition.x + otherSize.x && position.x + size.x >= otherPosition.x - otherSize.x &&
+	//Get half sizes
+	/*XMFLOAT3 otherPosition = other.GetPosition();
+	XMFLOAT3 size = GetHalfSize();
+	XMFLOAT3 otherSize = other.GetHalfSize();*/
+
+	/*return (position.x - size.x <= otherPosition.x + otherSize.x && position.x + size.x >= otherPosition.x - otherSize.x &&
 		position.y - size.y <= otherPosition.y + otherSize.y && position.y + size.y >= otherPosition.y - otherSize.y &&
 		position.z - size.z <= otherPosition.z + otherSize.z && position.z + size.z >= otherPosition.z - otherSize.z
-		);
+		);*/
 
-	//return SAT(other);
+	return SAT(other);
 
 	//Circle Collision
 	/*XMVECTOR thisPos = XMLoadFloat3(&position);
@@ -194,9 +194,8 @@ bool Collider::SAT(Collider other)
 			rotAinB.m[i][j] = XMVectorGetX(XMVector3Dot(axesA[i], axesB[j]));
 
 	//Vector between rigidbodies
-	XMVECTOR translation = other.GetCenterGlobal() - GetCenterGlobal();
+	XMVECTOR translation = XMLoadFloat3(&other.GetPosition()) - XMLoadFloat3(&GetPosition());
 	//Converted into A's vector space
-	//translation = vector3(glm::dot(translation, axesA[0]), glm::dot(translation, axesA[1]), glm::dot(translation, axesA[2]));
 	float tx = XMVectorGetX(XMVector3Dot(translation, axesA[0]));
 	float ty = XMVectorGetX(XMVector3Dot(translation, axesA[1]));
 	float tz = XMVectorGetX(XMVector3Dot(translation, axesA[2]));
