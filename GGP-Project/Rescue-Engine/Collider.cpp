@@ -12,7 +12,6 @@ Collider::Collider(XMFLOAT3 position)
 	this->offset = XMFLOAT3();
 	this->worldMatrix = XMFLOAT4X4();
 
-	debug = false;
 	worldDirty = true;
 }
 
@@ -32,7 +31,6 @@ Collider::Collider(XMFLOAT3 position, XMFLOAT3 size, XMFLOAT3 offset)
 	this->offset = offset;
 	this->worldMatrix = XMFLOAT4X4();
 
-	debug = false;
 	worldDirty = true;
 }
 
@@ -267,16 +265,4 @@ bool Collider::SAT(Collider other)
 	if (abs(XMVectorGetByIndex(translation, 1) * rotAinB.m[0][2] - XMVectorGetByIndex(translation, 0) * rotAinB.m[1][2]) > ra + rb) return false;
 
 	return true;
-}
-
-// Check if the collider is in debug mode (draw outline)
-bool Collider::IsDebug()
-{
-	return debug;
-}
-
-// Set debug mode for this collider (draw outline)
-void Collider::SetDebug(bool setting)
-{
-	debug = setting;
 }

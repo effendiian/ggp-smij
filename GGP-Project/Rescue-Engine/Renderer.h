@@ -22,15 +22,19 @@ private:
 	Mesh* cubeMesh;
 
 	//Collider debugging
-	std::vector<Collider*> debugColliders;
-	SimpleVertexShader* colDebugVS;
-	SimplePixelShader* colDebugPS;
+	std::vector<DirectX::XMFLOAT4X4> debugCubes;
+	SimpleVertexShader* vs_debug;
+	SimplePixelShader* ps_debug;
 	ID3D11RasterizerState* RS_wireframe;
 
 	//Skybox
 	Material* skyboxMat;
 	ID3D11RasterizerState* skyRasterState;
 	ID3D11DepthStencilState* skyDepthState;
+
+	//Shadows
+	ID3D11RasterizerState* shadowRasterizer;
+	SimpleVertexShader* shadowVS;
 
 	// Post-Process: FXAA ------------------
 	ID3D11RenderTargetView* fxaaRTV; // Allow us to render to a texture.
@@ -55,7 +59,19 @@ private:
 	// --------------------------------------------------------
 	// Prepare post-process render texture.
 	// --------------------------------------------------------
-	void PreparePostProcess(ID3D11DeviceContext* context, ID3D11RenderTargetView* ppRTV, ID3D11DepthStencilView* ppDSV);
+	void PreparePostProcess(ID3D11DeviceContext* context, 
+		ID3D11RenderTargetView* ppRTV, 
+		ID3D11DepthStencilView* ppDSV);
+
+	// --------------------------------------------------------
+	// Render shadow maps for all lights that cast shadows
+	// --------------------------------------------------------
+	void RenderShadowMaps(ID3D11DeviceContext* context,
+		ID3D11Device* device,
+		Camera* camera,
+		ID3D11RenderTargetView* backBufferRTV,
+		ID3D11DepthStencilView* depthStencilView,
+		UINT width, UINT height);
 
 	// --------------------------------------------------------
 	// Draw opaque objects
@@ -110,6 +126,7 @@ public:
 	// camera - The active camera object
 	// --------------------------------------------------------
 	void Draw(ID3D11DeviceContext* context,
+			  ID3D11Device* device,
 			  Camera* camera,
 			  ID3D11RenderTargetView* backBufferRTV,
 		      ID3D11DepthStencilView* depthStencilView,
@@ -136,11 +153,26 @@ public:
 	// --------------------------------------------------------
 	// Tell the renderer to render a collider this frame
 	// --------------------------------------------------------
-	void AddDebugColliderToThisFrame(Collider* c);
+	void AddDebugCubeToThisFrame(DirectX::XMFLOAT3 position, float size = 1);
+
+	// --------------------------------------------------------
+	// Tell the renderer to render a collider this frame
+	// --------------------------------------------------------
+	void AddDebugCubeToThisFrame(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4 rotation, float size = 1);
+
+	// --------------------------------------------------------
+	// Tell the renderer to render a collider this frame
+	// --------------------------------------------------------
+	void AddDebugCubeToThisFrame(DirectX::XMFLOAT4X4 world);
 
 	// --------------------------------------------------------
 	// Set clear color.
 	// --------------------------------------------------------
 	void SetClearColor(const float color[4]);
 	void SetClearColor(float r, float g, float b, float a = 1.0);
+
+	// --------------------------------------------------------
+	// Create the post-processing texture
+	// --------------------------------------------------------
+	void CreatePostProcessingResources(ID3D11Device* device, UINT width, UINT height);
 };

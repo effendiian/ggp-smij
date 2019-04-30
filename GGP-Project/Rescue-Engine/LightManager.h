@@ -2,6 +2,8 @@
 #include "Lights.h"
 #include <vector>
 
+#define SHADOW_MAP_SIZE 2048
+
 class LightManager
 {
 private:
@@ -19,10 +21,16 @@ private:
 	//Lighting containers
 	AmbientLightStruct* ambientLight;
 	std::vector<Light*> lightList;
+	std::vector<Light*> shadowLightList;
 
 	//Light struct array helpers
 	bool listDirty;
 	LightStruct* lightStructArr;
+
+	//Shadow descs
+	D3D11_TEXTURE2D_DESC shadowTexDesc;
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC shadowSRVDesc;
 
 	// --------------------------------------------------------
 	//Set the light manager's light list to dirty
@@ -30,6 +38,16 @@ private:
 	//		IN Lights.cpp
 	// --------------------------------------------------------
 	friend void SetLightListDirty(LightManager* lightManager);
+
+	// --------------------------------------------------------
+	// Rebuild the light struct array and the shadow light list
+	// --------------------------------------------------------
+	void RebuildLightLists();
+
+	// --------------------------------------------------------
+	// Rebuild the shadow light list
+	// --------------------------------------------------------
+	void RebuildShadowLightList();
 
 	// --------------------------------------------------------
 	// Rebuild the light struct array from all lights in the lightList
@@ -54,7 +72,7 @@ public:
 	// --------------------------------------------------------
 	// Create a new directional light and add it to the light manager
 	// --------------------------------------------------------
-	DirectionalLight* CreateDirectionalLight();
+	DirectionalLight* CreateDirectionalLight(bool castShadows);
 
 	// --------------------------------------------------------
 	// Create a new directional light and add it to the light manager
@@ -62,12 +80,12 @@ public:
 	// color - Diffuse color of the light
 	// intensity - how intense the light is
 	// --------------------------------------------------------
-	DirectionalLight* CreateDirectionalLight(DirectX::XMFLOAT3 color, float intensity);
+	DirectionalLight* CreateDirectionalLight(bool castShadows, DirectX::XMFLOAT3 color, float intensity);
 
 	// --------------------------------------------------------
 	// Create a new point light and add it to the light manager
 	// --------------------------------------------------------
-	PointLight* CreatePointLight();
+	PointLight* CreatePointLight(bool castShadows);
 
 	// --------------------------------------------------------
 	// Create a new point light and add it to the light manager
@@ -76,12 +94,12 @@ public:
 	// color - Diffuse color of the light
 	// intensity - how intense the light is
 	// --------------------------------------------------------
-	PointLight* CreatePointLight(float radius, DirectX::XMFLOAT3 color, float intensity);
+	PointLight* CreatePointLight(bool castShadows, float radius, DirectX::XMFLOAT3 color, float intensity);
 
 	// --------------------------------------------------------
 	// Create a new spot light and add it to the light manager
 	// --------------------------------------------------------
-	SpotLight* CreateSpotLight();
+	SpotLight* CreateSpotLight(bool castShadows);
 
 	// --------------------------------------------------------
 	// Create a new spot light and add it to the light manager
@@ -91,7 +109,7 @@ public:
 	// color - Diffuse color of the light
 	// intensity - how intense the light is
 	// --------------------------------------------------------
-	SpotLight* CreateSpotLight(float range, float spotFalloff, DirectX::XMFLOAT3 color, float intensity);
+	SpotLight* CreateSpotLight(bool castShadows, float range, float spotFalloff, DirectX::XMFLOAT3 color, float intensity);
 
 	// --------------------------------------------------------
 	// Add a light to the light manager
@@ -143,5 +161,25 @@ public:
 	// Get the array of light structs for sending to a shader
 	// --------------------------------------------------------
 	LightStruct* GetLightStructArray();
+
+	// --------------------------------------------------------
+	// Get all lights that cast shadows
+	// --------------------------------------------------------
+	std::vector<Light*> GetShadowCastingLights();
+
+	// --------------------------------------------------------
+	// Get the shadow texture description for creating shadowTexs
+	// --------------------------------------------------------
+	D3D11_TEXTURE2D_DESC* GetShadowTexDesc();
+
+	// --------------------------------------------------------
+	// Get the shadow depth/stencil description for creating shadowDSs
+	// --------------------------------------------------------
+	D3D11_DEPTH_STENCIL_VIEW_DESC* GetShadowDSDesc();
+
+	// --------------------------------------------------------
+	// Get the shadow resource view description for creating shadowSRVs
+	// --------------------------------------------------------
+	D3D11_SHADER_RESOURCE_VIEW_DESC* GetShadowSRVDesc();
 };
 

@@ -37,19 +37,16 @@ Entity* EntityManager::GetEntity(std::string id)
 }
 
 // Remove an entity by its object
-void EntityManager::RemoveEntityFromList(Entity* entity, bool deleteEntity)
+void EntityManager::RemoveEntityFromList(Entity* entity, bool release)
 {
 	Entity* org = entity;
+	std::vector<Entity*>::iterator it = std::find(entities.begin(), entities.end(), entity);
 
-	//Get the iterator of the entity
-	//Swap it for the last one
-	std::swap(entity, entities[entities.size() - 1]);
-
-	//Pop the last one
-	entities.pop_back();
+	//Erase entity
+	entities.erase(it);
 
 	//Delete instance if user wants to
-	if (deleteEntity)
+	if (release)
 		delete org;
 
 	return;
@@ -62,14 +59,13 @@ void EntityManager::RemoveEntity(std::string name, bool deleteEntity)
 	{
 		if (entities[i]->GetName() == name)
 		{
-			Entity* e = entities[i];
-			e->SetEnabled(false);
-			remove_entities.push_back(EntityRemoval{ e, deleteEntity });
+			entities[i]->SetEnabled(false);
+			remove_entities.push_back(EntityRemoval{ entities[i], deleteEntity });
 			return;
 		}
 	}
 
-	printf("Entity of name %s does not exist in EntityManager. Cannot remove", name.c_str());
+	printf("Entity of name %s does not exist in EntityManager. Cannot remove\n", name.c_str());
 }
 
 // Remove an entity by its object
@@ -79,7 +75,7 @@ void EntityManager::RemoveEntity(Entity* entity, bool deleteEntity)
 	std::vector<Entity*>::iterator it = std::find(entities.begin(), entities.end(), entity);
 	if (it == entities.end())
 	{
-		printf("Cannot remove entity %s because it is not in entity manager", entity->GetName().c_str());
+		printf("Cannot remove entity %s because it is not in entity manager\n", entity->GetName().c_str());
 		return;
 	}
 
@@ -94,7 +90,7 @@ void EntityManager::Update(float deltaTime)
 	//Update entities
 	for (size_t i = 0; i < entities.size(); i++)
 	{
-		if (entities[i]->GetEnabled())
+		if (entities[i] && entities[i]->GetEnabled())
 		{
 			entities[i]->GameObject::Update(deltaTime);
 			entities[i]->Update(deltaTime);
@@ -102,9 +98,9 @@ void EntityManager::Update(float deltaTime)
 	}
 
 	//Remove entities
-	for (auto const& er : remove_entities)
+	for (size_t i = 0; i < remove_entities.size(); i++)
 	{
-		RemoveEntityFromList(er.e, er.release);
+		RemoveEntityFromList(remove_entities[i].e, remove_entities[i].release);
 	}
 	remove_entities.clear();
 }

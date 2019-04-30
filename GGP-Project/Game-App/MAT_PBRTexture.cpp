@@ -6,7 +6,7 @@ MAT_PBRTexture::MAT_PBRTexture(SimpleVertexShader* vertexShader, SimplePixelShad
 	float shininess, DirectX::XMFLOAT2 uvScale, 
 	ID3D11ShaderResourceView* albedo, ID3D11ShaderResourceView* normals, 
 	ID3D11ShaderResourceView* roughness, ID3D11ShaderResourceView* metal, 
-	ID3D11SamplerState* sampler)
+	ID3D11SamplerState* sampler, ID3D11SamplerState* shadowSampler)
 	: Material(vertexShader, pixelShader)
 {
 	this->shininess = shininess;
@@ -16,6 +16,7 @@ MAT_PBRTexture::MAT_PBRTexture(SimpleVertexShader* vertexShader, SimplePixelShad
 	this->metalSRV = metal;
 	this->sampler = sampler;
 	this->uvScale = uvScale;
+	this->shadowSampler = shadowSampler;
 }
 
 // Release all data in the material
@@ -26,12 +27,14 @@ MAT_PBRTexture::~MAT_PBRTexture()
 void MAT_PBRTexture::PrepareMaterialCombo(GameObject* entityObj, Camera* cam)
 {
 	LightManager* lightManager = LightManager::GetInstance();
+	std::vector<Light*> lights = LightManager::GetInstance()->GetShadowCastingLights();
 
 	// Vertex shader data
 	vertexShader->SetMatrix4x4("projection", cam->GetProjectionMatrix());
 	vertexShader->SetMatrix4x4("view", cam->GetViewMatrix());
 	vertexShader->SetFloat2("uvScale", uvScale);
-	vertexShader->CopyBufferData("perCombo");
+	vertexShader->SetMatrix4x4("shadowView", lights[0]->GetViewMatrix());
+	vertexShader->SetMatrix4x4("shadowProj", lights[0]->GetProjectionMatrix());
 
 	//Pixel shader data
 	pixelShader->SetFloat3("CameraPosition", cam->GetPosition());
@@ -42,13 +45,21 @@ void MAT_PBRTexture::PrepareMaterialCombo(GameObject* entityObj, Camera* cam)
 		sizeof(LightStruct) * MAX_LIGHTS);
 	pixelShader->SetInt("LightCount", amnt);
 	pixelShader->SetData("AmbLight", lightManager->GetAmbientLight(), sizeof(AmbientLightStruct));
-	pixelShader->CopyBufferData("perCombo");
 
+	//Set PBR vars
 	pixelShader->SetShaderResourceView("AlbedoTexture", albedoSRV);
 	pixelShader->SetShaderResourceView("NormalTexture", normalSRV);
 	pixelShader->SetShaderResourceView("RoughnessTexture", roughnessSRV);
 	pixelShader->SetShaderResourceView("MetalTexture", metalSRV);
 	pixelShader->SetSamplerState("BasicSampler", sampler);
+
+	//Set shadow vars
+	ID3D11ShaderResourceView* shadowSRV = lights[0]->GetShadowSRV();
+	pixelShader->SetShaderResourceView("ShadowMap", shadowSRV);
+	pixelShader->SetSamplerState("ShadowSampler", shadowSampler);
+
+	vertexShader->CopyBufferData("perCombo");
+	pixelShader->CopyBufferData("perCombo");
 }
 
 // Prepare this material's shader's per object variables

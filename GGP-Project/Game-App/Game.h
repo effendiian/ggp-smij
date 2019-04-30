@@ -51,8 +51,9 @@ private:
 	GameState gameState;
 	Boat* player;
 
-	//Sampler state
+	//Sampler states
 	ID3D11SamplerState* samplerState;
+	ID3D11SamplerState* shadowSampler;
 
 	//Transformation modifiers
 	float position;

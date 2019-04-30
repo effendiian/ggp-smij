@@ -24,6 +24,7 @@ private:
 	DirectX::XMFLOAT4 rotationQuat;
 	DirectX::XMFLOAT3 scale;
 	bool worldDirty;
+	bool debug;
 
 	//Other data
 	Collider* collider;
@@ -235,5 +236,15 @@ public:
 	// offset - offset of collider from position of game object
 	// --------------------------------------------------------
 	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
+
+	// --------------------------------------------------------
+	// Check if the collider is in debug mode (draw outline)
+	// --------------------------------------------------------
+	bool IsDebug();
+
+	// --------------------------------------------------------
+	// Set debug mode for this collider (draw outline)
+	// --------------------------------------------------------
+	void SetDebug(bool setting);
 };
 

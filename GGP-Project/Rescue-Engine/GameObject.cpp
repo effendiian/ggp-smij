@@ -15,7 +15,8 @@ GameObject::GameObject()
 	scale = XMFLOAT3(1, 1, 1);
 	worldDirty = false;
 	RebuildWorld();
-	
+	debug = false;
+
 	enabled = true;
 	name = "GameObject";
 }
@@ -59,11 +60,7 @@ std::string GameObject::GetName()
 
 // Update this entity
 void GameObject::Update(float deltaTime)
-{
-	//Add collider to render list
-	if (collider != nullptr && collider->IsDebug())
-		Renderer::GetInstance()->AddDebugColliderToThisFrame(collider);
-}
+{ }
 
 // Get the world matrix for this GameObject (rebuilding if necessary)
 XMFLOAT4X4 GameObject::GetWorldMatrix()
@@ -71,6 +68,10 @@ XMFLOAT4X4 GameObject::GetWorldMatrix()
 	//Rebuild the world if it is not current
 	if (worldDirty)
 		RebuildWorld();
+
+	//Add collider to render list
+	if (collider != nullptr && IsDebug())
+		Renderer::GetInstance()->AddDebugCubeToThisFrame(collider->GetWorldMatrix());
 
 	return world;
 }
@@ -289,15 +290,29 @@ void GameObject::SetScale(float x, float y, float z)
 	scale = XMFLOAT3(x, y, z);
 }
 
-Collider * GameObject::GetCollider()
+// Get this object's collider
+Collider* GameObject::GetCollider()
 {
 	return collider;
 }
 
+// Add a collider to this object if it has none
 void GameObject::AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset)
 {
 	if (collider == nullptr)
 	{
 		collider = new Collider(position, size, offset);
 	}
+}
+
+// Check if the collider is in debug mode (draw outline)
+bool GameObject::IsDebug()
+{
+	return debug;
+}
+
+// Set debug mode for this collider (draw outline)
+void GameObject::SetDebug(bool setting)
+{
+	debug = setting;
 }

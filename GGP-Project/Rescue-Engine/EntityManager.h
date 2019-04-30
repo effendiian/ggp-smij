@@ -23,7 +23,7 @@ private:
 	// --------------------------------------------------------
 	// Remove an entity by its object
 	// --------------------------------------------------------
-	void RemoveEntityFromList(Entity* entity, bool deleteEntity = true);
+	void RemoveEntityFromList(Entity* entity, bool release);
 
 public:
 
