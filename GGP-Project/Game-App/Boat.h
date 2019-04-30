@@ -6,6 +6,8 @@
 #include "InputManager.h"
 #include "SwimmerManager.h"
 
+enum class BoatState { Starting, Playing, Crashed, Resetting };
+
 class Boat :
 	public Entity
 {
@@ -17,10 +19,14 @@ private:
 	float minDistance = 0.5f;
 	float levelWidth;
 	float levelHeight;
-	bool crashed;
+	BoatState state;
 	SwimmerManager* swimmerManager;
 	InputManager* inputManager;
 	std::vector<Swimmer*> trail;
+
+	//Seek timer
+	float seekTimer;
+	DirectX::XMFLOAT3 seekPos;
 
 	// --------------------------------------------------------
 	// Attach a swimmer at the end of the trail
@@ -42,6 +48,11 @@ public:
 	void Reset();
 
 	// --------------------------------------------------------
+	// Interprets key input for starting the game
+	// --------------------------------------------------------
+	void InputStart();
+
+	// --------------------------------------------------------
 	// Interprets key input
 	// --------------------------------------------------------
 	void Input(float deltaTime);
@@ -50,6 +61,11 @@ public:
 	// Moves the boat forward
 	// --------------------------------------------------------
 	void Move(float deltaTime);
+
+	// --------------------------------------------------------
+	// Seeks 0,0,0 
+	// --------------------------------------------------------
+	void SeekOrigin(float deltaTime);
 
 	// --------------------------------------------------------
 	// Checks for collisions and calls corresponding collide methods
@@ -64,7 +80,7 @@ public:
 	// --------------------------------------------------------
 	// Get whether the boat is crashed or not
 	// --------------------------------------------------------
-	bool GetCrashed();
+	BoatState GetState();
 	
 	// --------------------------------------------------------
 	// Clears all swimmers from the boat

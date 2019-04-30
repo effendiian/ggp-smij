@@ -293,7 +293,7 @@ void Game::Update(float deltaTime, float totalTime)
 			entityManager->Update(deltaTime);
 
 			//Check for gameover
-			if (player->GetCrashed())
+			if (player->GetState() == BoatState::Crashed)
 				gameState = GameState::GameOver;
 			break;
 

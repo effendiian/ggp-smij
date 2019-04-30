@@ -12,7 +12,7 @@ using namespace DirectX;
 
 Boat::Boat(Mesh * mesh, Material * material) : Entity(mesh, material, "player")
 {
-	crashed = false;
+	state = BoatState::Starting;
 	trail = std::vector<Swimmer*>();
 	swimmerManager = SwimmerManager::GetInstance();
 	inputManager = InputManager::GetInstance();
@@ -26,26 +26,61 @@ Boat::~Boat()
 void Boat::Update(float deltaTime)
 {
 	//Gameover state
-	if (crashed)
+	if (state == BoatState::Crashed)
 		return;
 
-	Input(deltaTime);
-	Move(deltaTime);
-	CheckCollisions();
+	switch (state)
+	{
+	case BoatState::Starting:
+		InputStart();
+		break;
+	
+	case BoatState::Playing:
+		Input(deltaTime);
+		Move(deltaTime);
+		CheckCollisions();
+		break;
+	
+	case BoatState::Crashed:
+		break;
+	
+	case BoatState::Resetting:
+		SeekOrigin(deltaTime);
+		break;
+
+	default:
+		break;
+	}
+
+}
+
+// Interprets key input for starting the game
+void Boat::InputStart()
+{
+	//Left
+	if (inputManager->GetKey(VK_LEFT) || inputManager->GetKey(VK_UP) ||
+		inputManager->GetKey('A') || inputManager->GetKey('W') ||
+		inputManager->GetKey(VK_RIGHT) || inputManager->GetKey(VK_DOWN) ||
+		inputManager->GetKey('D') || inputManager->GetKey('S'))
+	{
+		state = BoatState::Playing;
+	}
 }
 
 // Interprets key input
 void Boat::Input(float deltaTime)
 {
 	//Left
-	if (inputManager->GetKey(VK_LEFT) && !crashed)
+	if ((inputManager->GetKey(VK_LEFT) || inputManager->GetKey(VK_UP) ||
+		inputManager->GetKey('A') || inputManager->GetKey('W')))
 	{
-		this->Rotate(0, turnSpeed * deltaTime * -1, 0);
+		Rotate(0, turnSpeed * deltaTime * -1, 0);
 	}
 	//Right
-	else if (inputManager->GetKey(VK_RIGHT) && !crashed)
+	else if ((inputManager->GetKey(VK_RIGHT) || inputManager->GetKey(VK_DOWN) ||
+		inputManager->GetKey('D') || inputManager->GetKey('S')))
 	{
-		this->Rotate(0, turnSpeed * deltaTime * 1, 0);
+		Rotate(0, turnSpeed * deltaTime * 1, 0);
 	}
 
 //If we are in debug, allow us to click to spawn swimmers on our tail
@@ -76,19 +111,50 @@ void Boat::Input(float deltaTime)
 void Boat::Reset() 
 {
 	// Detach all swimmers.
-	this->ClearSwimmers();
-
-	// Reset position.
-	this->SetPosition(0, 0, 0);
+	ClearSwimmers();
 
 	// Set crashed to false.
-	this->crashed = false;
+	state = BoatState::Resetting;
+	seekTimer = 0;
+	seekPos = GetPosition();
 }
 
 // Moves the boat forward
 void Boat::Move(float deltaTime)
 {
-	this->MoveRelative(XMFLOAT3(0, 0, speed * deltaTime));
+	MoveRelative(XMFLOAT3(0, 0, speed * deltaTime));
+}
+
+// Seeks 0,0,0 
+void Boat::SeekOrigin(float deltaTime)
+{
+	seekTimer += deltaTime;
+
+	//Check when seek is finished
+	if (seekTimer >= 1)
+	{
+		state = BoatState::Starting;
+		SetPosition(0, 0, 0);
+		return;
+	}
+
+	//Lerp movement vector
+	XMVECTOR move = XMVectorLerp(XMLoadFloat3(&seekPos), XMVectorSet(0, 0, 0, 0), seekTimer);
+
+	//Calculate arc
+	float arc = sin(seekTimer * XM_PI) * 3; //arc height is 2
+
+	//Move the boat
+	XMFLOAT3 movement;
+	XMStoreFloat3(&movement, move);
+	movement.y = arc;
+	SetPosition(movement);
+
+	//Rotate the boat
+	XMVECTOR slerp = XMQuaternionSlerp(XMLoadFloat4(&GetRotation()), XMVectorSet(0, 0, 0, 1), seekTimer);
+	XMFLOAT4 rotation;
+	XMStoreFloat4(&rotation, slerp);
+	SetRotation(rotation);
 }
 
 // Checks for collisions and calls corresponding collide methods
@@ -143,14 +209,14 @@ void Boat::GameOver()
 	}
 
 	printf("Game Over! Press the 'Spacebar' to reset.\n");
-	this->crashed = true;
+	this->state = BoatState::Crashed;
 	if (trail.size() > 0) { trail[0]->SetSwimmerState(SwimmerState::Hitting); }
 }
 
 // Get whether the boat is crashed or not
-bool Boat::GetCrashed()
+BoatState Boat::GetState()
 {
-	return crashed;
+	return state;
 }
 
 // Clears all swimmers from the boat

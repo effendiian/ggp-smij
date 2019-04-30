@@ -22,7 +22,7 @@ FocusCamera::FocusCamera(GameObject* obj, DirectX::XMFLOAT3 anchor,
 
 #if defined(DEBUG) || defined(_DEBUG)
 	prevKeypress = false;
-	printf("Debug camera enabled. Press 'f' to toggle between focus and fps movement");
+	printf("Debug camera enabled. Press 'f' to toggle between focus and fps movement\n");
 #endif
 }
 
