@@ -40,7 +40,7 @@ SamplerState BasicSampler		: register(s0);
 // Shadow-related variables
 Texture2D ShadowMap						: register(t4);
 SamplerComparisonState ShadowSampler	: register(s1);
-
+Texture2D NormalTexture2				: register(t5);
 
 // Entry point for this pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
@@ -51,7 +51,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Scrolls the normal map in two directions and samples the sum
 	float3 normalMap1 = NormalMapping(NormalTexture, BasicSampler, input.uv + Translate, input.normal, input.tangent);
-	float3 normalMap2 = NormalMapping(NormalTexture, BasicSampler, input.uv - Translate, input.normal, input.tangent);
+	float3 normalMap2 = NormalMapping(NormalTexture2, BasicSampler, input.uv - Translate / 2, input.normal, input.tangent);
 	input.normal = normalize(normalMap1 + normalMap2);
 
 	// Sample the roughness map
@@ -63,6 +63,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Sample texture
 	float4 surfaceColor = AlbedoTexture.Sample(BasicSampler, input.uv);
 	surfaceColor.rgb = pow(surfaceColor.rgb, 2.2);
+
+	//Alpha cutout
+	if (surfaceColor.a < 0.25f)
+		discard;
 
 	// Specular color - Assuming albedo texture is actually holding specular color if metal == 1
 	float3 specColor = lerp(F0_NON_METAL.rrr, surfaceColor.rgb, metal);
