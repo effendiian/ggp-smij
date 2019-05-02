@@ -52,6 +52,11 @@ private:
 	DirectX::XMFLOAT3 GetTrailPos(float deltaTime);
 
 	// --------------------------------------------------------
+	// Get the rotation for following on the trail
+	// --------------------------------------------------------
+	DirectX::XMFLOAT4 GetTrailRotation(float deltaTime);
+
+	// --------------------------------------------------------
 	// Causes this swimmer to seek the surface y's position
 	// --------------------------------------------------------
 	void SeekSurfaceY();
@@ -86,11 +91,6 @@ public:
 	void Update(float deltaTime);
 
 	// --------------------------------------------------------
-	// Check if the boat is in the following state
-	// --------------------------------------------------------
-	bool IsFollowing();
-
-	// --------------------------------------------------------
 	// Set Swimmer to follow a game object.
 	// --------------------------------------------------------
 	void JoinTrail(Entity* leader);
@@ -104,5 +104,10 @@ public:
 	// Set Swimmer's state to a new state
 	// --------------------------------------------------------
 	void SetSwimmerState(SwimmerState newState);
+
+	// --------------------------------------------------------
+	// Get the state of the swimmer
+	// --------------------------------------------------------
+	SwimmerState GetState();
 };
 

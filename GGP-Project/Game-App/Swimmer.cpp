@@ -209,6 +209,16 @@ XMFLOAT3 Swimmer::GetTrailPos(float deltaTime)
 	return lerp;
 }
 
+// Get the rotation for following on the trail
+DirectX::XMFLOAT4 Swimmer::GetTrailRotation(float deltaTime)
+{
+	XMFLOAT4 rot;
+	XMStoreFloat4(&rot,
+		XMQuaternionSlerp(XMLoadFloat4(&GetRotation()), XMLoadFloat4(&leader->GetRotation()), 1.4f * deltaTime));
+	return rot;
+}
+
+
 // --------------------------------------------------------
 // Causes this swimmer to seek the surface y's position
 // --------------------------------------------------------
@@ -231,27 +241,16 @@ void Swimmer::Join(float deltaTime)
 
 	//Seek trail
 	XMFLOAT3 trailPos = GetTrailPos(deltaTime);
+	XMFLOAT3 lerp;
+	XMStoreFloat3(&lerp, XMVectorScale(XMVector3Normalize(
+		XMLoadFloat3(&trailPos) - XMLoadFloat3(&GetPosition())), 5 * deltaTime)
+	);
+	MoveAbsolute(lerp);
+	SetRotation(GetTrailRotation(deltaTime));
+
 	float dist = ExtendedMath::DistanceFloat3(trailPos, GetPosition());
-	if (dist > 0.1f)
-	{
-		XMFLOAT3 lerp;
-		XMStoreFloat3(&lerp, XMVectorScale(XMVector3Normalize(
-			XMLoadFloat3(&trailPos) - XMLoadFloat3(&GetPosition())), 5 * deltaTime)
-		);
-		MoveAbsolute(lerp);
-	}
-	//XMFLOAT3 trailPos = GetTrailPos(deltaTime);
-	//float dist = ExtendedMath::DistanceFloat3(GetPosition(), trailPos);
-	//if (dist > 0.25f)
-	//{
-	//	XMFLOAT3 lerp;
-	//	XMStoreFloat3(&lerp, XMVectorLerp(
-	//			XMLoadFloat3(&GetPosition()), XMLoadFloat3(&trailPos), 3 * deltaTime)
-	//	);
-	//	SetPosition(lerp);
-	//}
-	else if(leader->GetName() != "swimmer" 
-		|| (leader->GetName() == "swimmer" && ((Swimmer*)leader)->IsFollowing()))
+	if (dist < 0.1f && (leader->GetName() != "swimmer"
+		|| (leader->GetName() == "swimmer" && ((Swimmer*)leader)->GetState() == SwimmerState::Following)))
 	{
 		swmrState = SwimmerState::Following;
 	}
@@ -265,6 +264,7 @@ void Swimmer::Follow(float deltaTime)
 
 	// Interpolate between the two samples on either side of our target time.
 	SetPosition(GetTrailPos(deltaTime));
+	SetRotation(GetTrailRotation(deltaTime));
 }
 
 // Run this swimmer's hitting behaviour
@@ -288,12 +288,6 @@ void Swimmer::Hit(float deltaTime)
 	}
 }
 
-// Check if the boat is in the following state
-bool Swimmer::IsFollowing()
-{
-	return this->enabled && (swmrState == SwimmerState::Following);
-}
-
 // Set Swimmer to follow a game object.
 void Swimmer::JoinTrail(Entity* newLeader)
 {
@@ -312,4 +306,10 @@ bool Swimmer::CheckHit()
 void Swimmer::SetSwimmerState(SwimmerState newState)
 {
 	swmrState = newState;
+}
+
+// Get the state of the swimmer
+SwimmerState Swimmer::GetState()
+{
+	return swmrState;
 }

@@ -175,7 +175,7 @@ void Boat::CheckCollisions()
 	for (int i = 1; i < trail.size(); i++)
 	{
 		Swimmer* swmr = trail[i];
-		if (swmr != nullptr	&& swmr->IsFollowing() 
+		if (swmr != nullptr	&& swmr->GetState() == SwimmerState::Following
 			&& GetCollider()->Collides(*swmr->GetCollider()))
 		{
 			GameOver();
@@ -187,7 +187,7 @@ void Boat::CheckCollisions()
 	for (int i = swimmerManager->GetSwimmerCount() - 1; i >= 0; i--) 
 	{
 		Swimmer* swmr = swimmerManager->GetSwimmer(i);
-		if (swmr != nullptr && !swmr->IsFollowing() &&
+		if (swmr != nullptr && swmr->GetState() == SwimmerState::Floating &&
 			GetCollider()->Collides(*swmr->GetCollider()))
 		{
 			AttachSwimmer(swmr, i);

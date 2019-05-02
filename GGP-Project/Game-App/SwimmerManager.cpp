@@ -126,9 +126,9 @@ Swimmer* SwimmerManager::GetSwimmer(int id)
 }
 
 // Get swimmer count
-size_t SwimmerManager::GetSwimmerCount()
+int SwimmerManager::GetSwimmerCount()
 {
-	return swimmers.size();
+	return (int)swimmers.size();
 }
 
 // Attach swimmer to the input object.
