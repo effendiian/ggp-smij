@@ -543,7 +543,6 @@ namespace Input {
 	class Command : IEnableState
 	{
 	private:
-
 		///////////////////////////
 		// DATA MEMBERS
 		///////////////////////////
