@@ -10,8 +10,7 @@
 #include "SwimmerManager.h"
 #include "Boat.h"
 
-#define LEVEL_WIDTH 13
-#define LEVEL_HEIGHT 13
+#define LEVEL_RADIUS 13
 
 enum class GameState {Menu, Playing, GameOver};
 

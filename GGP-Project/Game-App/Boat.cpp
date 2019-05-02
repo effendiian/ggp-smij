@@ -10,13 +10,13 @@
 using namespace std;
 using namespace DirectX;
 
-Boat::Boat(Mesh * mesh, Material * material, XMFLOAT2 bounds) : Entity(mesh, material, "player")
+Boat::Boat(Mesh * mesh, Material * material, float levelRadius) : Entity(mesh, material, "player")
 {
 	state = BoatState::Starting;
 	trail = std::vector<Swimmer*>();
 	swimmerManager = SwimmerManager::GetInstance();
 	inputManager = InputManager::GetInstance();
-	levelBounds = bounds;
+	this->levelRadius = levelRadius;
 }
 
 Boat::~Boat()
@@ -163,9 +163,10 @@ void Boat::CheckCollisions()
 {
 	float x = this->GetPosition().x;
 	float z = this->GetPosition().z;
+
 	//Checking Within Level Bounds
-	if (!ExtendedMath::InRange(x, levelBounds.x) ||
-		!ExtendedMath::InRange(z, levelBounds.y))
+	float dist = XMVectorGetX(XMVector3Length(XMVectorSubtract(XMLoadFloat3(&GetPosition()), XMVectorSet(0, 0, 0, 0))));
+	if (dist > levelRadius)
 	{
 		//Game Over
 		GameOver();

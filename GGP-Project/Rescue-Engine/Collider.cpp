@@ -180,10 +180,10 @@ bool Collider::SAT(Collider* other)
 
 	//Populates axis arrays using helper functions
 	axesA[0] = GetNormal(XMFLOAT4(1, 0, 0, 0)); //x
-	axesA[1] = GetNormal(XMFLOAT4(1, 0, 0, 0)); //y
+	axesA[1] = GetNormal(XMFLOAT4(0, 1, 0, 0)); //y
 	axesA[2] = GetNormal(XMFLOAT4(0, 0, 1, 0)); //z
 	axesB[0] = other->GetNormal(XMFLOAT4(1, 0, 0, 0)); //x
-	axesB[1] = other->GetNormal(XMFLOAT4(1, 0, 0, 0)); //y
+	axesB[1] = other->GetNormal(XMFLOAT4(0, 1, 0, 0)); //y
 	axesB[2] = other->GetNormal(XMFLOAT4(0, 0, 1, 0)); //z
 
 	//Populates rotAinB

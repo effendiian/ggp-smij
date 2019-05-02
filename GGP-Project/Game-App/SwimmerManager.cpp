@@ -2,6 +2,8 @@
 #include "ResourceManager.h"
 #include "EntityManager.h"
 
+using namespace DirectX;
+
 // Default constructor.
 SwimmerManager::SwimmerManager() 
 {
@@ -21,24 +23,26 @@ SwimmerManager::~SwimmerManager()
 	Reset();
 }
 
+// Set level radius
+void SwimmerManager::SetLevelRadius(float radius)
+{
+	this->levelRadius = radius;
+
+}
+
 // Get next random position.
 DirectX::XMFLOAT3 SwimmerManager::GetNextPosition()
-{
-	Collider* c = this->GetCollider();
-
-	// Create uniform distribution ranges.
-	DirectX::XMFLOAT3 halfSize = c->GetHalfSize();
-	std::uniform_real<float> distX(-halfSize.x, halfSize.x);
-	std::uniform_real<float> distZ(-halfSize.z, halfSize.z);
-
-	// Create the center position.
-	DirectX::XMFLOAT3 center = c->GetPosition();
+{	// Create uniform distribution ranges.
+	std::uniform_real<float> angle(0, XM_2PI);
+	std::uniform_real<float> distR(0, levelRadius);
+	float theta = angle(rng);
+	float rad = distR(rng);
 
 	// Return next randomly generated position, centered on the swimmer manager's collider.
 	return DirectX::XMFLOAT3(
-		center.x + distX(rng), 
+		sin(theta) * rad, 
 		-5, 
-		center.z + distZ(rng)
+		cos(theta) * rad
 	);
 }
 

@@ -65,7 +65,7 @@ void Game::Init()
 	renderer->Init(device, width, height);
 	entityManager = EntityManager::GetInstance();
 	swimmerManager = SwimmerManager::GetInstance();
-	swimmerManager->AddCollider(XMFLOAT3((LEVEL_WIDTH - 1) * 2, 1, ( LEVEL_HEIGHT - 1) * 2));
+	swimmerManager->SetLevelRadius(LEVEL_RADIUS - 1);
 
 	//Initialize singleton data
 	inputManager->Init(hWnd);
@@ -106,7 +106,6 @@ void Game::LoadAssets()
 	//Load shaders
 	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
 	resourceManager->LoadPixelShader("PixelShader.cso", device, context);
-	resourceManager->LoadPixelShader("PS_PBR.cso", device, context);
 
 	resourceManager->LoadPixelShader("PS_Water.cso", device, context);
 	resourceManager->LoadPixelShader("PS_ShineWater.cso", device, context);
@@ -126,17 +125,14 @@ void Game::LoadAssets()
 	resourceManager->LoadMesh("Assets\\Models\\cube.obj", device);
 	resourceManager->LoadMesh("Assets\\Models\\boat.obj", device);
 	resourceManager->LoadMesh("Assets\\Models\\swimmer.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\area.obj", device);
 
 	//Load textures
 	resourceManager->LoadTexture2D("Assets/Textures/Boat/boat_albedo.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Boat/boat_normals.png", device, context);
+
 	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_albedo.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_normals.png", device, context);
-
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_albedo.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_normals.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_roughness.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_metal.png", device, context);
 
 	resourceManager->LoadTexture2D("Assets/Textures/Water/blue.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_1.png", device, context);
@@ -181,30 +177,22 @@ void Game::LoadAssets()
 	shadowSampDesc.BorderColor[3] = 1.0f;
 	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
 
-	//Create materials
 	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
 	SimplePixelShader* ps_basic = resourceManager->GetPixelShader("PixelShader.cso");
-	SimplePixelShader* ps_pbr = resourceManager->GetPixelShader("PS_PBR.cso");
 
+	//Boat material
 	Material* mat_boat = new MAT_Basic(vs, ps_basic, XMFLOAT2(1, 1), samplerState,
 		resourceManager->GetTexture2D("Assets/Textures/Boat/boat_albedo.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Boat/boat_normals.png"),
 		0, 50, shadowSampler);
 	resourceManager->AddMaterial("boat", mat_boat);
 
+	//Swimmer Material
 	Material* mat_swimmer = new MAT_Basic(vs, ps_basic, XMFLOAT2(1, 1), samplerState,
 		resourceManager->GetTexture2D("Assets/Textures/Swimmer/swimmer_albedo.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Swimmer/swimmer_normals.png"),
 		0, 50, shadowSampler);
 	resourceManager->AddMaterial("swimmer", mat_swimmer);
-
-	Material* mat3 = new MAT_PBRTexture(vs, ps_pbr, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_albedo.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_normals.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
-		samplerState, shadowSampler);
-	resourceManager->AddMaterial("wood", mat3);
 	
 	//Water surface material
 	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_ShineWater.cso"),
@@ -234,14 +222,19 @@ void Game::CreateEntities()
 	);
 	water->SetScale(26, 0.1f, 26);*/
 
+	//Create area
+	Entity* area = new Entity(resourceManager->GetMesh("Assets\\Models\\area.obj"),
+		resourceManager->GetMaterial("boat"));
+	area->SetScale(2.18f, 0.5f, 2.18f);
+
 	// Player (Boat) - Create the player.
 	player = new Boat(
 		resourceManager->GetMesh("Assets\\Models\\boat.obj"),
 		resourceManager->GetMaterial("boat"),
-		XMFLOAT2(LEVEL_WIDTH, LEVEL_HEIGHT)
+		LEVEL_RADIUS
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
-	player->AddCollider(XMFLOAT3(1.0f, 0.8f, 2.4f), XMFLOAT3(0, 0, 0));
+	player->AddCollider(XMFLOAT3(0.9f, 0.8f, 2.3f), XMFLOAT3(0, 0, 0));
 #if defined(DEBUG) || defined(_DEBUG)
 	player->SetDebug(true);
 #endif

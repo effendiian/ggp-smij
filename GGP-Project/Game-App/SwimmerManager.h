@@ -15,6 +15,7 @@ private: // PRIVATE ------------------------------------
 	const char* swimmerMesh = "Assets\\Models\\swimmer.obj";
 	const char* swimmerMat = "swimmer";
 	std::mt19937 rng;
+	float levelRadius;
 
 	//Singleton
 	SwimmerManager();
@@ -71,6 +72,11 @@ public: // PUBLIC --------------------------------------
 	// Get swimmer count
 	// --------------------------------------------------------
 	int GetSwimmerCount();
+
+	// --------------------------------------------------------
+	// Set level radius
+	// --------------------------------------------------------
+	void SetLevelRadius(float radius);
 		
 	// --------------------------------------------------------
 	// Attach swimmer to a leader.

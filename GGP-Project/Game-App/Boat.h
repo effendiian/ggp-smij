@@ -17,7 +17,7 @@ private:
 	float speed = 3;
 	float turnSpeed = 150;
 	float minDistance = 0.5f;
-	DirectX::XMFLOAT2 levelBounds;
+	float levelRadius;
 	BoatState state;
 	SwimmerManager* swimmerManager;
 	InputManager* inputManager;
@@ -33,7 +33,7 @@ private:
 	void AttachSwimmer(Swimmer* swimmer, int index);
 	
 public:
-	Boat(Mesh* mesh, Material* material, DirectX::XMFLOAT2 bounds);
+	Boat(Mesh* mesh, Material* material, float levelRadius);
 	~Boat();
 
 	// --------------------------------------------------------
