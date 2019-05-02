@@ -188,7 +188,6 @@ void FocusCamera::FPSMovement(float deltaTime)
 
 	Camera::Update(deltaTime);
 }
-#endif
 
 // Calculate the camera's rotation when moving
 void FocusCamera::CalculateCameraRotFromMouse()
@@ -245,3 +244,4 @@ void FocusCamera::CalculateCameraRotFromMouse()
 	SetRotation(xRot, yRot, 0);
 	SetCursorPos(centerX, centerY); //Position the mouse in the center
 }
+#endif
