@@ -86,7 +86,7 @@ void Game::Init()
 	//Initialize lights
 	//Set ambient light
 	LightManager* lightManager = LightManager::GetInstance();
-	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
+	lightManager->SetAmbientColor(0.35f, 0.19f, 0.02f);
 
 	//Directional lights
 	DirectionalLight* dLight = lightManager->CreateDirectionalLight(true, XMFLOAT3(1, 1, 1), 1);
@@ -133,6 +133,9 @@ void Game::LoadAssets()
 
 	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_albedo.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_normals.png", device, context);
+
+	resourceManager->LoadTexture2D("Assets/Textures/Area/area_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Area/area_normals.png", device, context);
 
 	resourceManager->LoadTexture2D("Assets/Textures/Water/blue.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_1.png", device, context);
@@ -193,6 +196,13 @@ void Game::LoadAssets()
 		resourceManager->GetTexture2D("Assets/Textures/Swimmer/swimmer_normals.png"),
 		0, 50, shadowSampler);
 	resourceManager->AddMaterial("swimmer", mat_swimmer);
+
+	//Area Material
+	Material* mat_area = new MAT_Basic(vs, ps_basic, XMFLOAT2(1, 1), samplerState,
+		resourceManager->GetTexture2D("Assets/Textures/Area/area_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Area/area_normals.png"),
+		0, 50, shadowSampler);
+	resourceManager->AddMaterial("area", mat_area);
 	
 	//Water surface material
 	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_ShineWater.cso"),
@@ -224,7 +234,7 @@ void Game::CreateEntities()
 
 	//Create area
 	Entity* area = new Entity(resourceManager->GetMesh("Assets\\Models\\area.obj"),
-		resourceManager->GetMaterial("boat"));
+		resourceManager->GetMaterial("area"));
 	area->SetScale(2.18f, 0.5f, 2.18f);
 
 	// Player (Boat) - Create the player.
