@@ -294,7 +294,8 @@ void Game::Update(float deltaTime, float totalTime)
 
 		case GameState::Playing:
 			// Updates the swimmer generator/manager.
-			swimmerManager->Update(deltaTime);
+			if(player->GetState() == BoatState::Playing)
+				swimmerManager->Update(deltaTime);
 
 			entityManager->Update(deltaTime);
 
