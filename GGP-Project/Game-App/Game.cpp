@@ -202,7 +202,7 @@ void Game::LoadAssets()
 	//Water surface material
 	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_Water.cso"),
 		1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Water/cloud.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Water/blue.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_2.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/water_metal.png"),

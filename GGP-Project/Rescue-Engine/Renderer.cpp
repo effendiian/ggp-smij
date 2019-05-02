@@ -41,15 +41,6 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 
 	// --------------------------------------------------------
 	//Set states for water
-	// Rasterizer state
-	D3D11_RASTERIZER_DESC rd = {};
-	rd.CullMode = D3D11_CULL_NONE;
-	rd.FillMode = D3D11_FILL_SOLID;
-	device->CreateRasterizerState(&rd, &waterRasterState);
-
-	// Setting the state here (although often you would set this
-	// in draw, depending on the object/material)
-	//context->RSSetState(waterRasterState);
 
 	// Depth state
 	D3D11_DEPTH_STENCIL_DESC ds = {};
@@ -59,21 +50,19 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 
 	//blend
 	D3D11_BLEND_DESC bd = {};
-
-	//bd.AlphaToCoverageEnable = false; 
-	//bd.IndependentBlendEnable = false;
-
+	bd.AlphaToCoverageEnable = false; 
+	bd.IndependentBlendEnable = false;
 	bd.RenderTarget[0].BlendEnable = true;
-
 	// These control how the RGB channels are combined
 	bd.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 	bd.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 	bd.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-
 	// These control how the alpha channel is combined
 	bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-	bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&bd, &waterBlendState);
 
 	//DEBUG water
 	water = new Entity(
@@ -81,10 +70,6 @@ void Renderer::Init(ID3D11Device* device, UINT width, UINT height)
 		ResourceManager::GetInstance()->GetMaterial("water"), "water"
 	);
 	water->SetScale(26, 0.1f, 26);
-
-	bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	device->CreateBlendState(&bd, &waterBlendState);
 
 	// --------------------------------------------------------
 	//Get shadow information
@@ -150,7 +135,6 @@ Renderer::~Renderer()
 	skyRasterState->Release();
 
 	//Clean up water
-	waterRasterState->Release();
 	waterBlendState->Release();
 	if(waterDepthState != nullptr) waterDepthState->Release();
 	//delete water;
@@ -304,6 +288,7 @@ void Renderer::RenderShadowMaps(ID3D11DeviceContext* context,
 void Renderer::DrawOpaqueObjects(ID3D11DeviceContext* context, Camera* camera)
 {
 	//TODO: Apply attenuation
+	context->OMSetDepthStencilState(waterDepthState, 0);
 	for (auto const& mapPair : renderMap)
 	{
 		if (mapPair.second.size() < 1)
@@ -358,10 +343,15 @@ void Renderer::DrawOpaqueObjects(ID3D11DeviceContext* context, Camera* camera)
 				0);    // Offset to add to each index when looking up vertices
 		}
 	}
+	context->OMSetDepthStencilState(0, 0);
 }
 
 void Renderer::DrawWater(ID3D11DeviceContext * context, Camera * camera)
 {
+	//Set render states
+	context->OMSetBlendState(waterBlendState, 0, 0xFFFFFFFF);
+	context->OMSetDepthStencilState(waterDepthState, 0);
+
 	// Turn shaders on
 	waterMat->GetVertexShader()->SetShader();
 	//waterMat->GetVertexShader()->SetMatrix4x4("world", water->GetWorldInvTransMatrix());
@@ -378,11 +368,6 @@ void Renderer::DrawWater(ID3D11DeviceContext * context, Camera * camera)
 	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-	//Set render states
-	context->RSSetState(waterRasterState);
-	context->OMSetDepthStencilState(waterDepthState, 0);
-	context->OMSetBlendState(waterBlendState, 0, 0xFFFFFFFF);
-
 	//Prepare the material's object specific variables
 	waterMat->PrepareMaterialObject(water);
 
@@ -390,7 +375,6 @@ void Renderer::DrawWater(ID3D11DeviceContext * context, Camera * camera)
 	context->DrawIndexed(cubeMesh->GetIndexCount(), 0, 0);
 
 	// Reset states
-	context->RSSetState(0);
 	context->OMSetDepthStencilState(0, 0);
 	context->OMSetBlendState(0, 0, 0xFFFFFFFF);
 

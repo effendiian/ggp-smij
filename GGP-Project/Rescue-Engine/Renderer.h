@@ -30,16 +30,15 @@ private:
 	//Water
 	Material* waterMat;
 	Entity* water;
+	ID3D11BlendState* waterBlendState;
+	ID3D11DepthStencilState* waterDepthState;
 
 	//Skybox
 	Material* skyboxMat;
 	ID3D11RasterizerState* skyRasterState;
 	ID3D11DepthStencilState* skyDepthState;
 
-	//Render states
-	ID3D11RasterizerState* waterRasterState;
-	ID3D11BlendState* waterBlendState;
-	ID3D11DepthStencilState* waterDepthState;
+
 
 	//Shadows
 	ID3D11RasterizerState* shadowRasterizer;

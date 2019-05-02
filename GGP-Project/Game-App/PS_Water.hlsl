@@ -64,10 +64,6 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float4 surfaceColor = AlbedoTexture.Sample(BasicSampler, input.uv);
 	surfaceColor.rgb = pow(surfaceColor.rgb, 2.2);
 
-	//Alpha cutout
-	if (surfaceColor.a < 0.25f)
-		discard;
-
 	// Specular color - Assuming albedo texture is actually holding specular color if metal == 1
 	float3 specColor = lerp(F0_NON_METAL.rrr, surfaceColor.rgb, metal);
 
@@ -112,5 +108,5 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Adjust the light color by the light amount
 	float3 gammaCorrect = pow(totalColor, 1.0 / 2.2);
-	return float4(gammaCorrect, 1);
+	return float4(gammaCorrect, surfaceColor.a);
 }
