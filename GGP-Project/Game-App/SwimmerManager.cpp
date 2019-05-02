@@ -9,11 +9,9 @@ SwimmerManager::SwimmerManager()
 	std::random_device rseed;
 	rng = std::mt19937(rseed());
 
-	swimmerCount = 0;
-	maxSwimmerCount = 10;
+	maxSwimmerCount = 5;
 	currentTTS = 0;
 	this->Reset();
-	this->AddCollider(DirectX::XMFLOAT3(10, 0, 10), DirectX::XMFLOAT3(0, 0, 0));
 }
 
 // Remove swimmers.
@@ -50,19 +48,15 @@ void SwimmerManager::RandomizeSwimmer(Swimmer* swimmer)
 	if (swimmer != nullptr) 
 	{
 		swimmer->SetPosition(this->GetNextPosition());
-		// swimmer->SetRotation(this->GetNextRotation());
-		// swimmer->SetScale(this->GetNextScale());
 	}
 }
 
 // Check if another swimmer can spawn.
 bool SwimmerManager::IsReadyToSpawn()
 {
-	return ( // Return true...
-		(this->enabled) // ...if this object is enabled,
-		&& (swimmerCount < maxSwimmerCount) // ...if there is still space,
-		&& (currentTTS >= maxTTS) // ...and if the timer surpassed the delay amount.
-	); 
+	return (swimmers.size() == 0) ||
+		((swimmers.size() < maxSwimmerCount) // ...if there is still space,
+		&& (currentTTS >= maxTTS)); // ...and if the timer surpassed the delay amount. 
 }
 
 // Reset the manager.
@@ -75,14 +69,7 @@ void SwimmerManager::Reset()
 			swimmers[i]->SetSwimmerState(SwimmerState::Leaving);
 	}
 	swimmers.clear();
-	swimmerCount = 0;
 	currentTTS = 0;
-}
-
-// Increase the level.
-void SwimmerManager::IncreaseLevel() 
-{
-	maxSwimmerCount += 5;
 }
 
 // Update swimmer state and spawn time.
@@ -110,14 +97,11 @@ Swimmer* SwimmerManager::SpawnSwimmer()
 		// To be refactored into the swimmer manager.
 		ResourceManager* resourceManager = ResourceManager::GetInstance();
 
-		// Create the swimmer name.
-		std::string swimmer_id = "swimmer" + std::to_string(swimmerCount + 1);
-
 		// Create the swimmer.
 		Swimmer* swimmer = new Swimmer(
 			resourceManager->GetMesh(swimmerMesh),
 			resourceManager->GetMaterial(swimmerMat),
-			swimmer_id
+			"swimmer"
 		);
 
 		// Add collider.
@@ -142,9 +126,9 @@ Swimmer* SwimmerManager::GetSwimmer(int id)
 }
 
 // Get swimmer count
-int SwimmerManager::GetSwimmerCount()
+size_t SwimmerManager::GetSwimmerCount()
 {
-	return (int)swimmers.size();
+	return swimmers.size();
 }
 
 // Attach swimmer to the input object.

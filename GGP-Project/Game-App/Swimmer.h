@@ -14,7 +14,7 @@ private:
 	SwimmerState swmrState;
 	static const int MAX_FPS = 60;
 	Entity* leader;
-	float lagSeconds = 0.7f;
+	float lagSeconds = 0.5f;
 	float hitTimer;
 
 	//Snake movement buffer vars

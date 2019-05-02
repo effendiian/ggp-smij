@@ -10,13 +10,13 @@
 using namespace std;
 using namespace DirectX;
 
-Boat::Boat(Mesh * mesh, Material * material) : Entity(mesh, material, "player")
+Boat::Boat(Mesh * mesh, Material * material, XMFLOAT2 bounds) : Entity(mesh, material, "player")
 {
 	state = BoatState::Starting;
 	trail = std::vector<Swimmer*>();
 	swimmerManager = SwimmerManager::GetInstance();
 	inputManager = InputManager::GetInstance();
-	SetLevelBounds(13.0f, 13.0f);
+	levelBounds = bounds;
 }
 
 Boat::~Boat()
@@ -163,8 +163,8 @@ void Boat::CheckCollisions()
 	float x = this->GetPosition().x;
 	float z = this->GetPosition().z;
 	//Checking Within Level Bounds
-	if (!ExtendedMath::InRange(x, levelWidth) ||
-		!ExtendedMath::InRange(z, levelHeight))
+	if (!ExtendedMath::InRange(x, levelBounds.x) ||
+		!ExtendedMath::InRange(z, levelBounds.y))
 	{
 		//Game Over
 		GameOver();
@@ -172,16 +172,14 @@ void Boat::CheckCollisions()
 	}
 	
 	// Check collisions with swimmers in our trail
-	for (int i = 0; i < trail.size(); i++)
+	for (int i = 1; i < trail.size(); i++)
 	{
 		Swimmer* swmr = trail[i];
-		if (swmr != nullptr && swmr->IsFollowing() &&
-			GetCollider()->Collides(*swmr->GetCollider()))
+		if (swmr != nullptr	&& swmr->IsFollowing() 
+			&& GetCollider()->Collides(*swmr->GetCollider()))
 		{
-			//printf("Collision with swimmer.\n");
-			//TODO: Add implementation of swimmers joining the trail
-			//GameOver();
-			//return;
+			GameOver();
+			return;
 		}
 	}
 

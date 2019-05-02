@@ -250,7 +250,8 @@ void Swimmer::Join(float deltaTime)
 	//	);
 	//	SetPosition(lerp);
 	//}
-	else
+	else if(leader->GetName() != "swimmer" 
+		|| (leader->GetName() == "swimmer" && ((Swimmer*)leader)->IsFollowing()))
 	{
 		swmrState = SwimmerState::Following;
 	}

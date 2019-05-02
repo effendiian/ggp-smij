@@ -14,11 +14,10 @@ class Boat :
 private:
 
 	//Movement
-	float speed = 2;
-	float turnSpeed = 100;
+	float speed = 3;
+	float turnSpeed = 150;
 	float minDistance = 0.5f;
-	float levelWidth;
-	float levelHeight;
+	DirectX::XMFLOAT2 levelBounds;
 	BoatState state;
 	SwimmerManager* swimmerManager;
 	InputManager* inputManager;
@@ -34,7 +33,7 @@ private:
 	void AttachSwimmer(Swimmer* swimmer, int index);
 	
 public:
-	Boat(Mesh* mesh, Material* material);
+	Boat(Mesh* mesh, Material* material, DirectX::XMFLOAT2 bounds);
 	~Boat();
 
 	// --------------------------------------------------------
@@ -86,11 +85,4 @@ public:
 	// Clears all swimmers from the boat
 	// --------------------------------------------------------
 	void ClearSwimmers();
-
-	//GETTERS & SETTERS
-	void SetLevelWidth (float value)               { if (value > 0) levelWidth  = value;           }
-	void SetLevelHeight(float value)               { if (value > 0) levelHeight = value;           }
-	void SetLevelBounds(float width, float height) { SetLevelWidth(width); SetLevelHeight(height); }
-	float GetLevelWidth () { return levelWidth;  }
-	float GetLevelHeight() { return levelHeight; }
 };

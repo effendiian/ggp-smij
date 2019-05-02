@@ -63,6 +63,7 @@ void Game::Init()
 	renderer->Init(device, width, height);
 	entityManager = EntityManager::GetInstance();
 	swimmerManager = SwimmerManager::GetInstance();
+	swimmerManager->AddCollider(XMFLOAT3((LEVEL_WIDTH - 1) * 2, 1, ( LEVEL_HEIGHT - 1) * 2));
 
 	//Initialize singleton data
 	inputManager->Init(hWnd);
@@ -225,7 +226,8 @@ void Game::CreateEntities()
 	// Player (Boat) - Create the player.
 	player = new Boat(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("scratched")
+		resourceManager->GetMaterial("scratched"),
+		XMFLOAT2(LEVEL_WIDTH, LEVEL_HEIGHT)
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
 	player->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));

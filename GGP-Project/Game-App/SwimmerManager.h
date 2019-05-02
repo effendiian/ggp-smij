@@ -10,9 +10,8 @@ class SwimmerManager :
 private: // PRIVATE ------------------------------------
 
 	float currentTTS = 0;
-	float maxTTS = 5;
-	int swimmerCount = 0;
-	int maxSwimmerCount = 10;
+	float maxTTS = 3;
+	int maxSwimmerCount;
 	const char* swimmerMesh = "Assets\\Models\\sphere.obj";
 	const char* swimmerMat = "wood";
 	std::mt19937 rng;
@@ -54,13 +53,6 @@ public: // PUBLIC --------------------------------------
 	void Reset();
 
 	// --------------------------------------------------------
-	// Increase the number of maximum swimmers.
-	//
-	// Should be called after set is returned to the dock.
-	// --------------------------------------------------------
-	void IncreaseLevel();
-
-	// --------------------------------------------------------
 	// Updates swimmers and spawn time.
 	// --------------------------------------------------------
 	void Update(float deltaTime);
@@ -78,7 +70,7 @@ public: // PUBLIC --------------------------------------
 	// --------------------------------------------------------
 	// Get swimmer count
 	// --------------------------------------------------------
-	int GetSwimmerCount();
+	size_t GetSwimmerCount();
 		
 	// --------------------------------------------------------
 	// Attach swimmer to a leader.

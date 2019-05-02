@@ -235,7 +235,7 @@ public:
 	// size - dimensions of bounding box
 	// offset - offset of collider from position of game object
 	// --------------------------------------------------------
-	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
+	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset = DirectX::XMFLOAT3());
 
 	// --------------------------------------------------------
 	// Check if the collider is in debug mode (draw outline)
