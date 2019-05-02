@@ -40,7 +40,7 @@ SamplerState BasicSampler		: register(s0);
 // Shadow-related variables
 Texture2D ShadowMap						: register(t4);
 SamplerComparisonState ShadowSampler	: register(s1);
-
+Texture2D NormalTexture2				: register(t5);
 
 // Entry point for this pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
@@ -51,7 +51,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Scrolls the normal map in two directions and samples the sum
 	float3 normalMap1 = NormalMapping(NormalTexture, BasicSampler, input.uv + Translate, input.normal, input.tangent);
-	float3 normalMap2 = NormalMapping(NormalTexture, BasicSampler, input.uv - Translate, input.normal, input.tangent);
+	float3 normalMap2 = NormalMapping(NormalTexture2, BasicSampler, input.uv - Translate, input.normal, input.tangent);
 	input.normal = normalize(normalMap1 + normalMap2);
 
 	// Sample the roughness map
@@ -108,5 +108,5 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Adjust the light color by the light amount
 	float3 gammaCorrect = pow(totalColor, 1.0 / 2.2);
-	return float4(gammaCorrect, 1);
+	return float4(gammaCorrect, surfaceColor.a);
 }

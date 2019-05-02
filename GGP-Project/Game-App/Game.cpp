@@ -120,6 +120,7 @@ void Game::LoadAssets()
 
 	//Create meshes
 	resourceManager->LoadMesh("Assets\\Models\\cube.obj", device);
+	//resourceManager->LoadMesh("Assets\\Models\\plane.obj", device);
 	resourceManager->LoadMesh("Assets\\Models\\sphere.obj", device);
 
 	//Load textures
@@ -139,7 +140,11 @@ void Game::LoadAssets()
 	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_metal.png", device, context);
 
 	resourceManager->LoadTexture2D("Assets/Textures/Water/blue.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/cloud.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_1.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_2.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_3.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/water_metal.png", device, context);
 
 	//Load cubemap
 	resourceManager->LoadCubeMap("Assets/Textures/Sky/SunnyCubeMap.dds", device);
@@ -199,10 +204,10 @@ void Game::LoadAssets()
 	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_Water.cso"),
 		1024.0f, XMFLOAT2(2, 2),
 		resourceManager->GetTexture2D("Assets/Textures/Water/blue.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_1.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_2.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
-		samplerState, shadowSampler, &translate);
+		resourceManager->GetTexture2D("Assets/Textures/Wood/water_metal.png"),
+		samplerState, shadowSampler, &translate, resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_3.png"));
 	resourceManager->AddMaterial("water", mat_water);
 
 	//Skybox material
@@ -217,11 +222,11 @@ void Game::LoadAssets()
 void Game::CreateEntities()
 {
 	//Create water
-	Entity* water = new Entity(
+	/*Entity* water = new Entity(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
 		resourceManager->GetMaterial("water")
 	);
-	water->SetScale(26, 0.1f, 26);
+	water->SetScale(26, 0.1f, 26);*/
 
 	// Player (Boat) - Create the player.
 	player = new Boat(
@@ -316,7 +321,7 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	//Updates water's scrolling normal map
-	translate += 0.05f * deltaTime;
+	translate += 0.025f * deltaTime;
 	if (translate > 1.0f) translate = 0.0f;
 	
 

@@ -27,10 +27,18 @@ private:
 	SimplePixelShader* ps_debug;
 	ID3D11RasterizerState* RS_wireframe;
 
+	//Water
+	Material* waterMat;
+	Entity* water;
+	ID3D11BlendState* waterBlendState;
+	ID3D11DepthStencilState* waterDepthState;
+
 	//Skybox
 	Material* skyboxMat;
 	ID3D11RasterizerState* skyRasterState;
 	ID3D11DepthStencilState* skyDepthState;
+
+
 
 	//Shadows
 	ID3D11RasterizerState* shadowRasterizer;
@@ -77,6 +85,11 @@ private:
 	// Draw opaque objects
 	// --------------------------------------------------------
 	void DrawOpaqueObjects(ID3D11DeviceContext* context, Camera* camera);
+
+	// --------------------------------------------------------
+	// Draw transparent water
+	// --------------------------------------------------------
+	void DrawWater(ID3D11DeviceContext* context, Camera* camera);
 
 	// --------------------------------------------------------
 	// Draw debug colider rectangles
