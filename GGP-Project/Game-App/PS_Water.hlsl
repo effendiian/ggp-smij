@@ -51,7 +51,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Scrolls the normal map in two directions and samples the sum
 	float3 normalMap1 = NormalMapping(NormalTexture, BasicSampler, input.uv + Translate, input.normal, input.tangent);
-	float3 normalMap2 = NormalMapping(NormalTexture2, BasicSampler, input.uv - Translate / 2, input.normal, input.tangent);
+	float3 normalMap2 = NormalMapping(NormalTexture2, BasicSampler, input.uv - Translate, input.normal, input.tangent);
 	input.normal = normalize(normalMap1 + normalMap2);
 
 	// Sample the roughness map
