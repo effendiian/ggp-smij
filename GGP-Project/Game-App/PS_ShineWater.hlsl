@@ -1,6 +1,8 @@
 
 #include "Lighting.hlsli"
 
+// How many lights could we handle?
+
 //Data that changes once per MatMesh combo
 cbuffer perCombo : register(b0)
 {
@@ -8,8 +10,14 @@ cbuffer perCombo : register(b0)
 	int LightCount; //amount of lights
 	float3 CameraPosition;
 	AmbientLight AmbLight;
+	float Shininess;
+	float Roughness;
 }
 
+cbuffer perObject : register(b1)
+{
+	float Translate;
+}
 
 // Defines the input to this pixel shader
 // - Should match the output of our corresponding vertex shader
@@ -27,14 +35,22 @@ struct VertexToPixel
 // Texture-related variables
 Texture2D AlbedoTexture			: register(t0);
 Texture2D NormalTexture			: register(t1);
-Texture2D RoughnessTexture		: register(t2);
-Texture2D MetalTexture			: register(t3);
 SamplerState BasicSampler		: register(s0);
+Texture2D NormalTexture2		: register(t5);
+Texture2D ShineTexture			: register(t6);
 
 // Shadow-related variables
 Texture2D ShadowMap						: register(t4);
 SamplerComparisonState ShadowSampler	: register(s1);
 
+float map(float value, float min1, float max1, float min2, float max2)
+{
+	// Convert the current value to a percentage
+	float perc = (value - min1) / (max1 - min1);
+
+	// Do the same operation backwards with min2 and max2
+	return perc * (max2 - min2) + min2;
+}
 
 // Entry point for this pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
@@ -43,22 +59,18 @@ float4 main(VertexToPixel input) : SV_TARGET
 	input.normal = normalize(input.normal);
 	input.tangent = normalize(input.tangent);
 
-	// Use normal mapping
-	float3 normalMap = NormalMapping(NormalTexture, BasicSampler, input.uv, input.normal, input.tangent);
-	input.normal = normalMap;
-
-	// Sample the roughness map
-	float roughness = RoughnessTexture.Sample(BasicSampler, input.uv).r;
-
-	// Sample the metal map
-	float metal = MetalTexture.Sample(BasicSampler, input.uv).r;
+	// Scrolls the normal map in two directions and samples the sum
+	float3 normalMap1 = NormalMapping(NormalTexture, BasicSampler, input.uv + Translate, input.normal, input.tangent);
+	float3 normalMap2 = NormalMapping(NormalTexture2, BasicSampler, input.uv - Translate, input.normal, input.tangent);
+	input.normal = normalize(normalMap1 + normalMap2);
 
 	// Sample texture
 	float4 surfaceColor = AlbedoTexture.Sample(BasicSampler, input.uv);
-	surfaceColor.rgb = pow(surfaceColor.rgb, 2.2);
-
-	// Specular color - Assuming albedo texture is actually holding specular color if metal == 1
-	float3 specColor = lerp(F0_NON_METAL.rrr, surfaceColor.rgb, metal);
+	float shine = map(ShineTexture.Sample(BasicSampler, input.uv + Translate).r, 0, 1, 1, 0)
+					+ map(ShineTexture.Sample(BasicSampler, input.uv - Translate).r, 0, 1, 1, 0);
+	if(shine < 0.13 || shine > 0.92)
+		surfaceColor.rgb += shine;
+	surfaceColor = pow(surfaceColor, 2.2);
 
 	//Sample shadowmap
 	//Shadows are only on the singular directional light
@@ -80,19 +92,19 @@ float4 main(VertexToPixel input) : SV_TARGET
 		switch (Lights[i].Type)
 		{
 		case LIGHT_TYPE_DIRECTIONAL:
-			float3 dL = DirLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			float3 dL = DirLight(Lights[i], input.normal, input.worldPos, CameraPosition, Roughness, Shininess, surfaceColor.rgb);
 			dL *= shadowAmount;
 			totalColor += dL;
 			break;
 
 		case LIGHT_TYPE_POINT:
-			float3 pL = PointLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			float3 pL = PointLight(Lights[i], input.normal, input.worldPos, CameraPosition, Shininess, Roughness, surfaceColor.rgb);
 			//pL *= shadowAmount;
 			totalColor += pL;
 			break;
 
 		case LIGHT_TYPE_SPOT:
-			float3 sL = SpotLightPBR(Lights[i], input.normal, input.worldPos, CameraPosition, roughness, metal, surfaceColor.rgb, specColor);
+			float3 sL = SpotLight(Lights[i], input.normal, input.worldPos, CameraPosition, Shininess, Roughness, surfaceColor.rgb);
 			//sL *= shadowAmount;
 			totalColor += sL;
 			break;
@@ -101,5 +113,5 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Adjust the light color by the light amount
 	float3 gammaCorrect = pow(totalColor, 1.0 / 2.2);
-	return float4(gammaCorrect, 1);
+	return float4(gammaCorrect, surfaceColor.a);
 }

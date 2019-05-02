@@ -59,6 +59,9 @@
     <ClCompile Include="FocusCamera.cpp">
       <Filter>Source Files\Cameras</Filter>
     </ClCompile>
+    <ClCompile Include="MAT_Basic.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXCore.h">
@@ -85,6 +88,9 @@
     <ClInclude Include="FocusCamera.h">
       <Filter>Header Files\Cameras</Filter>
     </ClInclude>
+    <ClInclude Include="MAT_Basic.h">
+      <Filter>Header Files\Materials</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
@@ -103,6 +109,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="PS_PBR.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PS_ShineWater.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

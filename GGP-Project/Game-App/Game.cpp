@@ -4,6 +4,7 @@
 #include "MAT_PBRTexture.h"
 #include "MAT_Water.h"
 #include "MAT_Skybox.h"
+#include "MAT_Basic.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -41,6 +42,7 @@ Game::~Game()
 {
 	//Delete sampler states
 	samplerState->Release();
+	waterSamplerState->Release();
 	shadowSampler->Release();
 
 	//Delete the camera
@@ -103,9 +105,11 @@ void Game::LoadAssets()
 {
 	//Load shaders
 	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
+	resourceManager->LoadPixelShader("PixelShader.cso", device, context);
 	resourceManager->LoadPixelShader("PS_PBR.cso", device, context);
 
 	resourceManager->LoadPixelShader("PS_Water.cso", device, context);
+	resourceManager->LoadPixelShader("PS_ShineWater.cso", device, context);
 
 	resourceManager->LoadVertexShader("VS_ColDebug.cso", device, context);
 	resourceManager->LoadPixelShader("PS_ColDebug.cso", device, context);
@@ -120,19 +124,14 @@ void Game::LoadAssets()
 
 	//Create meshes
 	resourceManager->LoadMesh("Assets\\Models\\cube.obj", device);
-	//resourceManager->LoadMesh("Assets\\Models\\plane.obj", device);
-	resourceManager->LoadMesh("Assets\\Models\\sphere.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\boat.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\swimmer.obj", device);
 
 	//Load textures
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_albedo.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_normals.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_roughness.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_metal.png", device, context);
-
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_albedo.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_normals.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_roughness.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_metal.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Boat/boat_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Boat/boat_normals.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_normals.png", device, context);
 
 	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_albedo.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_normals.png", device, context);
@@ -140,14 +139,14 @@ void Game::LoadAssets()
 	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_metal.png", device, context);
 
 	resourceManager->LoadTexture2D("Assets/Textures/Water/blue.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Water/cloud.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_1.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_2.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_3.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_metal.png", device, context);
 
-	//Load cubemap
+	//Load cubemaps
 	resourceManager->LoadCubeMap("Assets/Textures/Sky/SunnyCubeMap.dds", device);
+	resourceManager->LoadCubeMap("Assets/Textures/Water/water_shine.dds", device);
 
 	//Create sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -158,6 +157,16 @@ void Game::LoadAssets()
 	samplerDesc.MaxAnisotropy = 16;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&samplerDesc, &samplerState);
+
+	samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; //Anisotropic filtering
+	samplerDesc.MaxAnisotropy = 16;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	samplerDesc.MipLODBias = 1.8f;
+	device->CreateSamplerState(&samplerDesc, &waterSamplerState);
 
 	// Create the special "comparison" sampler state for shadows
 	D3D11_SAMPLER_DESC shadowSampDesc = {};
@@ -174,25 +183,22 @@ void Game::LoadAssets()
 
 	//Create materials
 	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
-	SimplePixelShader* ps = resourceManager->GetPixelShader("PS_PBR.cso");
+	SimplePixelShader* ps_basic = resourceManager->GetPixelShader("PixelShader.cso");
+	SimplePixelShader* ps_pbr = resourceManager->GetPixelShader("PS_PBR.cso");
 
-	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_normals.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_metal.png"),
-		samplerState, shadowSampler);
-	resourceManager->AddMaterial("floor", mat1);
+	Material* mat_boat = new MAT_Basic(vs, ps_basic, XMFLOAT2(1, 1), samplerState,
+		resourceManager->GetTexture2D("Assets/Textures/Boat/boat_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Boat/boat_normals.png"),
+		0, 50, shadowSampler);
+	resourceManager->AddMaterial("boat", mat_boat);
 
-	Material* mat2 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_albedo.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_normals.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_metal.png"),
-		samplerState, shadowSampler);
-	resourceManager->AddMaterial("scratched", mat2);
+	Material* mat_swimmer = new MAT_Basic(vs, ps_basic, XMFLOAT2(1, 1), samplerState,
+		resourceManager->GetTexture2D("Assets/Textures/Swimmer/swimmer_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Swimmer/swimmer_normals.png"),
+		0, 50, shadowSampler);
+	resourceManager->AddMaterial("swimmer", mat_swimmer);
 
-	Material* mat3 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
+	Material* mat3 = new MAT_PBRTexture(vs, ps_pbr, 1024.0f, XMFLOAT2(2, 2),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_albedo.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_normals.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
@@ -201,13 +207,13 @@ void Game::LoadAssets()
 	resourceManager->AddMaterial("wood", mat3);
 	
 	//Water surface material
-	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_Water.cso"),
-		1024.0f, XMFLOAT2(2, 2),
+	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_ShineWater.cso"),
+		XMFLOAT2(2, 2), waterSamplerState, 
 		resourceManager->GetTexture2D("Assets/Textures/Water/blue.png"),
 		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_2.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/water_metal.png"),
-		samplerState, shadowSampler, &translate, resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_3.png"));
+		0, 100, shadowSampler, &translate,
+		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_3.png"),
+		resourceManager->GetCubeMap("Assets/Textures/Water/water_shine.dds"));
 	resourceManager->AddMaterial("water", mat_water);
 
 	//Skybox material
@@ -230,12 +236,12 @@ void Game::CreateEntities()
 
 	// Player (Boat) - Create the player.
 	player = new Boat(
-		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("scratched"),
+		resourceManager->GetMesh("Assets\\Models\\boat.obj"),
+		resourceManager->GetMaterial("boat"),
 		XMFLOAT2(LEVEL_WIDTH, LEVEL_HEIGHT)
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
-	player->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));
+	player->AddCollider(XMFLOAT3(1.0f, 0.8f, 2.4f), XMFLOAT3(0, 0, 0));
 #if defined(DEBUG) || defined(_DEBUG)
 	player->SetDebug(true);
 #endif

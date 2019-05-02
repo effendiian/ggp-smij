@@ -87,7 +87,7 @@ DirectX::XMFLOAT3 Collider::GetHalfSize() const
 DirectX::XMVECTOR Collider::GetNormal(DirectX::XMFLOAT4 axis)
 {
 	//return worldMatrix * axis
-	XMMATRIX world = XMLoadFloat4x4(&worldMatrix);
+	XMMATRIX world = XMLoadFloat4x4(&GetWorldMatrix());
 	XMVECTOR direction = XMLoadFloat4(&axis);
 
 	return XMVector4Transform(direction, world);
@@ -109,7 +109,7 @@ void Collider::SetPosition(DirectX::XMFLOAT3 newPosition)
 {
 	XMVECTOR newPos = XMLoadFloat3(&newPosition);
 	XMVECTOR off = XMLoadFloat3(&offset);
-	XMStoreFloat3(&position, newPos + off);
+	XMStoreFloat3(&position, XMVectorAdd(newPos, off));
 	worldDirty = true;
 }
 
@@ -128,7 +128,7 @@ void Collider::SetSize(DirectX::XMFLOAT3 newSize)
 }
 
 // Check if a collision has occured.
-bool Collider::Collides(Collider other)
+bool Collider::Collides(Collider* other)
 {
 	//JavaScript reference from MDN:
 	//return (a.minX <= b.maxX && a.maxX >= b.minX) &&
@@ -164,7 +164,7 @@ bool Collider::Collides(Collider other)
 
 }
 
-bool Collider::SAT(Collider other)
+bool Collider::SAT(Collider* other)
 {
 	//SAT
 	//variables for switching between axes to check
@@ -182,9 +182,9 @@ bool Collider::SAT(Collider other)
 	axesA[0] = GetNormal(XMFLOAT4(1, 0, 0, 0)); //x
 	axesA[1] = GetNormal(XMFLOAT4(1, 0, 0, 0)); //y
 	axesA[2] = GetNormal(XMFLOAT4(0, 0, 1, 0)); //z
-	axesB[0] = other.GetNormal(XMFLOAT4(1, 0, 0, 0)); //x
-	axesB[1] = other.GetNormal(XMFLOAT4(1, 0, 0, 0)); //y
-	axesB[2] = other.GetNormal(XMFLOAT4(0, 0, 1, 0)); //z
+	axesB[0] = other->GetNormal(XMFLOAT4(1, 0, 0, 0)); //x
+	axesB[1] = other->GetNormal(XMFLOAT4(1, 0, 0, 0)); //y
+	axesB[2] = other->GetNormal(XMFLOAT4(0, 0, 1, 0)); //z
 
 	//Populates rotAinB
 	for (int i = 0; i < 3; i++)
@@ -192,7 +192,7 @@ bool Collider::SAT(Collider other)
 			rotAinB.m[i][j] = XMVectorGetX(XMVector3Dot(axesA[i], axesB[j]));
 
 	//Vector between rigidbodies
-	XMVECTOR translation = XMLoadFloat3(&other.GetPosition()) - XMLoadFloat3(&GetPosition());
+	XMVECTOR translation = XMLoadFloat3(&other->GetPosition()) - XMLoadFloat3(&GetPosition());
 	//Converted into A's vector space
 	float tx = XMVectorGetX(XMVector3Dot(translation, axesA[0]));
 	float ty = XMVectorGetX(XMVector3Dot(translation, axesA[1]));
@@ -205,7 +205,7 @@ bool Collider::SAT(Collider other)
 			subexpressions.m[i][j] = abs(rotAinB.m[i][j]) + std::numeric_limits<float>::epsilon();
 
 	XMVECTOR thisHalf = XMLoadFloat3(&GetHalfSize()); //half size of this collider
-	XMVECTOR otherHalf = XMLoadFloat3(&other.GetHalfSize()); //half size of other collider
+	XMVECTOR otherHalf = XMLoadFloat3(&other->GetHalfSize()); //half size of other collider
 
 	//Checks first three axes (A's xyz)
 	for (int i = 0; i < 3; i++)

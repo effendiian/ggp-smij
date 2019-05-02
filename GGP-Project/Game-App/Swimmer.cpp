@@ -308,6 +308,12 @@ void Swimmer::SetSwimmerState(SwimmerState newState)
 	swmrState = newState;
 }
 
+// Set Swimmer's lag seconds
+void Swimmer::SetLagSeconds(float lagSeconds)
+{
+	this->lagSeconds = lagSeconds;
+}
+
 // Get the state of the swimmer
 SwimmerState Swimmer::GetState()
 {

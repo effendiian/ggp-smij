@@ -106,6 +106,11 @@ public:
 	void SetSwimmerState(SwimmerState newState);
 
 	// --------------------------------------------------------
+	// Set Swimmer's lag seconds
+	// --------------------------------------------------------
+	void SetLagSeconds(float lagSeconds);
+
+	// --------------------------------------------------------
 	// Get the state of the swimmer
 	// --------------------------------------------------------
 	SwimmerState GetState();

@@ -103,6 +103,7 @@ Swimmer* SwimmerManager::SpawnSwimmer()
 			resourceManager->GetMaterial(swimmerMat),
 			"swimmer"
 		);
+		swimmer->SetScale(0.05f, 0.05f, 0.05f);
 
 		// Add collider.
 		swimmer->AddCollider(DirectX::XMFLOAT3(0.9f, 0.9f, 0.9f), DirectX::XMFLOAT3(0, 0, 0));

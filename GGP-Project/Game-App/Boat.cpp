@@ -89,10 +89,11 @@ void Boat::Input(float deltaTime)
 	{
 		// Create the swimmer.
 		Swimmer* swimmer = new Swimmer(
-			ResourceManager::GetInstance()->GetMesh("Assets\\Models\\sphere.obj"),
-			ResourceManager::GetInstance()->GetMaterial("wood"),
+			ResourceManager::GetInstance()->GetMesh("Assets\\Models\\swimmer.obj"),
+			ResourceManager::GetInstance()->GetMaterial("swimmer"),
 			"swimmer"
 		);
+		swimmer->SetScale(0.05f, 0.05f, 0.05f);
 		swimmer->AddCollider(DirectX::XMFLOAT3(0.9f, 0.9f, 0.9f), DirectX::XMFLOAT3(0, 0, 0));
 		swimmer->SetDebug(true);
 
@@ -176,7 +177,7 @@ void Boat::CheckCollisions()
 	{
 		Swimmer* swmr = trail[i];
 		if (swmr != nullptr	&& swmr->GetState() == SwimmerState::Following
-			&& GetCollider()->Collides(*swmr->GetCollider()))
+			&& GetCollider()->Collides(swmr->GetCollider()))
 		{
 			GameOver();
 			return;
@@ -188,7 +189,7 @@ void Boat::CheckCollisions()
 	{
 		Swimmer* swmr = swimmerManager->GetSwimmer(i);
 		if (swmr != nullptr && swmr->GetState() == SwimmerState::Floating &&
-			GetCollider()->Collides(*swmr->GetCollider()))
+			GetCollider()->Collides(swmr->GetCollider()))
 		{
 			AttachSwimmer(swmr, i);
 		}
@@ -237,6 +238,9 @@ void Boat::AttachSwimmer(Swimmer* swimmer, int index)
 		leader = this;
 	else leader = trail[trail.size() - 1];
 		
+	if (trail.size() == 0)
+		swimmer->SetLagSeconds(0.8f);
+
 	// Attach the swimmer.
 	trail.push_back(swimmer);
 	swimmerManager->AttachSwimmer(swimmer, leader, index);

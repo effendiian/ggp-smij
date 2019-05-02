@@ -52,6 +52,7 @@ private:
 
 	//Sampler states
 	ID3D11SamplerState* samplerState;
+	ID3D11SamplerState* waterSamplerState;
 	ID3D11SamplerState* shadowSampler;
 
 	//Transformation modifiers

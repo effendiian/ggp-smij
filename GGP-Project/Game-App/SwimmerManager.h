@@ -12,8 +12,8 @@ private: // PRIVATE ------------------------------------
 	float currentTTS = 0;
 	float maxTTS = 3;
 	int maxSwimmerCount;
-	const char* swimmerMesh = "Assets\\Models\\sphere.obj";
-	const char* swimmerMat = "wood";
+	const char* swimmerMesh = "Assets\\Models\\swimmer.obj";
+	const char* swimmerMat = "swimmer";
 	std::mt19937 rng;
 
 	//Singleton

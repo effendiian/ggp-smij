@@ -90,9 +90,9 @@ public:
 	// --------------------------------------------------------
 	// Check if the collider collides with another (AABB)
 	// --------------------------------------------------------
-	bool Collides(Collider other); //AABB for now
+	bool Collides(Collider* other); //AABB for now
 
-	bool SAT(Collider other);
+	bool SAT(Collider* other);
 
 
 };
