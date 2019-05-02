@@ -1,136 +1,95 @@
 
+#include "Lighting.hlsli"
+
 // Struct representing the data for any light
-struct Light
+
+//Data that changes once per MatMesh combo
+cbuffer perCombo : register(b0)
 {
-	float4 ambientColor;
-	float4 diffuseColor;
-	float3 position;
-	float3 direction;
-	float intensity;
-};
+	Light Lights[MAX_LIGHTS]; //array of lights
+	int LightCount; //amount of lights
+	float3 CameraPosition;
+	AmbientLight AmbLight;
+	float Shininess;
+	float Roughness;
+}
 
-//External data for the pixel shader
-cbuffer externalData : register(b0)
-{
-	Light light1;
-	Light light2;
-	Light light3;
-	float4 surfaceColor;
-	float3 cameraPosition;
-	float specularity;
-};
-
-//Texturing
-Texture2D diffuseTexture : register(t0);
-SamplerState basicSampler : register(s0);
-
-// Struct representing the data we expect to receive from earlier pipeline stages
+// Defines the input to this pixel shader
 // - Should match the output of our corresponding vertex shader
-// - The name of the struct itself is unimportant
-// - The variable names don't have to match other shaders (just the semantics)
-// - Each variable must have a semantic, which defines its usage
 struct VertexToPixel
 {
-	// Data type
-	//  |
-	//  |   Name          Semantic
-	//  |    |                |
-	//  v    v                v
 	float4 position		: SV_POSITION;
-	float3 normal		: NORMAL;        // XYZ normal
-	float3 worldPos		: POSITION;		 // world position of the vertex
-	float2 uv			: TEXCOORD;		 // XY uv
+	float2 uv			: TEXCOORD;
+	float3 normal		: NORMAL;
+	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION; // The world position of this PIXEL
+	float4 posForShadow : SHADOW;
 };
 
-// --------------------------------------------------------
-// Calculate directional light and apply the color
-// --------------------------------------------------------
-float4 dLightCalc(VertexToPixel input, Light light, float3 toCamera, float4 finalSurface)
-{
-	//Calc direction to the light
-	float3 lightDir = normalize(light.direction);
+// Texture-related variables
+Texture2D AlbedoTexture			: register(t0);
+Texture2D NormalTexture			: register(t1);
+SamplerState BasicSampler		: register(s0);
 
-	//Get NdotL "brightness" factor
-	float NdotL = saturate(dot(input.normal, -lightDir));
+// Shadow-related variables
+Texture2D ShadowMap						: register(t2);
+SamplerComparisonState ShadowSampler	: register(s1);
 
-	//Calculate specularness ("shinyness")
-	float spec = pow(saturate(dot(reflect(lightDir, input.normal), toCamera)), specularity);
-
-	//Add all colors
-	return ((light.ambientColor * finalSurface)  
-			+ (light.diffuseColor * NdotL * finalSurface)
-			+ float4(spec, spec, spec, 0))
-			* light.intensity;
-}
-
-// --------------------------------------------------------
-// Calculate point light and apply the color
-// --------------------------------------------------------
-float4 pLightCalc(VertexToPixel input, Light light, float3 toCamera, float4 finalSurface)
-{
-	//Calc direction to the light
-	float3 lightDir = normalize(light.position - input.worldPos);
-
-	//Get NdotL "brightness" factor
-	float NdotL = saturate(dot(input.normal, lightDir));
-
-	//Calculate specularness ("shinyness")
-	float spec = pow(saturate(dot(reflect(-lightDir, input.normal), toCamera)), specularity);
-
-	//Add all colors
-	return ((light.diffuseColor * NdotL * finalSurface)
-			+ float4(spec, spec, spec, 0))
-			* light.intensity;
-}
-
-// --------------------------------------------------------
-// Calculate spot light and apply the color
-// --------------------------------------------------------
-float4 sLightCalc(VertexToPixel input, Light light, float3 toCamera, float4 finalSurface)
-{
-	//Calc direction to the light
-	float3 lightDir = normalize(light.position - input.worldPos);
-
-	//Get NdotL "brightness" factor
-	float NdotL = saturate(dot(input.normal, lightDir));
-
-	//Calculate spotlight amount
-	float spotAmnt = pow(max(dot(-lightDir, light.direction), 0.0f), light.intensity);
-
-	//Calculate specularness ("shinyness")
-	float spec = pow(saturate(dot(reflect(-lightDir, input.normal), toCamera)), specularity);
-
-	//Add all colors
-	return ((light.diffuseColor * NdotL * finalSurface)
-			+ float4(spec, spec, spec, 0))
-			* spotAmnt;
-}
-
-// --------------------------------------------------------
-// The entry point (main method) for our pixel shader
-// 
-// - Input is the data coming down the pipeline (defined by the struct)
-// - Output is a single color (float4)
-// - Has a special semantic (SV_TARGET), which means 
-//    "put the output of this into the current render target"
-// - Named "main" because that's the default the shader compiler looks for
-// --------------------------------------------------------
+// Entry point for this pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	//Renormalize normals
+	// Fix for poor normals: re-normalizing interpolated normals
 	input.normal = normalize(input.normal);
+	input.tangent = normalize(input.tangent);
 
-	//Calculate direction to camera
-	float3 toCamera = normalize(cameraPosition - input.worldPos);
+	// Use normal mapping
+	float3 normalMap = NormalMapping(NormalTexture, BasicSampler, input.uv, input.normal, input.tangent);
+	input.normal = normalMap;
 
-	//Apply texture
-	float4 finalSurface = diffuseTexture.Sample(basicSampler, input.uv);
+	// Sample texture
+	float4 surfaceColor = AlbedoTexture.Sample(BasicSampler, input.uv);
+	surfaceColor.rgb = pow(surfaceColor.rgb, 2.2);
 
-	//Calculate lighting effects
-	float4 finalColor = float4(dLightCalc(input, light1, toCamera, finalSurface).xyz, 1) +
-		float4(pLightCalc(input, light2, toCamera, finalSurface).xyz, 1) +
-		float4(sLightCalc(input, light3, toCamera, finalSurface).xyz, 1);
+	//Sample shadowmap
+	//Shadows are only on the singular directional light
+	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
+	shadowUV.y = 1.0f - shadowUV.y;
+	float shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
 
-	//Return final pixel color after lighting
-	return finalColor;
+	// Total color for this pixel
+	float3 totalColor = float3(0, 0, 0);
+
+	//Add ambient light
+	totalColor += AmbLight.Color * AmbLight.Intensity * surfaceColor.rgb;
+
+	// Loop through all lights this frame
+	for (int i = 0; i < LightCount; i++)
+	{
+		// Which kind of light?
+		switch (Lights[i].Type)
+		{
+		case LIGHT_TYPE_DIRECTIONAL:
+			float3 dL = DirLight(Lights[i], input.normal, input.worldPos, CameraPosition, Shininess, Roughness, surfaceColor.rgb);
+			dL *= shadowAmount;
+			totalColor += dL;
+			break;
+
+		case LIGHT_TYPE_POINT:
+			float3 pL = PointLight(Lights[i], input.normal, input.worldPos, CameraPosition, Shininess, Roughness, surfaceColor.rgb);
+			//pL *= shadowAmount;
+			totalColor += pL;
+			break;
+
+		case LIGHT_TYPE_SPOT:
+			float3 sL = SpotLight(Lights[i], input.normal, input.worldPos, CameraPosition, Shininess, Roughness, surfaceColor.rgb);
+			//sL *= shadowAmount;
+			totalColor += sL;
+			break;
+		}
+	}
+
+	// Adjust the light color by the light amount
+	float3 gammaCorrect = pow(totalColor, 1.0 / 2.2);
+	return float4(gammaCorrect, 1);
 }

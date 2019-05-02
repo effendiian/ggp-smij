@@ -30,6 +30,9 @@ private:
 	bool prev_MB_R_Down;
 	bool prev_MB_M_Down;
 
+	//Scrollwheel control
+	float wheelDelta;
+
 	//Window control
 	HWND hWnd;
 	bool winRequireFocus;
@@ -75,6 +78,12 @@ public:
 	void SetWindowFocusRequirement(bool windowMustBeFocused);
 	
 	// --------------------------------------------------------
+	// Get the focus of the window
+	// If the focus requirement is false, then this will always return true
+	// --------------------------------------------------------
+	bool IsWindowFocused();
+
+	// --------------------------------------------------------
 	// NOT FOR USE OUTSIDE OF GAME.CPP
 	// Helper method for mouse clicking.
 	// --------------------------------------------------------
@@ -101,6 +110,11 @@ public:
 	// on the direction of the scroll
 	// --------------------------------------------------------
 	void OnMouseWheel(float wheelDelta, int x, int y);
+
+	// --------------------------------------------------------
+	//Update the focus state of the window
+	// --------------------------------------------------------
+	void InputManager::UpdateFocus();
 
 	// --------------------------------------------------------
 	// Update the input manager's key/button states (only call ONCE PER FRAME!)
@@ -155,6 +169,11 @@ public:
 	// Get the current Y mouse position
 	// --------------------------------------------------------
 	long GetMouseY();
+
+	// --------------------------------------------------------
+	// Get the current scrollwheel delta
+	// --------------------------------------------------------
+	float GetScrollWheelDelta();
 
 	// --------------------------------------------------------
 	// Get the X coordinate of the window (left)

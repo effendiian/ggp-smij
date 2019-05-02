@@ -20,10 +20,37 @@ void LightManager::Init()
 	ambientLight = new AmbientLightStruct();
 	ambientLight->Color = XMFLOAT3(0, 0, 0);
 	ambientLight->Intensity = 1;
+
+	// Create the desc for the actual texture that will be the shadow map
+	shadowTexDesc = {};
+	shadowTexDesc.Width = SHADOW_MAP_SIZE;
+	shadowTexDesc.Height = SHADOW_MAP_SIZE;
+	shadowTexDesc.ArraySize = 1;
+	shadowTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowTexDesc.CPUAccessFlags = 0;
+	shadowTexDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowTexDesc.MipLevels = 1;
+	shadowTexDesc.MiscFlags = 0;
+	shadowTexDesc.SampleDesc.Count = 1;
+	shadowTexDesc.SampleDesc.Quality = 0;
+	shadowTexDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	// Create the depth/stencil desc
+	shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+
+	// Create the desc for shadow map creation
+	shadowSRVDesc = {};
+	shadowSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	shadowSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shadowSRVDesc.Texture2D.MipLevels = 1;
+	shadowSRVDesc.Texture2D.MostDetailedMip = 0;
 }
 
 // Create a new directional light and add it to the light manager
-DirectionalLight* LightManager::CreateDirectionalLight()
+DirectionalLight* LightManager::CreateDirectionalLight(bool castShadows)
 {
 	if (lightList.size() >= MAX_LIGHTS)
 	{
@@ -32,14 +59,14 @@ DirectionalLight* LightManager::CreateDirectionalLight()
 	}
 
 	listDirty = true;
-	DirectionalLight* light = new DirectionalLight();
+	DirectionalLight* light = new DirectionalLight(castShadows);
 	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
 
 // Create a new directional light and add it to the light manager
-DirectionalLight* LightManager::CreateDirectionalLight(XMFLOAT3 color, float intensity)
+DirectionalLight* LightManager::CreateDirectionalLight(bool castShadows, XMFLOAT3 color, float intensity)
 {
 	if (lightList.size() >= MAX_LIGHTS)
 	{
@@ -48,14 +75,14 @@ DirectionalLight* LightManager::CreateDirectionalLight(XMFLOAT3 color, float int
 	}
 
 	listDirty = true;
-	DirectionalLight* light = new DirectionalLight(color, intensity);
+	DirectionalLight* light = new DirectionalLight(castShadows, color, intensity);
 	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
 
 // Create a new point light and add it to the light manager
-PointLight* LightManager::CreatePointLight()
+PointLight* LightManager::CreatePointLight(bool castShadows)
 {
 	if (lightList.size() >= MAX_LIGHTS)
 	{
@@ -64,14 +91,14 @@ PointLight* LightManager::CreatePointLight()
 	}
 
 	listDirty = true;
-	PointLight* light = new PointLight();
+	PointLight* light = new PointLight(castShadows);
 	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
 
 // Create a new point light and add it to the light manager
-PointLight* LightManager::CreatePointLight(float radius, XMFLOAT3 color, float intensity)
+PointLight* LightManager::CreatePointLight(bool castShadows, float radius, XMFLOAT3 color, float intensity)
 {
 	if (lightList.size() >= MAX_LIGHTS)
 	{
@@ -80,14 +107,14 @@ PointLight* LightManager::CreatePointLight(float radius, XMFLOAT3 color, float i
 	}
 
 	listDirty = true;
-	PointLight* light = new PointLight(radius, color, intensity);
+	PointLight* light = new PointLight(castShadows, radius, color, intensity);
 	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
 
 // Create a new spot light and add it to the light manager
-SpotLight* LightManager::CreateSpotLight()
+SpotLight* LightManager::CreateSpotLight(bool castShadows)
 {
 	if (lightList.size() >= MAX_LIGHTS)
 	{
@@ -96,14 +123,14 @@ SpotLight* LightManager::CreateSpotLight()
 	}
 
 	listDirty = true;
-	SpotLight* light = new SpotLight();
+	SpotLight* light = new SpotLight(castShadows);
 	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
 }
 
 // Create a new spot light and add it to the light manager
-SpotLight* LightManager::CreateSpotLight(float range, float spotFalloff, XMFLOAT3 color, float intensity)
+SpotLight* LightManager::CreateSpotLight(bool castShadows, float range, float spotFalloff, XMFLOAT3 color, float intensity)
 {
 	if (lightList.size() >= MAX_LIGHTS)
 	{
@@ -112,7 +139,7 @@ SpotLight* LightManager::CreateSpotLight(float range, float spotFalloff, XMFLOAT
 	}
 
 	listDirty = true;
-	SpotLight* light = new SpotLight(range, spotFalloff, color, intensity);
+	SpotLight* light = new SpotLight(castShadows, range, spotFalloff, color, intensity);
 	SetInLightManager(light, true);
 	lightList.push_back(light);
 	return light;
@@ -208,17 +235,23 @@ int LightManager::GetLightAmnt()
 LightStruct* LightManager::GetLightStructArray()
 {
 	if (listDirty)
-		RebuildLightStructArray();
+		RebuildLightLists();
 
 	//return lightStructArray[0];
 	return lightStructArr;
 }
 
+// Rebuild the light struct array and the shadow light list
+void LightManager::RebuildLightLists()
+{
+	RebuildLightStructArray();
+	RebuildShadowLightList();
+	listDirty = false;
+}
+
 // Rebuild the light struct array from all lights in the lightList
 void LightManager::RebuildLightStructArray()
 {
-	listDirty = false;
-
 	//Reset array
 	if (lightStructArr) { delete lightStructArr; }
 	lightStructArr = new LightStruct[MAX_LIGHTS];
@@ -236,4 +269,42 @@ void LightManager::RebuildLightStructArray()
 void SetInLightManager(Light* light, bool val)
 {
 	light->inLightManager = val;
+}
+
+// Get all lights that cast shadows
+std::vector<Light*> LightManager::GetShadowCastingLights()
+{
+	if (listDirty)
+		RebuildLightLists();
+
+	return shadowLightList;
+}
+
+// Get the shadow texture description for creating shadowTexs
+D3D11_TEXTURE2D_DESC* LightManager::GetShadowTexDesc()
+{
+	return &shadowTexDesc;
+}
+
+// Get the shadow depth/stencil description for creating shadowDSs
+D3D11_DEPTH_STENCIL_VIEW_DESC* LightManager::GetShadowDSDesc()
+{
+	return &shadowDSDesc;
+}
+
+// Get the shadow resource view description for creating shadowSRVs
+D3D11_SHADER_RESOURCE_VIEW_DESC* LightManager::GetShadowSRVDesc()
+{
+	return &shadowSRVDesc;
+}
+
+// Rebuild the shadow light list
+void LightManager::RebuildShadowLightList()
+{
+	shadowLightList.clear();
+	for (auto light : lightList)
+	{
+		if (light->GetCastsShadows())
+			shadowLightList.push_back(light);
+	}
 }

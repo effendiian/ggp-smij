@@ -2,6 +2,8 @@
 #include "ResourceManager.h"
 #include "EntityManager.h"
 
+using namespace DirectX;
+
 // Default constructor.
 SwimmerManager::SwimmerManager() 
 {
@@ -9,11 +11,9 @@ SwimmerManager::SwimmerManager()
 	std::random_device rseed;
 	rng = std::mt19937(rseed());
 
-	swimmerCount = 0;
-	maxSwimmerCount = 10;
+	maxSwimmerCount = 5;
 	currentTTS = 0;
 	this->Reset();
-	this->AddCollider(DirectX::XMFLOAT3(10, 0, 10), DirectX::XMFLOAT3(0, 0, 0));
 }
 
 // Remove swimmers.
@@ -23,24 +23,26 @@ SwimmerManager::~SwimmerManager()
 	Reset();
 }
 
+// Set level radius
+void SwimmerManager::SetLevelRadius(float radius)
+{
+	this->levelRadius = radius;
+
+}
+
 // Get next random position.
 DirectX::XMFLOAT3 SwimmerManager::GetNextPosition()
-{
-	Collider* c = this->GetCollider();
-
-	// Create uniform distribution ranges.
-	DirectX::XMFLOAT3 halfSize = c->GetHalfSize();
-	std::uniform_real<float> distX(-halfSize.x, halfSize.x);
-	std::uniform_real<float> distZ(-halfSize.z, halfSize.z);
-
-	// Create the center position.
-	DirectX::XMFLOAT3 center = c->GetPosition();
+{	// Create uniform distribution ranges.
+	std::uniform_real<float> angle(0, XM_2PI);
+	std::uniform_real<float> distR(0, levelRadius);
+	float theta = angle(rng);
+	float rad = distR(rng);
 
 	// Return next randomly generated position, centered on the swimmer manager's collider.
 	return DirectX::XMFLOAT3(
-		center.x + distX(rng), 
+		sin(theta) * rad, 
 		-5, 
-		center.z + distZ(rng)
+		cos(theta) * rad
 	);
 }
 
@@ -50,19 +52,15 @@ void SwimmerManager::RandomizeSwimmer(Swimmer* swimmer)
 	if (swimmer != nullptr) 
 	{
 		swimmer->SetPosition(this->GetNextPosition());
-		// swimmer->SetRotation(this->GetNextRotation());
-		// swimmer->SetScale(this->GetNextScale());
 	}
 }
 
 // Check if another swimmer can spawn.
 bool SwimmerManager::IsReadyToSpawn()
 {
-	return ( // Return true...
-		(this->enabled) // ...if this object is enabled,
-		&& (swimmerCount < maxSwimmerCount) // ...if there is still space,
-		&& (currentTTS >= maxTTS) // ...and if the timer surpassed the delay amount.
-	); 
+	return (swimmers.size() == 0) ||
+		((swimmers.size() < maxSwimmerCount) // ...if there is still space,
+		&& (currentTTS >= maxTTS)); // ...and if the timer surpassed the delay amount. 
 }
 
 // Reset the manager.
@@ -71,18 +69,11 @@ void SwimmerManager::Reset()
 	EntityManager* entityManager = EntityManager::GetInstance();
 	for (int i = 0; i < swimmers.size(); i++)
 	{
-		if(swimmers[i] != nullptr)
-			entityManager->RemoveEntity(swimmers[i]);
+		if (swimmers[i] != nullptr)
+			swimmers[i]->SetSwimmerState(SwimmerState::Leaving);
 	}
 	swimmers.clear();
-	swimmerCount = 0;
 	currentTTS = 0;
-}
-
-// Increase the level.
-void SwimmerManager::IncreaseLevel() 
-{
-	maxSwimmerCount += 5;
 }
 
 // Update swimmer state and spawn time.
@@ -110,20 +101,18 @@ Swimmer* SwimmerManager::SpawnSwimmer()
 		// To be refactored into the swimmer manager.
 		ResourceManager* resourceManager = ResourceManager::GetInstance();
 
-		// Create the swimmer name.
-		std::string swimmer_id = "swimmer" + std::to_string(swimmerCount + 1);
-
 		// Create the swimmer.
 		Swimmer* swimmer = new Swimmer(
 			resourceManager->GetMesh(swimmerMesh),
 			resourceManager->GetMaterial(swimmerMat),
-			swimmer_id
+			"swimmer"
 		);
+		swimmer->SetScale(0.05f, 0.05f, 0.05f);
 
 		// Add collider.
 		swimmer->AddCollider(DirectX::XMFLOAT3(0.9f, 0.9f, 0.9f), DirectX::XMFLOAT3(0, 0, 0));
 #if defined(DEBUG) || defined(_DEBUG)
-		swimmer->GetCollider()->SetDebug(true);
+		swimmer->SetDebug(true);
 #endif
 
 		// Instantiate the position and rotation.

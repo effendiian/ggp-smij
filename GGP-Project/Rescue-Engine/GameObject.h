@@ -14,15 +14,25 @@ private:
 	//Transformations
 	DirectX::XMFLOAT4X4 world;
 	DirectX::XMFLOAT4X4 worldInvTrans;
+
+
 	DirectX::XMFLOAT3 forwardAxis;
+	DirectX::XMFLOAT3 rightAxis;
+	DirectX::XMFLOAT3 upAxis;
+
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT4 rotationQuat;
-	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
 	bool worldDirty;
+	bool debug;
 
 	//Other data
 	Collider* collider;
+
+	// --------------------------------------------------------
+	// Calculate the local axis for the gameobject
+	// --------------------------------------------------------
+	void CalculateAxis();
 
 protected:
 	bool enabled;
@@ -140,14 +150,19 @@ public:
 	DirectX::XMFLOAT3 GetForwardAxis();
 
 	// --------------------------------------------------------
-	// Get the rotation for this GameObject (Angles)
+	// Get the rotated right axis of this gameobject
 	// --------------------------------------------------------
-	DirectX::XMFLOAT3 GetRotation();
+	DirectX::XMFLOAT3 GetRightAxis();
 
 	// --------------------------------------------------------
-	// Get the quaternion rotation for this GameObject (Quaternion)
+	// Get the rotated up axis of this gameobject
 	// --------------------------------------------------------
-	DirectX::XMFLOAT4 GetQuatRotation();
+	DirectX::XMFLOAT3 GetUpAxis();
+
+	// --------------------------------------------------------
+	// Get the rotation for this GameObject (Quaternion)
+	// --------------------------------------------------------
+	DirectX::XMFLOAT4 GetRotation();
 
 	// --------------------------------------------------------
 	// Set the rotation for this GameObject (Angles)
@@ -164,6 +179,13 @@ public:
 	// z - z angle
 	// --------------------------------------------------------
 	void SetRotation(float x, float y, float z);
+
+	// --------------------------------------------------------
+	// Set the rotation for this GameObject (Quaternion)
+	//
+	// newQuatRotation - The new rotation to rotate to
+	// --------------------------------------------------------
+	void SetRotation(DirectX::XMFLOAT4 newQuatRotation);
 
 	// --------------------------------------------------------
 	// Rotate this GameObject (Angles)
@@ -213,6 +235,16 @@ public:
 	// size - dimensions of bounding box
 	// offset - offset of collider from position of game object
 	// --------------------------------------------------------
-	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset);
+	void AddCollider(DirectX::XMFLOAT3 size, DirectX::XMFLOAT3 offset = DirectX::XMFLOAT3());
+
+	// --------------------------------------------------------
+	// Check if the collider is in debug mode (draw outline)
+	// --------------------------------------------------------
+	bool IsDebug();
+
+	// --------------------------------------------------------
+	// Set debug mode for this collider (draw outline)
+	// --------------------------------------------------------
+	void SetDebug(bool setting);
 };
 

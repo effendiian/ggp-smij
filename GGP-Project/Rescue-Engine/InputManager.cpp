@@ -12,6 +12,7 @@ void InputManager::Init(HWND hWnd)
 	prev_MB_L_Down = false;
 	prev_MB_R_Down = false;
 	prev_MB_M_Down = false;
+	wheelDelta = 0;
 
 	GetCursorPos(&mousePos);
 	prevMousePos = mousePos;
@@ -20,38 +21,24 @@ void InputManager::Init(HWND hWnd)
 InputManager::~InputManager()
 { }
 
-//Update the input manager (only call ONCE PER FRAME!)
-void InputManager::UpdateStates()
+//Update the focus state of the window
+void InputManager::UpdateFocus()
 {
 	if (GetFocus() == hWnd)
 	{
 		windowFocused = true;
 	}
 	else windowFocused = false;
-	
-	//Previouse mouse button states
+}
+
+//Update the input manager (only call ONCE PER FRAME!)
+void InputManager::UpdateStates()
+{
+	//Previous mouse button states
 	prev_MB_L_Down = mb_L_Down;
 	prev_MB_R_Down = mb_R_Down;
 	prev_MB_M_Down = mb_M_Down;
-
-	//Get new cursor position
-	prevMousePos = mousePos;
-	GetCursorPos(&mousePos);
-
-	/*
-	static float timer = 0;
-	timer += deltaTime;
-
-	if (timer > 1)
-	{
-		timer = 0;
-		std::cout << "F\t: " << windowFocused << std::endl;
-		std::cout << "MW\t: " << hWnd << std::endl;
-		std::cout << "GAW\t: " << GetActiveWindow() << std::endl;
-		std::cout << "GFW\t: " << GetForegroundWindow() << std::endl;
-		std::cout << "GF\t: " << GetFocus() << "\n" << std::endl;
-	}
-	*/
+	wheelDelta = 0;
 }
 
 //Update the mouse position (only call ONCE PER FRAME!)
@@ -66,6 +53,15 @@ void InputManager::UpdateMousePos()
 void InputManager::SetWindowFocusRequirement(bool windowMustBeFocused)
 {
 	winRequireFocus = windowMustBeFocused;
+}
+
+// Get the focus of the window
+// If the focus requirement is false, then this will always return true
+bool InputManager::IsWindowFocused()
+{
+	if (winRequireFocus)
+		return windowFocused;
+	return true;
 }
 
 // --------------------------------------------------------
@@ -124,7 +120,8 @@ void InputManager::OnMouseMove(WPARAM buttonState, int x, int y)
 // --------------------------------------------------------
 void InputManager::OnMouseWheel(float wheelDelta, int x, int y)
 {
-	//TODO: Implement wheel states
+	//Store wheel delta
+	this->wheelDelta = wheelDelta;
 }
 
 //Returns true while the inputted key is held down
@@ -247,6 +244,12 @@ long InputManager::GetMouseX()
 long InputManager::GetMouseY()
 {
 	return mousePos.y;
+}
+
+// Get the current scrollwheel delta
+float InputManager::GetScrollWheelDelta()
+{
+	return wheelDelta;
 }
 
 // Get the X coordinate of the window (left)

@@ -31,7 +31,8 @@ void Camera::CreateViewMatrix()
 
 	//Create view matrix (transpose for HLSL)
 	XMStoreFloat4x4(&view, XMMatrixTranspose(
-		XMMatrixLookToLH(XMLoadFloat3(&GetPosition()), forward, up)));
+		XMMatrixLookToLH(XMLoadFloat3(&GetPosition()), 
+		forward, up)));
 }
 
 // Get the camera's view matrix

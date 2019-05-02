@@ -6,21 +6,26 @@
 #include "InputManager.h"
 #include "SwimmerManager.h"
 
+enum class BoatState { Starting, Playing, Crashed, Resetting };
+
 class Boat :
 	public Entity
 {
 private:
 
 	//Movement
-	float speed = 2;
-	float turnSpeed = 100;
+	float speed = 3;
+	float turnSpeed = 150;
 	float minDistance = 0.5f;
-	float levelWidth;
-	float levelHeight;
-	bool crashed;
+	float levelRadius;
+	BoatState state;
 	SwimmerManager* swimmerManager;
 	InputManager* inputManager;
 	std::vector<Swimmer*> trail;
+
+	//Seek timer
+	float seekTimer;
+	DirectX::XMFLOAT3 seekPos;
 
 	// --------------------------------------------------------
 	// Attach a swimmer at the end of the trail
@@ -28,7 +33,7 @@ private:
 	void AttachSwimmer(Swimmer* swimmer, int index);
 	
 public:
-	Boat(Mesh* mesh, Material* material);
+	Boat(Mesh* mesh, Material* material, float levelRadius);
 	~Boat();
 
 	// --------------------------------------------------------
@@ -42,6 +47,11 @@ public:
 	void Reset();
 
 	// --------------------------------------------------------
+	// Interprets key input for starting the game
+	// --------------------------------------------------------
+	void InputStart();
+
+	// --------------------------------------------------------
 	// Interprets key input
 	// --------------------------------------------------------
 	void Input(float deltaTime);
@@ -52,6 +62,11 @@ public:
 	void Move(float deltaTime);
 
 	// --------------------------------------------------------
+	// Seeks 0,0,0 
+	// --------------------------------------------------------
+	void SeekOrigin(float deltaTime);
+
+	// --------------------------------------------------------
 	// Checks for collisions and calls corresponding collide methods
 	// --------------------------------------------------------
 	void CheckCollisions();
@@ -60,16 +75,14 @@ public:
 	// Code called when the player hits the edge of the level
 	// --------------------------------------------------------
 	void GameOver();
+
+	// --------------------------------------------------------
+	// Get whether the boat is crashed or not
+	// --------------------------------------------------------
+	BoatState GetState();
 	
 	// --------------------------------------------------------
 	// Clears all swimmers from the boat
 	// --------------------------------------------------------
 	void ClearSwimmers();
-
-	//GETTERS & SETTERS
-	void SetLevelWidth (float value)               { if (value > 0) levelWidth  = value;           }
-	void SetLevelHeight(float value)               { if (value > 0) levelHeight = value;           }
-	void SetLevelBounds(float width, float height) { SetLevelWidth(width); SetLevelHeight(height); }
-	float GetLevelWidth () { return levelWidth;  }
-	float GetLevelHeight() { return levelHeight; }
 };

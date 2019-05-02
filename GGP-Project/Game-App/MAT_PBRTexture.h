@@ -13,6 +13,8 @@ private:
 	ID3D11ShaderResourceView* metalSRV;
 	ID3D11SamplerState* sampler;
 
+	ID3D11SamplerState* shadowSampler;
+
 public:
 	// --------------------------------------------------------
 	// Constructor - Set up a material
@@ -24,7 +26,7 @@ public:
 		float shininess, DirectX::XMFLOAT2 uvScale,
 		ID3D11ShaderResourceView* albedo, ID3D11ShaderResourceView* normals,
 		ID3D11ShaderResourceView* roughness, ID3D11ShaderResourceView* metal,
-		ID3D11SamplerState* sampler);
+		ID3D11SamplerState* sampler, ID3D11SamplerState* shadowSampler);
 
 	// --------------------------------------------------------
 	// Release all data in the material

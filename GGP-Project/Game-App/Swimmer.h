@@ -3,7 +3,7 @@
 #include "Entity.h"
 
 //Enum for swimmer states
-enum class SwimmerState { Entering, Floating, Joining, Following, Still, Hitting, Nothing };
+enum class SwimmerState { Entering, Floating, Joining, Following, Still, Hitting, Nothing, Leaving };
 
 class Swimmer :
 	public Entity
@@ -14,7 +14,7 @@ private:
 	SwimmerState swmrState;
 	static const int MAX_FPS = 60;
 	Entity* leader;
-	float lagSeconds = 0.7f;
+	float lagSeconds = 0.5f;
 	float hitTimer;
 
 	//Snake movement buffer vars
@@ -39,12 +39,7 @@ private:
 	// --------------------------------------------------------
 	// Apply buoyancy to the swimmer
 	//---------------------------------------------------------
-	void ApplyBuoyancy(float deltaTime);
-
-	// --------------------------------------------------------
-	// Apply buoyancy to the swimmer
-	//---------------------------------------------------------
-	void ApplyCos(float deltaTime);
+	void ApplyWaterPhysics(float deltaTime, bool applyBuoyancy);
 
 	// --------------------------------------------------------
 	// Run this swimmer's floating behaviour
@@ -55,6 +50,11 @@ private:
 	// Update the swimmer's buffers for snake movement
 	// --------------------------------------------------------
 	DirectX::XMFLOAT3 GetTrailPos(float deltaTime);
+
+	// --------------------------------------------------------
+	// Get the rotation for following on the trail
+	// --------------------------------------------------------
+	DirectX::XMFLOAT4 GetTrailRotation(float deltaTime);
 
 	// --------------------------------------------------------
 	// Causes this swimmer to seek the surface y's position
@@ -76,6 +76,11 @@ private:
 	// --------------------------------------------------------
 	void Hit(float deltaTime);
 
+	// --------------------------------------------------------
+	// Run this swimmer's leaving behaviour
+	// --------------------------------------------------------
+	void Leave(float deltaTime);
+
 public:
 	Swimmer(Mesh* mesh, Material* material, std::string name);
 	~Swimmer();
@@ -86,22 +91,28 @@ public:
 	void Update(float deltaTime);
 
 	// --------------------------------------------------------
-	// Check if the boat is in the following state
-	// --------------------------------------------------------
-	bool IsFollowing();
-
-	// --------------------------------------------------------
 	// Set Swimmer to follow a game object.
 	// --------------------------------------------------------
 	void JoinTrail(Entity* leader);
 
 	// --------------------------------------------------------
-	// Check if the swimmer is in the hitting state for the correct amount of time	// --------------------------------------------------------
+	// Check if the swimmer is in the hitting state for the correct amount of time	
+	// --------------------------------------------------------
 	bool CheckHit();
 
 	// --------------------------------------------------------
 	// Set Swimmer's state to a new state
 	// --------------------------------------------------------
 	void SetSwimmerState(SwimmerState newState);
+
+	// --------------------------------------------------------
+	// Set Swimmer's lag seconds
+	// --------------------------------------------------------
+	void SetLagSeconds(float lagSeconds);
+
+	// --------------------------------------------------------
+	// Get the state of the swimmer
+	// --------------------------------------------------------
+	SwimmerState GetState();
 };
 

@@ -1,8 +1,10 @@
 #include "Game.h"
+#include "LightManager.h"
 #include "Vertex.h"
 #include "MAT_PBRTexture.h"
 #include "MAT_Water.h"
 #include "MAT_Skybox.h"
+#include "MAT_Basic.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -38,14 +40,10 @@ Game::Game(HINSTANCE hInstance)
 // --------------------------------------------------------
 Game::~Game()
 {
-	//Delete sampler state
+	//Delete sampler states
 	samplerState->Release();
-
-	//Delete entities - Refactored into EntityManager.
-	// for (int i = 0; i < entities.size(); i++)
-	// {
-	// 	if (entities[i]) { delete entities[i]; }
-	// }
+	waterSamplerState->Release();
+	shadowSampler->Release();
 
 	//Delete the camera
 	if (camera) { delete camera; }
@@ -67,17 +65,13 @@ void Game::Init()
 	renderer->Init(device, width, height);
 	entityManager = EntityManager::GetInstance();
 	swimmerManager = SwimmerManager::GetInstance();
+	swimmerManager->SetLevelRadius(LEVEL_RADIUS - 1);
 
 	//Initialize singleton data
 	inputManager->Init(hWnd);
 
-	//Create the camera and initialize matrices
-	camera = new FirstPersonCamera();
-	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
-	camera->SetRotation(75, 0, 0);
-	camera->SetPosition(0, 25, -5);
-
 	//Create game entities
+	gameState = GameState::Menu;
 	CreateEntities();
 
 	//Initialize transformation modifiers
@@ -95,17 +89,8 @@ void Game::Init()
 	lightManager->SetAmbientColor(0.01f, 0.01f, 0.01f);
 
 	//Directional lights
-	DirectionalLight* dLight = lightManager->CreateDirectionalLight(XMFLOAT3(1, 1, 1), 1);
-	dLight->SetRotation(90, 0, 0);
-
-	////Point light
-	//PointLight* pLight = lightManager->CreatePointLight(5, XMFLOAT3(0, 1, 0), 1);
-	//pLight->SetPosition(0, -2, 3);
-
-	////Spot light
-	//SpotLight* sLight = lightManager->CreateSpotLight(5, 5, XMFLOAT3(0, 0, 1), 1);
-	//sLight->SetPosition(2, 0, -1);
-	//sLight->SetRotation(0, -90, 0);
+	DirectionalLight* dLight = lightManager->CreateDirectionalLight(true, XMFLOAT3(1, 1, 1), 1);
+	dLight->SetRotation(60, -45, 0);
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.
@@ -120,42 +105,44 @@ void Game::LoadAssets()
 {
 	//Load shaders
 	resourceManager->LoadVertexShader("VertexShader.cso", device, context);
-	resourceManager->LoadPixelShader("PixelShaderPBR.cso", device, context);
+	resourceManager->LoadPixelShader("PixelShader.cso", device, context);
+
+	resourceManager->LoadPixelShader("PS_Water.cso", device, context);
+	resourceManager->LoadPixelShader("PS_ShineWater.cso", device, context);
+
 	resourceManager->LoadVertexShader("VS_ColDebug.cso", device, context);
 	resourceManager->LoadPixelShader("PS_ColDebug.cso", device, context);
+
 	resourceManager->LoadVertexShader("FXAAShaderVS.cso", device, context);
 	resourceManager->LoadPixelShader("FXAAShaderPS.cso", device, context);
-	resourceManager->LoadPixelShader("WaterPixelShader.cso", device, context);
+
 	resourceManager->LoadVertexShader("VS_Sky.cso", device, context);
 	resourceManager->LoadPixelShader("PS_Sky.cso", device, context);
 
+	resourceManager->LoadVertexShader("VS_Shadow.cso", device, context);
+
 	//Create meshes
-	resourceManager->LoadMesh("Assets\\Models\\torus.obj", device);
 	resourceManager->LoadMesh("Assets\\Models\\cube.obj", device);
-	resourceManager->LoadMesh("Assets\\Models\\helix.obj", device);
-	resourceManager->LoadMesh("Assets\\Models\\sphere.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\boat.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\swimmer.obj", device);
+	resourceManager->LoadMesh("Assets\\Models\\area.obj", device);
 
 	//Load textures
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_albedo.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_normals.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_roughness.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Floor/floor_metal.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Boat/boat_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Boat/boat_normals.png", device, context);
 
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_albedo.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_normals.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_roughness.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Scratched/scratched_metal.png", device, context);
-
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_albedo.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_normals.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_roughness.png", device, context);
-	resourceManager->LoadTexture2D("Assets/Textures/Wood/wood_metal.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_albedo.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Swimmer/swimmer_normals.png", device, context);
 
 	resourceManager->LoadTexture2D("Assets/Textures/Water/blue.png", device, context);
 	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_1.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_2.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/water_normal_3.png", device, context);
+	resourceManager->LoadTexture2D("Assets/Textures/Water/water_metal.png", device, context);
 
-	//Load cubemap
+	//Load cubemaps
 	resourceManager->LoadCubeMap("Assets/Textures/Sky/SunnyCubeMap.dds", device);
+	resourceManager->LoadCubeMap("Assets/Textures/Water/water_shine.dds", device);
 
 	//Create sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -167,42 +154,54 @@ void Game::LoadAssets()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&samplerDesc, &samplerState);
 
-	//Create materials
+	samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; //Anisotropic filtering
+	samplerDesc.MaxAnisotropy = 16;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	samplerDesc.MipLODBias = 1.8f;
+	device->CreateSamplerState(&samplerDesc, &waterSamplerState);
+
+	// Create the special "comparison" sampler state for shadows
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Could be anisotropic
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f;
+	shadowSampDesc.BorderColor[1] = 1.0f;
+	shadowSampDesc.BorderColor[2] = 1.0f;
+	shadowSampDesc.BorderColor[3] = 1.0f;
+	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
+
 	SimpleVertexShader* vs = resourceManager->GetVertexShader("VertexShader.cso");
-	SimplePixelShader* ps = resourceManager->GetPixelShader("PixelShaderPBR.cso");
+	SimplePixelShader* ps_basic = resourceManager->GetPixelShader("PixelShader.cso");
 
-	Material* mat1 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_albedo.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_normals.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Floor/floor_metal.png"),
-		samplerState);
-	resourceManager->AddMaterial("floor", mat1);
+	//Boat material
+	Material* mat_boat = new MAT_Basic(vs, ps_basic, XMFLOAT2(1, 1), samplerState,
+		resourceManager->GetTexture2D("Assets/Textures/Boat/boat_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Boat/boat_normals.png"),
+		0, 50, shadowSampler);
+	resourceManager->AddMaterial("boat", mat_boat);
 
-	Material* mat2 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_albedo.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_normals.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Scratched/scratched_metal.png"),
-		samplerState);
-	resourceManager->AddMaterial("scratched", mat2);
-
-	Material* mat3 = new MAT_PBRTexture(vs, ps, 1024.0f, XMFLOAT2(2, 2),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_albedo.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_normals.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
-		samplerState);
-	resourceManager->AddMaterial("wood", mat3);
+	//Swimmer Material
+	Material* mat_swimmer = new MAT_Basic(vs, ps_basic, XMFLOAT2(1, 1), samplerState,
+		resourceManager->GetTexture2D("Assets/Textures/Swimmer/swimmer_albedo.png"),
+		resourceManager->GetTexture2D("Assets/Textures/Swimmer/swimmer_normals.png"),
+		0, 50, shadowSampler);
+	resourceManager->AddMaterial("swimmer", mat_swimmer);
 	
 	//Water surface material
-	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("WaterPixelShader.cso"),
-		1024.0f, XMFLOAT2(2, 2),
+	Material* mat_water = new MAT_Water(vs, resourceManager->GetPixelShader("PS_ShineWater.cso"),
+		XMFLOAT2(2, 2), waterSamplerState, 
 		resourceManager->GetTexture2D("Assets/Textures/Water/blue.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_1.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_roughness.png"),
-		resourceManager->GetTexture2D("Assets/Textures/Wood/wood_metal.png"),
-		samplerState, &translate);
+		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_2.png"),
+		0, 100, shadowSampler, &translate,
+		resourceManager->GetTexture2D("Assets/Textures/Water/water_normal_3.png"),
+		resourceManager->GetCubeMap("Assets/Textures/Water/water_shine.dds"));
 	resourceManager->AddMaterial("water", mat_water);
 
 	//Skybox material
@@ -217,22 +216,32 @@ void Game::LoadAssets()
 void Game::CreateEntities()
 {
 	//Create water
-	Entity* water = new Entity(
+	/*Entity* water = new Entity(
 		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
 		resourceManager->GetMaterial("water")
 	);
-	water->SetScale(26, 0.1f, 26);
+	water->SetScale(26, 0.1f, 26);*/
+
+	//Create area
+	Entity* area = new Entity(resourceManager->GetMesh("Assets\\Models\\area.obj"),
+		resourceManager->GetMaterial("boat"));
+	area->SetScale(2.18f, 0.5f, 2.18f);
 
 	// Player (Boat) - Create the player.
-	Entity* player = new Boat(
-		resourceManager->GetMesh("Assets\\Models\\cube.obj"),
-		resourceManager->GetMaterial("scratched")
+	player = new Boat(
+		resourceManager->GetMesh("Assets\\Models\\boat.obj"),
+		resourceManager->GetMaterial("boat"),
+		LEVEL_RADIUS
 	);
 	player->SetPosition(0, 0, 0); // Set the player's initial position.
-	player->AddCollider(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0, 0, 0));
+	player->AddCollider(XMFLOAT3(0.9f, 0.8f, 2.3f), XMFLOAT3(0, 0, 0));
 #if defined(DEBUG) || defined(_DEBUG)
-	player->GetCollider()->SetDebug(true);
+	player->SetDebug(true);
 #endif
+
+	//Create the camera and initialize matrices
+	camera = new FocusCamera(player, XMFLOAT3(0, 16, -23), XMFLOAT3(40.75f, 0, 0), 4, 2);
+	camera->CreateProjectionMatrix(0.25f * XM_PI, (float)width / height, 0.1f, 100.0f);
 }
 
 // --------------------------------------------------------
@@ -250,6 +259,7 @@ void Game::OnResize()
 		(float)width / height,	// Aspect ratio
 		0.1f,				  	// Near clip plane distance
 		100.0f);			  	// Far clip plane distance
+	renderer->CreatePostProcessingResources(device, width, height);
 }
 
 // --------------------------------------------------------
@@ -257,10 +267,16 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
+	inputManager->UpdateFocus();
+	if (!inputManager->IsWindowFocused())
+		return;
+
 	//The only call to UpdateMousePos() for the InputManager
 	//Get the current mouse position
 	inputManager->UpdateMousePos();
 	// --------------------------------------------------------
+	//All game code goes below
+
 
 	// Quit if the escape key is pressed
 	if (inputManager->GetKey(VK_ESCAPE))
@@ -268,17 +284,48 @@ void Game::Update(float deltaTime, float totalTime)
 
 	//Update the camera
 	camera->Update(deltaTime);
+	
+	//Gamestate switch
+	switch (gameState)
+	{
+		case GameState::Menu:
+			gameState = GameState::Playing;
+			break;
 
-	// Updates all the entities
-	entityManager->Update(deltaTime);
+		case GameState::Playing:
+			// Updates the swimmer generator/manager.
+			if(player->GetState() == BoatState::Playing)
+				swimmerManager->Update(deltaTime);
 
-	// Updates the swimmer generator/manager.
-	swimmerManager->Update(deltaTime);
+			entityManager->Update(deltaTime);
+
+			//Check for gameover
+			if (player->GetState() == BoatState::Crashed)
+				gameState = GameState::GameOver;
+			break;
+
+		case GameState::GameOver:
+			entityManager->Update(deltaTime);
+
+			//Check for reset input
+			if (inputManager->GetKey(VK_SPACE))
+			{
+				player->Reset();
+				swimmerManager->Reset();
+				gameState = GameState::Playing;
+			}
+			break;
+
+		default:
+			break;
+	}
 
 	//Updates water's scrolling normal map
-	translate += 0.0001f;
+	translate += 0.025f * deltaTime;
 	if (translate > 1.0f) translate = 0.0f;
 	
+
+	//All game code goes above
 	// --------------------------------------------------------
 	//The only call to Update() for the InputManager
 	//Update for next frame
@@ -290,13 +337,9 @@ void Game::Update(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
-	// Background color (Cornflower Blue in this case) for clearing
-	// const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
-	const float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
 	//Draw all entities in the renderer
-	renderer->SetClearColor(color); // Needed for clearing the post process buffer texture and the back buffer.
-	renderer->Draw(context, camera, backBufferRTV, depthStencilView, samplerState, width, height);
+	renderer->SetClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Needed for clearing the post process buffer texture and the back buffer.
+	renderer->Draw(context, device, camera, backBufferRTV, depthStencilView, samplerState, width, height);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it

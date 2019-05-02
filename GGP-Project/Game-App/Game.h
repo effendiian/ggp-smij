@@ -3,17 +3,16 @@
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include "Renderer.h"
-#include "LightManager.h"
 #include "InputManager.h"
 #include "EntityManager.h"
-#include "FirstPersonCamera.h"
+#include "FocusCamera.h"
 #include "ResourceManager.h"
 #include "SwimmerManager.h"
 #include "Boat.h"
 
-#define NUM_MESHES 4
-#define NUM_TEXTURES 12
-#define NUM_MATS 3
+#define LEVEL_RADIUS 13
+
+enum class GameState {Menu, Playing, GameOver};
 
 class Game 
 	: public DXCore
@@ -24,7 +23,7 @@ public:
 	~Game();
 
 	//Camera
-	FirstPersonCamera* camera;
+	FocusCamera* camera;
 
 	// Overridden setup and game loop methods, which
 	// will be called automatically
@@ -46,11 +45,14 @@ private:
 	EntityManager* entityManager;
 	SwimmerManager* swimmerManager;
 
-	//Entities
-	// std::vector<Entity*> entities; // Refactored into EntityManager.
+	//Gameplay
+	GameState gameState;
+	Boat* player;
 
-	//Sampler state
+	//Sampler states
 	ID3D11SamplerState* samplerState;
+	ID3D11SamplerState* waterSamplerState;
+	ID3D11SamplerState* shadowSampler;
 
 	//Transformation modifiers
 	float position;
